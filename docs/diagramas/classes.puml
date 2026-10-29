@@ -67,22 +67,28 @@ package "transporte.modelo  (Henrique)" {
   class Parametros <<frozen>> {
     +raio_caminhada_m: float = 300
     +velocidade_caminhada_ms: float = 1.2
-    +faixas: list[FaixaHoraria]
+    +espera_padrao_s: float = 300
+    +faixas: tuple[FaixaHoraria, ...]
+    +faixa(nome): FaixaHoraria
   }
   class FaixaHoraria <<frozen>> {
     +nome: str
     +inicio_s: int
     +fim_s: int
+    +contem(instante_s): bool
   }
   abstract class Visao {
     +grafo: Grafo
+    +nome: str
   }
   class VisaoGP {
     +vertice_da_parada: dict[str, int]
+    +parada_do_vertice: list[str]
   }
   class VisaoGE {
     +vertice_da_parada: dict[str, int]
     +{field} plataforma: dict[(parada, padrão), int]
+    +faixa: str
     +tipos de aresta: embarque | viagem | desembarque | caminhada
     +baldeacoes(caminho): int  {embarques - 1}
   }
@@ -95,7 +101,7 @@ package "transporte.modelo  (Henrique)" {
   }
   class construtores <<module>> {
     +construir_gp(rede, params): VisaoGP
-    +construir_ge(rede, params, intervalos): VisaoGE
+    +construir_ge(rede, faixa, params, intervalos): VisaoGE
     +salvar(visao, caminho)
     +carregar(caminho): Visao
   }
