@@ -1,0 +1,51 @@
+@startuml componentes
+' Diagrama de componentes: módulos de src/transporte e o fluxo do dado.
+' Estado: planejado. Estrutura em docs/fontes/plano-de-projeto.md §4.4.
+!pragma layout smetana
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+title Componentes · do feed GTFS à interface
+
+actor "Usuário" as U
+artifact "Feed GTFS da BHTrans\n(dados/brutos/)" as GTFS
+artifact "Rede de teste\n(dados/rede-teste/)" as TESTE
+
+package "src/transporte" {
+  component "interface\nStreamlit: app, uma página por feature,\ncomponente de mapa (folium)" as UI
+  component "dados\nleitor GTFS, validação, recorte,\nmodelo normalizado (Rede)" as DADOS
+  component "modelo\nconstrutores de G_P, G_E, G_L e G_T;\nsalvar e carregar" as MODELO
+  component "grafo\nGrafo, HeapMin, BFS, Dijkstra" as GRAFO
+  component "algoritmos\ntrajetos, A*, baldeações, centralidades,\neficiência, isócronas, Tarjan" as ALG
+  component "simulacao\nespera por faixa horária, quadro de horários,\nMonte Carlo, falhas" as SIM
+  component "util\nmedição de tempo" as UTIL
+}
+
+package "fora de src/" {
+  component "tests\npytest; NetworkX só como gabarito" as TESTS
+  component "benchmarks\netapa opcional; NetworkX" as BENCH
+}
+
+U --> UI : interage
+GTFS --> DADOS : CSV lidos com pandas
+TESTE --> DADOS
+UI --> DADOS : carrega e recorta
+UI --> MODELO : constrói as visões (em cache)
+UI --> ALG : consultas
+UI --> SIM : simulações
+MODELO --> DADOS : lê a Rede
+MODELO --> GRAFO : monta o Grafo
+ALG --> GRAFO : percorre
+ALG --> MODELO : usa as visões
+SIM --> ALG : trajetos e eficiência
+SIM --> MODELO : desativa vértices e arestas
+TESTS ..> ALG : confere resultados
+TESTS ..> GRAFO
+BENCH ..> ALG : mede tempo
+BENCH ..> UTIL
+
+note bottom of GRAFO
+  Regra que zera a nota: nenhum módulo em src/
+  importa biblioteca de grafo (NetworkX, igraph, ...).
+  Fila de prioridade própria, sem heapq.
+end note
+@enduml

@@ -1,0 +1,59 @@
+@startuml casos-de-uso
+' Diagrama de casos de uso: o que a ferramenta oferece ao usuário.
+' Estado: planejado. Requisitos em docs/fontes/REQUISITOS.md §5.1.
+' Essenciais como casos de uso; desejáveis como <<extend>>; opcionais fora do diagrama.
+!pragma layout smetana
+left to right direction
+skinparam packageStyle rectangle
+title Casos de uso · análise da rede de transporte público
+
+actor "Analista da rede" as A
+actor "Feed GTFS" as G <<sistema>>
+
+rectangle "Ferramenta de análise de transporte público" {
+  usecase "Carregar e recortar a rede\n(RF-DAD-01 a 03, RF-UI-02)" as UC_CARREGAR
+  usecase "Ver a rede no mapa\n(RF-UI-01, RF-UI-03)" as UC_MAPA
+  usecase "Escolher origem e destino" as UC_ESCOLHER
+
+  usecase "Consultar trajeto mais rápido\n(F-ROTA)" as UC_ROTA
+  usecase "Escolher pontos no mapa e\ncomparar A* com Dijkstra\n(F-ROTA-2)" as UC_ROTA2
+
+  usecase "Simular trajeto num\nhorário de saída (F-ESPERA)" as UC_SIMULAR
+  usecase "Ver espera por linha\ne faixa horária (F-ESPERA)" as UC_ESPERA
+  usecase "Simular com quadro de horários\ne Monte Carlo (F-ESPERA-2)" as UC_ESPERA2
+
+  usecase "Consultar trajeto com\nmenos baldeações (F-BALD)" as UC_BALD
+  usecase "Comparar com o trajeto\nmais rápido (F-BALD-2)" as UC_BALD2
+
+  usecase "Ver paradas mais centrais\n(F-MET)" as UC_MET
+  usecase "Ver proximidade e\nintermediação amostrada (F-MET-2)" as UC_MET2
+
+  usecase "Avaliar a eficiência da rede\n(F-EFI)" as UC_EFI
+  usecase "Ver isócronas e\níndice de desvio (F-EFI-2)" as UC_EFI2
+
+  usecase "Simular falha de parada,\ntrecho ou linha (F-RES)" as UC_RES
+  usecase "Ordenar paradas e linhas\npor criticidade (F-RES-2)" as UC_RES2
+}
+
+A --> UC_CARREGAR
+A --> UC_MAPA
+A --> UC_ROTA
+A --> UC_SIMULAR
+A --> UC_ESPERA
+A --> UC_BALD
+A --> UC_MET
+A --> UC_EFI
+A --> UC_RES
+UC_CARREGAR --> G : lê
+
+UC_ROTA ..> UC_ESCOLHER : <<include>>
+UC_SIMULAR ..> UC_ESCOLHER : <<include>>
+UC_BALD ..> UC_ESCOLHER : <<include>>
+
+UC_ROTA <.. UC_ROTA2 : <<extend>>
+UC_SIMULAR <.. UC_ESPERA2 : <<extend>>
+UC_BALD <.. UC_BALD2 : <<extend>>
+UC_MET <.. UC_MET2 : <<extend>>
+UC_EFI <.. UC_EFI2 : <<extend>>
+UC_RES <.. UC_RES2 : <<extend>>
+@enduml

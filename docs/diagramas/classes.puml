@@ -1,0 +1,127 @@
+@startuml classes
+' Diagrama de classes: modelo normalizado, núcleo do grafo e visões.
+' Estado: planejado. Contratos em docs/fontes/plano-de-projeto.md §9; visões em docs/fontes/modelagem.md §3.4.
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide empty members
+title Classes · modelo normalizado, núcleo do grafo e visões
+
+package "transporte.dados  (Miguel)" {
+  class Parada <<frozen>> {
+    +id: str
+    +nome: str
+    +lat: float
+    +lon: float
+  }
+  class Linha <<frozen>> {
+    +id: str
+    +nome: str
+    +tipo: int
+  }
+  class Padrao <<frozen>> {
+    +id: str
+    +linha_id: str
+    +paradas: tuple[str, ...]
+  }
+  class Rede {
+    +paradas: dict[str, Parada]
+    +linhas: dict[str, Linha]
+    +padroes: dict[str, Padrao]
+    +{field} partidas: dict[(padrão, parada), list[int]]
+    +recortar(caixa, linhas): Rede
+  }
+  class leitor_gtfs <<module>> {
+    +ler(caminho_zip, dia): Rede
+    +validar(rede): list[str]
+  }
+}
+
+package "transporte.grafo  (Thiago)" {
+  class Grafo {
+    +adicionar_vertice(rotulo: str): int
+    +adicionar_aresta(u: int, v: int, peso: float, tipo: str): int
+    +vizinhos(u: int): list[(int, float, int)]
+    +desativar_vertice(u: int)
+    +desativar_aresta(a: int)
+    +reativar_tudo()
+    +reverso(): Grafo
+  }
+  class HeapMin {
+    +inserir(prioridade: float, item: int)
+    +extrair_min(): (float, int)
+    +vazio(): bool
+  }
+  class Resultado {
+    +dist: list[float]
+    +pred: list[int]
+  }
+  class buscas <<module>> {
+    +bfs(g, origem): Resultado
+    +dijkstra(g, origem, destino): Resultado
+    +caminho(r, destino): list[int]
+  }
+}
+
+package "transporte.modelo  (Henrique)" {
+  class Parametros <<frozen>> {
+    +raio_caminhada_m: float = 300
+    +velocidade_caminhada_ms: float = 1.2
+    +faixas: list[FaixaHoraria]
+  }
+  class FaixaHoraria <<frozen>> {
+    +nome: str
+    +inicio_s: int
+    +fim_s: int
+  }
+  abstract class Visao {
+    +grafo: Grafo
+  }
+  class VisaoGP {
+    +vertice_da_parada: dict[str, int]
+  }
+  class VisaoGE {
+    +vertice_da_parada: dict[str, int]
+    +{field} plataforma: dict[(parada, padrão), int]
+    +tipos de aresta: embarque | viagem | desembarque | caminhada
+    +baldeacoes(caminho): int  {embarques - 1}
+  }
+  class VisaoGL <<F-BALD · Rafael>> {
+    +vertice_do_padrao: dict[str, int]
+  }
+  class VisaoGT <<F-ESPERA-2 · Miguel>> {
+    +vertice_da_parada: dict[str, int]
+    +partidas_da_aresta: dict[int, list[int]]
+  }
+  class construtores <<module>> {
+    +construir_gp(rede, params): VisaoGP
+    +construir_ge(rede, params, intervalos): VisaoGE
+    +salvar(visao, caminho)
+    +carregar(caminho): Visao
+  }
+}
+
+Rede "1" *-- "*" Parada
+Rede "1" *-- "*" Linha
+Rede "1" *-- "*" Padrao
+Padrao "*" --> "1" Linha : linha_id
+Padrao "*" --> "2..*" Parada : sequência
+leitor_gtfs ..> Rede : cria
+
+buscas ..> Grafo : percorre
+buscas ..> HeapMin : usa
+buscas ..> Resultado : cria
+
+Parametros "1" *-- "*" FaixaHoraria
+Visao <|-- VisaoGP
+Visao <|-- VisaoGE
+Visao <|-- VisaoGL
+Visao <|-- VisaoGT
+Visao "1" *-- "1" Grafo
+construtores ..> Rede : lê
+construtores ..> Parametros : usa
+construtores ..> Visao : cria
+
+
+
+@enduml

@@ -9,11 +9,11 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** começar os diagramas UML globais (classes, componentes e casos de uso) em `docs/diagramas/` (prazo 03/11) e rascunhar as assinaturas dos construtores de G_P e G_E em `src/transporte/modelo/` com `estado: planejado`, contra os contratos propostos em `docs/fontes/plano-de-projeto.md` §9 (prazo 31/10).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
+- **Última sessão:** 29/10, Henrique, branch `feat/P0-MODELO-uml`.
+- **Onde parou:** três diagramas globais escritos e renderizados em PNG (classes, componentes e casos de uso), aguardando a revisão do Henrique; nada commitado ainda.
+- **Próximo passo:** revisar os diagramas (pendências abaixo), commitar e abrir o PR; depois, escrever as assinaturas dos construtores em `src/transporte/modelo/` com `estado: planejado`, seguindo o diagrama de classes (prazo 31/10).
+- **Arquivos tocados:** `docs/diagramas/{classes,componentes,casos-de-uso}.puml` e os `.png` gerados.
+- **Como testar:** `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml` gera as três imagens sem erro (layout smetana, dispensa Graphviz).
 - **Bloqueios:** depende de contratos de P0-GRAFO e P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
 
 ## Objetivo
@@ -27,7 +27,7 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
+| Modelo e dados | em andamento | 29/10: diagramas UML globais em rascunho (`docs/diagramas/`); construtores não iniciados |
 | Interface | não iniciado | |
 | Testes | não iniciado | |
 | Desempenho (tempo medido) | não iniciado | |
@@ -83,9 +83,11 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- Nenhuma.
+- **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS); `Resultado(dist, pred)` (Thiago, P0-GRAFO). Confirmar com eles quando publicarem os contratos em 30/10 e ajustar o diagrama.
+- **Decisões de modelagem embutidas no diagrama, a registrar no `docs/GUIA.md` §8 se mantidas:** hierarquia `Visao` com uma subclasse por visão; `construir_ge` recebe a tabela de intervalos de F-ESPERA (espera constante até 06/11); salvar e carregar ficam nos construtores (RF-GRF-07).
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Henrique.
 ### Mudança 29/10/2026: revisão do REQUISITOS.md dispensada (baseline v1.0 em 29/10); próximo passo passa a ser UML e assinaturas.
+### Sessão 29/10/2026: rascunho dos diagramas UML globais (classes, componentes, casos de uso) em PlantUML, na branch `feat/P0-MODELO-uml`.
