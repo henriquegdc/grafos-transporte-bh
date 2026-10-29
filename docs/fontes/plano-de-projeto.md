@@ -130,7 +130,7 @@ O enunciado diz que "somente serão avaliadas entregas que tenham todos os itens
 | 5 | Relatório técnico em LaTeX, template SBC, 12 a 15 páginas | 3 | `.tex` e PDF | Rafael integra; cada dono escreve sua parte | Completo em 19/11; final em 20/11 |
 | 6 | Responsabilidades e o que cada membro fez | 3 | Seção do relatório | Rafael | 20/11 |
 | 7 | Slides da apresentação | 3 | PDF | Arthur | 19/11 |
-| 8 | Apresentação presencial de 10 min com demonstração, todos participando | 3 | Presencial | Todos | Data a confirmar (P-03) |
+| 8 | Apresentação presencial de 10 min com demonstração, todos participando | 3 | Presencial | Todos | A partir de 24/11; ordem a confirmar |
 | 9 | Vídeo de 12 a 18 min, cada aluno mostrando as próprias features | 3 | Link enviado no Canvas junto com o `.zip` | Cada um grava o seu trecho; Caio monta e publica | 20/11 |
 | 10 | Arquivo `.zip` com o código-fonte, o `.tex` e o PDF do relatório | Entrega | `.zip` | Caio | 21/11 |
 | 11 | Envio no Canvas por cada um dos seis | Entrega | O mesmo `.zip` e o link do vídeo | Cada um | 21/11 (limite: 22/11, 23:59) |
@@ -160,7 +160,7 @@ O enunciado diz que "somente serão avaliadas entregas que tenham todos os itens
 |---|---|---|
 | P-01 | Formato do documento da Etapa 1 | Decidido: seções do relatório SBC e `README.md` estruturado; tudo entregue junto em 22/11 |
 | P-02 | Como entregar o vídeo | Decidido: link enviado no Canvas junto com o `.zip` |
-| P-03 | Data e ordem da apresentação presencial | **Aberta.** Henrique confirma com o professor. Hipótese: pronta a partir de 23/11 |
+| P-03 | Data e ordem da apresentação presencial | As apresentações começam em 24/11. **Ordem ainda aberta;** Henrique confirma |
 | P-04 | `heapq` e pandas são permitidos? | Decidido: pandas permitido, só para ler os CSV; fila de prioridade própria, sem `heapq` |
 | P-05 | NetworkX nos testes de corretude | Decidido pelo grupo: permitido em `tests/` só para comparar o resultado do nosso algoritmo com o dele; nunca em `src/` |
 | P-06 | Repositório privado ou público | Decidido: público |
@@ -266,7 +266,7 @@ O método vem do TI5, um projeto de seis meses. Para um trabalho de um mês, fic
 
 | Documento | Papel | Quem edita |
 |---|---|---|
-| `docs/fontes/REQUISITOS.md` | O que a ferramenta faz: problema, perguntas, RFs com prioridade, RNFs, dados, fora de escopo | O grupo. Depois da baseline (03/11), só por decisão registrada |
+| `docs/fontes/REQUISITOS.md` | O que a ferramenta faz: problema, perguntas, RFs com prioridade, RNFs, dados, fora de escopo | O grupo. Em baseline desde 29/10; muda só por decisão registrada |
 | `docs/fontes/modelagem.md` | Como o problema vira grafo: modelo de dados, visões, parâmetros, algoritmos e complexidade, diagramas UML | Henrique integra; cada dono escreve a parte da sua feature |
 | `docs/fontes/plano-de-projeto.md` | Como o grupo trabalha (este plano, depois de aprovado) | O grupo |
 | `docs/GUIA.md` | Explica a ferramenta de ponta a ponta para quem não escreveu o código: como cada parte funciona, por que foi feita assim, quais alternativas foram descartadas. Contém o **registro de decisões**, que é o lugar canônico de toda decisão do grupo | Caio integra; cada dono escreve a parte da sua feature a partir do arquivo da feature |
@@ -297,7 +297,7 @@ Movida para `docs/plano-de-desenvolvimento/README.md` (§6).
 
 | Período | Datas | Objetivo | Fecha com |
 |---|---|---|---|
-| P0 · Fundação e Etapa 1 | 29/10 (qui) a 03/11 (ter) | Contratos, núcleo do grafo com heap, dados, modelagem e UML, aplicação com mapa, relatório compilando, esqueleto do guia | `REQUISITOS.md` v1 em baseline; `modelagem.md` v1; seções da Etapa 1 v1 no relatório e no README; explicação cruzada 1 |
+| P0 · Fundação e Etapa 1 | 29/10 (qui) a 03/11 (ter) | Contratos, núcleo do grafo com heap, dados, modelagem e UML, aplicação com mapa, relatório compilando, esqueleto do guia | `modelagem.md` v1; seções da Etapa 1 v1 no relatório e no README; explicação cruzada 1 |
 | P1 · Essenciais | 04/11 (qua) a 11/11 (qua) | As seis features essenciais de ponta a ponta | Checkpoint em 07/11 (sáb); fechamento em 11/11 com o DoD conferido |
 | P2 · Desejáveis | 12/11 (qui) a 15/11 (dom) | Extensões desejáveis; opcionais só se sobrar tempo | Congelamento do código em 15/11, às 23:59 |
 | P3 · Entrega | 16/11 (seg) a 22/11 (dom) | Guia completo, relatório final, slides, vídeo, ensaio, `.zip` | Explicação cruzada 2 em 16/11; guia completo em 17/11; relatório completo em 19/11; vídeo montado em 20/11; entrega interna e envio de todos em 21/11 (sáb); limite do Canvas em 22/11, às 23:59 |
@@ -315,11 +315,11 @@ Regras do calendário:
 | Dia | Alvo |
 |---|---|
 | 29/10 (qui) | Com o ok do grupo, Henrique cria o repositório público e, com um agente, sobe a estrutura da seção 4.4, o `AGENTS.md`, as fontes a partir deste plano, os arquivos de **todas** as features (seção 12.6) e as issues do backlog, atribuídas aos donos. Caio assume o P0-REPO a partir daí: hook, `verificar_imports.py`, proteção da `main`, Kanban e README de instalação. Todos clonam, ativam o hook e pedem ao agente a primeira tarefa. |
-| 30/10 (sex) | Contratos publicados como "planejado": API do grafo e do heap (Thiago), modelo normalizado (Miguel) e contrato de página (Arthur). Henrique abre o `REQUISITOS.md` v1 a partir da seção 5. Henrique pergunta ao professor a data da apresentação (P-03). |
+| 30/10 (sex) | Contratos publicados como "planejado": API do grafo e do heap (Thiago), modelo normalizado (Miguel) e contrato de página (Arthur). Henrique começa os diagramas UML globais. |
 | 31/10 (sáb) | Rede de teste GTFS com respostas conhecidas e confirmação do feed BHTrans (Miguel). Assinaturas dos construtores (Henrique). Relatório SBC compilando e função de medição (Rafael). Esqueleto do guia com o registro de decisões de 29/10 (Caio). |
 | 01/11 (dom) | Núcleo com heap, BFS e Dijkstra testados (Thiago). Feed BHTrans lido no modelo normalizado (Miguel). |
 | 02/11 (seg, feriado) | Trabalho assíncrono, sem sessão marcada: G_P sobre a rede de teste (Henrique); aplicação com mapa e páginas vazias (Arthur). |
-| 03/11 (ter) | G_E sobre a rede de teste e diagramas UML globais: classes, componentes e casos de uso (Henrique). Feed real recortado (Miguel). Baseline do `REQUISITOS.md`, `modelagem.md` v1, seções da Etapa 1 v1 no relatório e no README (Henrique). Explicação cruzada 1, sobre a fundação. Fechamento do P0. |
+| 03/11 (ter) | G_E sobre a rede de teste e diagramas UML globais: classes, componentes e casos de uso (Henrique). Feed real recortado (Miguel). `modelagem.md` v1, seções da Etapa 1 v1 no relatório e no README (Henrique). Explicação cruzada 1, sobre a fundação. Fechamento do P0. |
 
 ### 7.3 Gatilhos de corte
 
@@ -787,7 +787,7 @@ O `README.md` segue a espinha da Etapa 1, de forma resumida, e termina com o uso
 | Desempenho e limitações | Rafael | 1 min |
 | **Total** | | **cerca de 9 min, com 1 min de folga** |
 
-Todos falam, como o enunciado exige. Os slides derivam do relatório, e Arthur os monta até 19/11. A data e a ordem dependem de P-03.
+Todos falam, como o enunciado exige. Os slides derivam do relatório, e Arthur os monta até 19/11. As apresentações começam em 24/11; a ordem depende de P-03.
 
 ### 14.4 Vídeo de 12 a 18 minutos
 
@@ -853,16 +853,16 @@ Esta tabela é o início do registro de decisões do `docs/GUIA.md`.
 
 O grupo aprovou este plano em 29/10; todas as decisões desta tabela estão em vigor.
 
-**Em aberto:** P-03, data e ordem da apresentação presencial (Henrique confirma).
+**Em aberto:** P-03, ordem da apresentação presencial; a data de início é 24/11 (Henrique confirma a ordem).
 
 ### 16.2 Próximos passos, na ordem
 
 0. ~~**Antes de tudo:** o grupo dá o ok a este plano~~ **aprovado em 29/10.** Cada um informa o usuário GitHub e o e-mail do git.
 1. **29/10:** Henrique cria o repositório público, convida os outros cinco e o professor e, com um agente, sobe a estrutura da seção 4.4, o `AGENTS.md` (com a tabela de integrantes), as fontes, os arquivos de todas as features e as issues do backlog atribuídas aos donos (seção 12.6).
 2. **29/10 e 30/10:** Caio ativa a proteção da `main`, sobe o hook e o `verificar_imports.py`, monta o Kanban e escreve o README de instalação. Cada integrante clona, ativa o hook e pergunta ao agente o que fazer.
-3. **30/10:** Thiago, Miguel e Arthur publicam os contratos com estado "planejado"; Henrique abre o `REQUISITOS.md` v1 a partir da seção 5; todos revisam até 02/11; baseline em 03/11.
+3. **30/10:** Thiago, Miguel e Arthur publicam os contratos com estado "planejado"; o `REQUISITOS.md` já está em baseline desde 29/10, sem revisão separada.
 4. **31/10:** Miguel confirma o feed BHTrans; Rafael publica a função de medição; Caio abre o `docs/GUIA.md` com a seção 16.1 como registro de decisões.
-5. **30/10 em diante:** Henrique confirma P-03 com o professor e atualiza a seção 2.3.
+5. **Quando sair:** Henrique confirma a ordem das apresentações (P-03) e atualiza a seção 2.3.
 
 ### 16.3 Checklist de adoção
 
@@ -871,7 +871,7 @@ O grupo aprovou este plano em 29/10; todas as decisões desta tabela estão em v
 - [ ] Hook ativado por todos (`git config core.hooksPath .githooks`)
 - [ ] `REQUISITOS.md`, `modelagem.md` e `plano-de-projeto.md`, cada um com versão e timeline
 - [ ] `docs/GUIA.md` com o registro de decisões
-- [ ] RFs com ID e prioridade; baseline em 03/11
+- [x] RFs com ID e prioridade; baseline em 29/10
 - [ ] Toda feature com arquivo, dono, retomada, status por camada, pendências e timeline
 - [ ] Tabela de integrantes com usuário GitHub e e-mail no `AGENTS.md`
 - [ ] Cada integrante testou "Leia o AGENTS.md e me diga o que eu preciso fazer agora." e recebeu a tarefa certa

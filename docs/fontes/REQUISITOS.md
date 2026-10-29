@@ -1,6 +1,6 @@
 # REQUISITOS · Análise de redes de transporte público
 
-**Versão:** 0.1, rascunho em revisão; baseline em 03/11/2026 · **Integrador:** Henrique
+**Versão:** 1.0, em baseline desde 29/10/2026 · **Integrador:** Henrique
 
 > Fonte de verdade sobre o que a ferramenta faz. Em conflito com qualquer outro documento, este vence.
 > Depois da baseline, muda só por decisão registrada em `docs/GUIA.md` §8.
@@ -148,3 +148,5 @@ Prioridade: **E** essencial, **D** desejável, **O** opcional.
 ## Timeline
 
 ### Criação 29/10/2026: gerado a partir do plano de desenvolvimento aprovado pelo grupo.
+
+### Baseline 29/10/2026: v1.0. Os RFs são os do plano aprovado pelo grupo; a revisão separada foi dispensada (decisão em `docs/GUIA.md` §8).

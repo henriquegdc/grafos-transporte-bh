@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** nenhuma (arquivo criado em 29/10).
 - **Onde parou:** não iniciado.
-- **Próximo passo:** revisar `docs/fontes/REQUISITOS.md` v0.1 com o grupo (30/10) e escrever as assinaturas dos construtores em `src/transporte/modelo/` com `estado: planejado` (31/10).
+- **Próximo passo:** começar os diagramas UML globais (classes, componentes e casos de uso) em `docs/diagramas/` (prazo 03/11) e rascunhar as assinaturas dos construtores de G_P e G_E em `src/transporte/modelo/` com `estado: planejado`, contra os contratos propostos em `docs/fontes/plano-de-projeto.md` §9 (prazo 31/10).
 - **Arquivos tocados:** nenhum.
 - **Como testar:** ainda não há testes.
 - **Bloqueios:** depende de contratos de P0-GRAFO e P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
@@ -88,3 +88,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Henrique.
+### Mudança 29/10/2026: revisão do REQUISITOS.md dispensada (baseline v1.0 em 29/10); próximo passo passa a ser UML e assinaturas.
