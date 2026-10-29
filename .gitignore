@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Ferramentas
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Dados brutos (baixados por script; grandes demais para o Git)
+dados/brutos/
+
+# LaTeX (o PDF final do relatório é versionado)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
