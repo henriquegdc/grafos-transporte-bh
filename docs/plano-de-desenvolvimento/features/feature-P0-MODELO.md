@@ -10,8 +10,8 @@
 
 ## Retomada
 - **Última sessão:** 29/10, Henrique, branch `feat/P0-MODELO` (um PR só, no fim da feature).
-- **Onde parou:** diagramas UML globais e contrato dos construtores prontos; decisões D1 a D7 tomadas e registradas (sem commit); falta commitar, enviar a branch e abrir o PR para a `main`.
-- **Próximo passo:** commitar o registro das decisões, enviar `feat/P0-MODELO` e abrir o PR (Henrique já autorizou); conseguir 1 aprovação; combinar com o Miguel o contrato da `Rede` (pendência abaixo) e, com ele, a rede de teste com G_P e G_E esperados calculados à mão; depois, implementar `construir_gp` com testes (G_P até 02/11).
+- **Onde parou:** diagramas UML globais e contrato dos construtores prontos; decisões D1 a D7 registradas; PR #33 aberto para a `main`, aguardando 1 aprovação.
+- **Próximo passo:** conseguir 1 aprovação no PR #33; combinar com o Miguel o contrato da `Rede` (pendência abaixo) e, com ele, a rede de teste com G_P e G_E esperados calculados à mão; depois, implementar `construir_gp` com testes (G_P até 02/11).
 - **Arquivos tocados:** `docs/diagramas/*`, `src/transporte/modelo/{parametros,visoes,construtores}.py`.
 - **Como testar:** `PYTHONPATH=src python -c "import transporte.modelo.construtores"` importa sem erro; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`. Ainda não há pytest (as funções são só contrato).
 - **Bloqueios:** depende de contratos de P0-GRAFO e P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
@@ -112,3 +112,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 29/10/2026: rascunho dos diagramas UML globais (classes, componentes, casos de uso) em PlantUML, na branch `feat/P0-MODELO-uml`.
 ### Sessão 29/10/2026: assinaturas de parametros.py, visoes.py e construtores.py com estado: planejado; diagrama de classes sincronizado; decisões D1 a D7 propostas com recomendação.
 ### Decisão 29/10/2026: D1 a D7 aceitas pela recomendação; `dados/cache/` no .gitignore.
+### PR 29/10/2026: #33 aberto (UML global, contrato dos construtores e decisões D1 a D7).
