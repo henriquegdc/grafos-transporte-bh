@@ -7,12 +7,12 @@ Contexto raiz para agentes e pessoas. Resume `docs/fontes/plano-de-projeto.md` e
 
 | Letra | Integrante | Usuário GitHub | Features, na ordem |
 |---|---|---|---|
-| A | Thiago | (a preencher) | P0-GRAFO, F-MET, F-MET-2, F-MET-OPC |
-| B | Miguel | (a preencher) | P0-DADOS, F-ESPERA, F-ESPERA-2, F-ESPERA-OPC |
+| A | Thiago | Thiagocs8 | P0-GRAFO, F-MET, F-MET-2, F-MET-OPC |
+| B | Miguel | Miguelgdn1 | P0-DADOS, F-ESPERA, F-ESPERA-2, F-ESPERA-OPC |
 | C | Henrique | henriquegdc | P0-MODELO, F-ROTA, F-ROTA-2, F-ROTA-OPC |
-| D | Arthur | (a preencher) | P0-UI, F-EFI, F-EFI-2, F-EFI-OPC |
-| E | Caio | (a preencher) | P0-REPO, F-RES, F-RES-2, F-RES-OPC |
-| F | Rafael | (a preencher) | P0-AVAL, F-BALD, F-BALD-2, F-BALD-OPC, F-AVAL, F-AVAL-OPC |
+| D | Arthur | ArthurkkLS | P0-UI, F-EFI, F-EFI-2, F-EFI-OPC |
+| E | Caio | CaioSResende | P0-REPO, F-RES, F-RES-2, F-RES-OPC |
+| F | Rafael | Rafael-Fonseca1510 | P0-AVAL, F-BALD, F-BALD-2, F-BALD-OPC, F-AVAL, F-AVAL-OPC |
 
 Quando alguém perguntar o que fazer:
 

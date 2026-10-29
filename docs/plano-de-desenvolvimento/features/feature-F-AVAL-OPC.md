@@ -1,7 +1,7 @@
 # F-AVAL-OPC · Benchmark contra NetworkX, complexidade empírica e página Desempenho
 
 **Período:** Etapa opcional (16/11 a 18/11) · **Classe:** opcional
-**Dono:** Rafael (@a-preencher) · **Issue:** #26 · **Visões do grafo:** todas
+**Dono:** Rafael (@Rafael-Fonseca1510) · **Issue:** #26 · **Visões do grafo:** todas
 **Depende de:** todas as essenciais e desejáveis com DoD cumprido em 15/11 · **Bloqueia:** nada
 **Prazo:** 18/11
 

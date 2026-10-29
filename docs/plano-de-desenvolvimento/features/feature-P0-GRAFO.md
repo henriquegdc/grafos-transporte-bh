@@ -1,7 +1,7 @@
 # P0-GRAFO · Núcleo de grafos, heap e buscas
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Thiago (@a-preencher) · **Issue:** #2 · **Visões do grafo:** todas (estrutura genérica)
+**Dono:** Thiago (@Thiagocs8) · **Issue:** #2 · **Visões do grafo:** todas (estrutura genérica)
 **Depende de:** nada · **Bloqueia:** P0-MODELO e todas as features
 **Prazo:** assinaturas 30/10; implementado 01/11
 

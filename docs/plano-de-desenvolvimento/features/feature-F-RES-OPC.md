@@ -1,7 +1,7 @@
 # F-RES-OPC · Falhas múltiplas
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Caio (@a-preencher) · **Issue:** #24 · **Visões do grafo:** G_P
+**Dono:** Caio (@CaioSResende) · **Issue:** #24 · **Visões do grafo:** G_P
 **Depende de:** F-RES · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 

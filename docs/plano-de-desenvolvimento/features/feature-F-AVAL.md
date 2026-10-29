@@ -1,7 +1,7 @@
 # F-AVAL · Tabela de complexidade e tempos para o relatório
 
 **Período:** 3 · Entrega (16/11 a 22/11) · **Classe:** prioritária
-**Dono:** Rafael (@a-preencher) · **Issue:** #25 · **Visões do grafo:** não se aplica
+**Dono:** Rafael (@Rafael-Fonseca1510) · **Issue:** #25 · **Visões do grafo:** não se aplica
 **Depende de:** tempos medidos de todas as features · **Bloqueia:** seção 8 do relatório
 **Prazo:** 19/11
 

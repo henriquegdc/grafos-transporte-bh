@@ -1,7 +1,7 @@
 # P0-REPO · Repositório, hook, README de instalação e Kanban
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Caio (@a-preencher) · **Issue:** #1 · **Visões do grafo:** não se aplica
+**Dono:** Caio (@CaioSResende) · **Issue:** #1 · **Visões do grafo:** não se aplica
 **Depende de:** nada · **Bloqueia:** todas (hook e proteção da `main`)
 **Prazo:** 30/10
 

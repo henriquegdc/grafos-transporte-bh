@@ -1,7 +1,7 @@
 # F-MET-2 · Proximidade e intermediação amostrada
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Thiago (@a-preencher) · **Issue:** #16 · **Visões do grafo:** G_P
+**Dono:** Thiago (@Thiagocs8) · **Issue:** #16 · **Visões do grafo:** G_P
 **Depende de:** F-MET · **Bloqueia:** nada
 **Prazo:** 15/11
 

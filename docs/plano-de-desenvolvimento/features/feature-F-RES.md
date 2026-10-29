@@ -1,7 +1,7 @@
 # F-RES · Falhas e resiliência
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Caio (@a-preencher) · **Issue:** #12 · **Visões do grafo:** G_P
+**Dono:** Caio (@CaioSResende) · **Issue:** #12 · **Visões do grafo:** G_P
 **Depende de:** P0-GRAFO; eficiência de F-EFI · **Bloqueia:** F-RES-2
 **Prazo:** 11/11 (checkpoint 07/11)
 

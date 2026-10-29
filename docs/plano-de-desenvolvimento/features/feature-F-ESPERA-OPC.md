@@ -1,7 +1,7 @@
 # F-ESPERA-OPC · Sensibilidade ao intervalo
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Miguel (@a-preencher) · **Issue:** #20 · **Visões do grafo:** G_E
+**Dono:** Miguel (@Miguelgdn1) · **Issue:** #20 · **Visões do grafo:** G_E
 **Depende de:** F-ESPERA · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 

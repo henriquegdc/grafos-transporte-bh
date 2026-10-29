@@ -1,7 +1,7 @@
 # P0-AVAL · Relatório SBC no repositório e medição de tempo
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Rafael (@a-preencher) · **Issue:** #6 · **Visões do grafo:** não se aplica
+**Dono:** Rafael (@Rafael-Fonseca1510) · **Issue:** #6 · **Visões do grafo:** não se aplica
 **Depende de:** nada · **Bloqueia:** medição de tempo de todas as features; seções do relatório
 **Prazo:** medição 01/11; relatório compilando 31/10; estrutura 03/11
 

@@ -1,7 +1,7 @@
 # P0-UI · Aplicação Streamlit e componente de mapa
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Arthur (@a-preencher) · **Issue:** #5 · **Visões do grafo:** todas (exibição)
+**Dono:** Arthur (@ArthurkkLS) · **Issue:** #5 · **Visões do grafo:** todas (exibição)
 **Depende de:** contrato de P0-DADOS · **Bloqueia:** páginas de todas as features
 **Prazo:** contrato 30/10; aplicação 02/11
 

@@ -1,7 +1,7 @@
 # F-BALD · Menos baldeações
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Rafael (@a-preencher) · **Issue:** #9 · **Visões do grafo:** G_L
+**Dono:** Rafael (@Rafael-Fonseca1510) · **Issue:** #9 · **Visões do grafo:** G_L
 **Depende de:** P0-DADOS, P0-GRAFO · **Bloqueia:** F-BALD-2
 **Prazo:** 11/11 (checkpoint 07/11)
 
