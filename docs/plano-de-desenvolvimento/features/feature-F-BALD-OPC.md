@@ -1,7 +1,7 @@
 # F-BALD-OPC · Trajetos não dominados
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Rafael (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_L, G_E
+**Dono:** Rafael (@a-preencher) · **Issue:** #21 · **Visões do grafo:** G_L, G_E
 **Depende de:** F-BALD-2 · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 

@@ -1,7 +1,7 @@
 # F-MET · Centralidades
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Thiago (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_P
+**Dono:** Thiago (@a-preencher) · **Issue:** #10 · **Visões do grafo:** G_P
 **Depende de:** G_P de P0-MODELO · **Bloqueia:** F-MET-2
 **Prazo:** 11/11 (checkpoint 07/11)
 

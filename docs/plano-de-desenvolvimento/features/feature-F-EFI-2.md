@@ -1,7 +1,7 @@
 # F-EFI-2 · Isócronas e índice de desvio
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Arthur (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Arthur (@a-preencher) · **Issue:** #17 · **Visões do grafo:** G_E
 **Depende de:** F-EFI · **Bloqueia:** nada
 **Prazo:** 15/11
 

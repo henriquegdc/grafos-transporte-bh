@@ -1,7 +1,7 @@
 # F-ROTA-2 · A* e origem e destino no mapa
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Henrique (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Henrique (@henriquegdc) · **Issue:** #13 · **Visões do grafo:** G_E
 **Depende de:** F-ROTA · **Bloqueia:** nada
 **Prazo:** 15/11
 

@@ -1,7 +1,7 @@
 # F-ROTA-OPC · Trajetos alternativos (Yen)
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Henrique (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Henrique (@henriquegdc) · **Issue:** #19 · **Visões do grafo:** G_E
 **Depende de:** F-ROTA · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 

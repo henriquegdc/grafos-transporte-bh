@@ -1,7 +1,7 @@
 # P0-DADOS · Leitura do GTFS, modelo normalizado e rede de teste
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Miguel (@a-preencher) · **Issue:** a criar · **Visões do grafo:** não se aplica (modelo normalizado)
+**Dono:** Miguel (@a-preencher) · **Issue:** #3 · **Visões do grafo:** não se aplica (modelo normalizado)
 **Depende de:** nada · **Bloqueia:** P0-MODELO, P0-UI, F-ESPERA, F-BALD
 **Prazo:** contrato 30/10; rede de teste 31/10; feed real 03/11
 

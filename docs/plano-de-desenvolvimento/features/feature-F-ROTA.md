@@ -1,7 +1,7 @@
 # F-ROTA · Trajeto mais rápido
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Henrique (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Henrique (@henriquegdc) · **Issue:** #7 · **Visões do grafo:** G_E
 **Depende de:** P0-MODELO (G_E), P0-UI · **Bloqueia:** F-BALD-2 (função de trajeto até 08/11), F-ROTA-2
 **Prazo:** 11/11 (checkpoint 07/11)
 

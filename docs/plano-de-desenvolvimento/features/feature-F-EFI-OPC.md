@@ -1,7 +1,7 @@
 # F-EFI-OPC · Pico contra fora do pico
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Arthur (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Arthur (@a-preencher) · **Issue:** #23 · **Visões do grafo:** G_E
 **Depende de:** F-EFI, F-ESPERA · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 

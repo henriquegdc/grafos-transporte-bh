@@ -1,7 +1,7 @@
 # F-RES-2 · Ranking de criticidade
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Caio (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_P
+**Dono:** Caio (@a-preencher) · **Issue:** #18 · **Visões do grafo:** G_P
 **Depende de:** F-RES · **Bloqueia:** nada
 **Prazo:** 15/11
 

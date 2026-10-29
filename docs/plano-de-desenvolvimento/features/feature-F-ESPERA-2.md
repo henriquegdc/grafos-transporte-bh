@@ -1,7 +1,7 @@
 # F-ESPERA-2 · Quadro de horários e Monte Carlo
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Miguel (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_T
+**Dono:** Miguel (@a-preencher) · **Issue:** #14 · **Visões do grafo:** G_T
 **Depende de:** F-ESPERA · **Bloqueia:** nada
 **Prazo:** 15/11
 

@@ -1,7 +1,7 @@
 # P0-MODELO · Modelagem, UML e construtores de G_P e G_E
 
 **Período:** 0 · Fundação (29/10 a 03/11) · **Classe:** fundação
-**Dono:** Henrique (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_P, G_E
+**Dono:** Henrique (@henriquegdc) · **Issue:** #4 · **Visões do grafo:** G_P, G_E
 **Depende de:** contratos de P0-GRAFO e P0-DADOS · **Bloqueia:** F-ROTA, F-ESPERA, F-MET, F-EFI, F-RES
 **Prazo:** assinaturas 31/10; G_P 02/11; G_E 03/11
 

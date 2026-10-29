@@ -1,7 +1,7 @@
 # F-ESPERA · Espera e simulação de trajeto
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Miguel (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E
+**Dono:** Miguel (@a-preencher) · **Issue:** #8 · **Visões do grafo:** G_E
 **Depende de:** P0-DADOS, P0-MODELO · **Bloqueia:** F-ESPERA-2; tabela de intervalos para P0-MODELO/F-ROTA até 06/11
 **Prazo:** 11/11 (checkpoint 07/11)
 

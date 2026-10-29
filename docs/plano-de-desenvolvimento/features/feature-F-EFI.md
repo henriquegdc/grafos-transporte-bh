@@ -1,7 +1,7 @@
 # F-EFI · Eficiência da rede
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
-**Dono:** Arthur (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_E ou G_P
+**Dono:** Arthur (@a-preencher) · **Issue:** #11 · **Visões do grafo:** G_E ou G_P
 **Depende de:** P0-MODELO · **Bloqueia:** F-RES (função de eficiência até 07/11), F-EFI-2
 **Prazo:** 11/11 (checkpoint 07/11)
 

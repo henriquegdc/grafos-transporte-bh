@@ -1,7 +1,7 @@
 # F-BALD-2 · Menos baldeações contra mais rápido
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Rafael (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_L, G_E
+**Dono:** Rafael (@a-preencher) · **Issue:** #15 · **Visões do grafo:** G_L, G_E
 **Depende de:** F-BALD, F-ROTA · **Bloqueia:** F-BALD-OPC
 **Prazo:** 15/11
 

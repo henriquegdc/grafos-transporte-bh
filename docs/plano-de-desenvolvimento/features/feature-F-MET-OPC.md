@@ -1,7 +1,7 @@
 # F-MET-OPC · Comunidades
 
 **Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Thiago (@a-preencher) · **Issue:** a criar · **Visões do grafo:** G_P
+**Dono:** Thiago (@a-preencher) · **Issue:** #22 · **Visões do grafo:** G_P
 **Depende de:** F-MET · **Bloqueia:** nada
 **Prazo:** 15/11, só se sobrar tempo
 
