@@ -10,8 +10,8 @@
 
 ## Retomada
 - **Última sessão:** 29/10, Henrique, branch `feat/P0-MODELO` (um PR só, no fim da feature).
-- **Onde parou:** diagramas UML globais commitados; assinaturas de `parametros.py`, `visoes.py` e `construtores.py` escritas com `estado: planejado` (sem commit); diagrama de classes sincronizado com elas.
-- **Próximo passo:** Henrique decide D1 a D7 (Pendências) e combina com o Miguel o contrato da Rede; depois, ajustar assinaturas e docstrings ao que for decidido, registrar as decisões no `docs/GUIA.md` §8 e no `modelagem.md` §3.4, e desenhar com o Miguel a rede de teste com G_P e G_E esperados calculados à mão.
+- **Onde parou:** diagramas UML globais e contrato dos construtores prontos; decisões D1 a D7 tomadas e registradas (sem commit); falta commitar, enviar a branch e abrir o PR para a `main`.
+- **Próximo passo:** commitar o registro das decisões, enviar `feat/P0-MODELO` e abrir o PR (Henrique já autorizou); conseguir 1 aprovação; combinar com o Miguel o contrato da `Rede` (pendência abaixo) e, com ele, a rede de teste com G_P e G_E esperados calculados à mão; depois, implementar `construir_gp` com testes (G_P até 02/11).
 - **Arquivos tocados:** `docs/diagramas/*`, `src/transporte/modelo/{parametros,visoes,construtores}.py`.
 - **Como testar:** `PYTHONPATH=src python -c "import transporte.modelo.construtores"` importa sem erro; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`. Ainda não há pytest (as funções são só contrato).
 - **Bloqueios:** depende de contratos de P0-GRAFO e P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
@@ -92,10 +92,10 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 
 ## Pendências
 - **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS); `Resultado(dist, pred)` (Thiago, P0-GRAFO). Confirmar com eles quando publicarem os contratos em 30/10 e ajustar o diagrama.
-- **Decisões de modelagem embutidas no diagrama, a registrar no `docs/GUIA.md` §8 se mantidas:** hierarquia `Visao` com uma subclasse por visão; `construir_ge` recebe a tabela de intervalos de F-ESPERA (espera constante até 06/11); salvar e carregar ficam nos construtores (RF-GRF-07).
+- ~~**Decisões de modelagem embutidas no diagrama**~~ **decidido em 29/10/2026:** mantidas e registradas no `docs/GUIA.md` §8. Texto original: hierarquia `Visao` com uma subclasse por visão; `construir_ge` recebe a tabela de intervalos de F-ESPERA (espera constante até 06/11); salvar e carregar ficam nos construtores (RF-GRF-07).
 - **Contrato da Rede (Miguel):** `partidas[(padrão, parada)] -> list[int]` perde a identidade da viagem. Para calcular o tempo entre paradas consecutivas (D2) é preciso saber qual horário da parada seguinte pertence à mesma viagem. Pedir ao Miguel que a Rede guarde as viagens (por exemplo `viagens[padrão] -> list[list[int]]`, uma lista de horários por viagem, na ordem das paradas) ou garanta o mesmo número e a mesma ordem de horários em todas as paradas do padrão.
 
-### Decisões a tomar (Henrique), cada uma com recomendação
+### ~~Decisões a tomar~~ Decididas em 29/10/2026: todas pela recomendação; registradas no `docs/GUIA.md` §8 e no `docs/fontes/modelagem.md` §3.4
 
 - **D1. O que é um padrão.** (a) linha + sentido (`direction_id`); (b) linha + sequência exata de paradas. **Recomendo (b):** o G_E encadeia plataformas numa sequência fixa, e variantes de itinerário da mesma linha (trajeto encurtado, desvio) quebrariam esse encadeamento em (a). Efeito colateral: cada variante tem menos partidas que a linha inteira, então a espera por padrão pode sair maior que a real para quem aceita qualquer variante; registrar como limitação.
 - **D2. Tempo de viagem entre paradas consecutivas.** (a) mediana das diferenças entre as viagens do padrão no dia típico; (b) média; (c) mediana por faixa horária. **Recomendo (a):** robusta a horários com erro de cadastro e simples; variação do tempo de viagem ao longo do dia vira limitação. Depende do contrato da Rede acima.
@@ -111,3 +111,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Mudança 29/10/2026: revisão do REQUISITOS.md dispensada (baseline v1.0 em 29/10); próximo passo passa a ser UML e assinaturas.
 ### Sessão 29/10/2026: rascunho dos diagramas UML globais (classes, componentes, casos de uso) em PlantUML, na branch `feat/P0-MODELO-uml`.
 ### Sessão 29/10/2026: assinaturas de parametros.py, visoes.py e construtores.py com estado: planejado; diagrama de classes sincronizado; decisões D1 a D7 propostas com recomendação.
+### Decisão 29/10/2026: D1 a D7 aceitas pela recomendação; `dados/cache/` no .gitignore.
