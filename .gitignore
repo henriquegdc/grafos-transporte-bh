@@ -17,6 +17,7 @@ htmlcov/
 
 # Dados brutos (baixados por script; grandes demais para o Git)
 dados/brutos/
+dados/cache/
 
 # LaTeX (o PDF final do relatório é versionado)
 *.aux
