@@ -1,0 +1,69 @@
+% Relatório SBC · Análise de redes de transporte público de Belo Horizonte
+%
+% Estrutura e orçamento de páginas: docs/fontes/plano-de-projeto.md §14.1.
+% Uma seção por arquivo em secoes/; cada dono edita só os arquivos da sua seção.
+% Seção de feature: crie secoes/<ID>.tex (ex.: secoes/F-ROTA.tex); ela entra sozinha
+% em secoes/funcionalidades.tex. Figuras em figuras/.
+% Compilar: ver relatorio/README.md. Limite: 12 a 15 páginas.
+
+\documentclass[12pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage{sbc-template}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\graphicspath{{figuras/}}
+
+% Texto ainda não escrito. Sai em cinza no PDF para ninguém esquecer; some quando a
+% seção é escrita. Nenhuma versão entregue pode conter \pendente.
+\newcommand{\pendente}[1]{{\color{gray}\itshape[#1]}}
+
+% Inclui secoes/<ID>.tex se existir; senão, mostra o aviso (essenciais) ou nada.
+\newcommand{\secaofeature}[2]{%
+  \InputIfFileExists{secoes/#1}{}{\subsection{#2}\pendente{#1 ainda sem seção: criar secoes/#1.tex}}}
+\newcommand{\secaofeatureopcional}[1]{\InputIfFileExists{secoes/#1}{}{}}
+
+\sloppy
+
+\title{Análise de redes de transporte público de Belo Horizonte\\com grafos}
+
+\author{Thiago\inst{1}, Miguel\inst{1}, Henrique\inst{1}, Arthur\inst{1}, Caio\inst{1}, Rafael\inst{1}}
+
+\address{\pendente{curso, instituição e cidade}
+  \email{\pendente{e-mails}}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  \pendente{Abstract em inglês, até 10 linhas, escrito por último (Rafael, P3).}
+\end{abstract}
+
+\begin{resumo}
+  \pendente{Resumo em português, até 10 linhas, escrito por último (Rafael, P3).}
+\end{resumo}
+
+\input{secoes/introducao}
+\input{secoes/fundamentacao}
+\input{secoes/dados}
+\input{secoes/modelagem}
+\input{secoes/plano}
+\input{secoes/implementacao}
+\input{secoes/funcionalidades}
+\input{secoes/avaliacao}
+\input{secoes/conclusao}
+\input{secoes/responsabilidades}
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+
+\end{document}

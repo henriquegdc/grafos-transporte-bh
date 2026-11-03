@@ -1,0 +1,33 @@
+% Seção: Responsabilidades
+% Dono: Rafael · Orçamento: 0,5 página · docs/fontes/plano-de-projeto.md §14.1
+% Conteúdo: quem fez o quê, a partir da tabela-mestre
+% (docs/plano-de-desenvolvimento/README.md) e do git log.
+% v1 (03/11): divisão planejada. No P3, confirmar com o git log e com as features que de
+% fato fecharam o Definition of Done; o que saiu do escopo sai da tabela.
+\section{Responsabilidades}\label{sec:responsabilidades}
+
+A Tabela~\ref{tab:responsabilidades} resume a divisão do trabalho. Cada
+integrante foi dono de uma frente: a fundação de uma área do código e as
+funcionalidades que a estendem.
+
+\begin{table}[ht]
+\centering
+\caption{Divisão do trabalho entre os integrantes.}
+\label{tab:responsabilidades}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+\toprule
+Integrante & Fundação e integração & Funcionalidades \\
+\midrule
+Thiago   & Núcleo de grafos, heap e buscas & Centralidades \\
+Miguel   & Leitura do GTFS, modelo normalizado e rede de teste & Espera e simulação de trajeto \\
+Henrique & Modelagem, diagramas UML e construtores das visões & Trajeto mais rápido \\
+Arthur   & Aplicação Streamlit e componente de mapa & Eficiência da rede \\
+Caio     & Repositório, verificação de imports e guia do projeto & Falhas e resiliência \\
+Rafael   & Relatório e medição de tempo & Menos baldeações; avaliação de desempenho \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\pendente{P3: acrescentar as desejáveis e opcionais que foram concluídas e conferir
+com o \texttt{git log}.}

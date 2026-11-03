@@ -29,6 +29,54 @@ Como as páginas se organizam, o componente de mapa, o cache da rede.
 ## 7. Como testamos e medimos (Rafael)
 Gabarito à mão, comparação de resultado com NetworkX, medição de tempo.
 
+### Medição de tempo (P0-AVAL)
+
+Todo tempo do projeto sai de uma função só, `medir`, em `src/transporte/util/medicao.py`. Se
+cada um medisse do seu jeito, com uma execução, com `time.time()` ou contando a leitura do GTFS,
+a tabela de desempenho do relatório misturaria números incomparáveis.
+
+```python
+from transporte.util.medicao import medir
+
+m = medir(sorted, list(range(100_000, 0, -1)), repeticoes=10)
+m.formatar()   # "855.140 µs ± 60.252 µs (n=10)", medido em 03/11 (feature-P0-AVAL.md)
+m.media_s      # em segundos, para a tabela da F-AVAL
+```
+
+Numa feature, passe o algoritmo e o grafo já construído, por exemplo
+`medir(dijkstra, visao.grafo, origem)`.
+
+Como funciona:
+
+1. Valida `repeticoes` (inteiro ≥ 1) **antes** de rodar o algoritmo.
+2. Executa `func(*args, **kwargs)` N vezes. Cada execução é cronometrada sozinha com
+   `time.perf_counter`, e só a chamada fica entre as duas leituras do relógio.
+3. Devolve uma `Medicao` imutável com a média e o desvio padrão amostral (divisor N − 1; com
+   N = 1, o desvio é 0).
+
+Exemplo: execuções de 1 s, 2 s e 3 s dão média 2 s e desvio raiz((1 + 0 + 1) / 2) = 1 s.
+Complexidade O(N · T) de tempo, em que T é uma execução de `func`, e O(N) de espaço.
+
+Por quê:
+
+- **`perf_counter`:** é monotônico e o de maior resolução (100 ns na máquina do Rafael).
+  `time.time()` segue o relógio do sistema, que pode ser acertado no meio da medição.
+- **N − 1:** as N execuções são uma amostra, e N − 1 corrige o viés do desvio.
+- **N = 5 por padrão:** dá a dispersão com custo baixo; para algo de microssegundos, suba N.
+- **Sem aquecimento nem descarte de outliers:** mantém o número honesto e o contrato simples.
+
+Regras de uso:
+
+- Meça só o algoritmo. Construa o grafo antes e passe-o como argumento.
+- Registre no arquivo da feature a média, o desvio, N, |V|, |E|, a máquina e o comando.
+- Se `func` altera os próprios argumentos, copie-os antes, porque as N execuções recebem os
+  mesmos objetos.
+
+Limitações: mede tempo de parede, que depende da máquina e do que mais estiver rodando; não mede
+memória. O custo fixo de uma medição é de cerca de 0,08 µs, desprezível para algoritmos de grafo.
+Os testes trocam `medicao._relogio` por um relógio falso de leituras conhecidas, o que permite
+um gabarito exato para média e desvio sem depender da velocidade da máquina.
+
 ## 8. Registro de decisões
 
 Lugar canônico de toda decisão do grupo. Nova decisão: uma linha aqui e a mudança na fonte, no mesmo commit.
@@ -67,9 +115,26 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 29/10 | Uma classe por visão herdando de `Visao`; `construir_ge` recebe a faixa e a tabela de intervalos; salvar e carregar ficam nos construtores | Cada visão tem mapas próprios (paradas, plataformas, padrões); o G_E depende da faixa porque a espera muda ao longo do dia | Uma classe única com mapas opcionais |
 | 29/10 | Arquivo de feature com seção Retomada, reescrita ao fim de toda sessão | Qualquer agente novo precisa saber onde parou e o próximo passo sem reler o código | Só status por camada |
 | 29/10 | Todos os arquivos de feature e as issues criados na abertura do repositório | Cada integrante clona, pergunta ao agente o que fazer e começa no mesmo dia | Cada dono cria os seus quando começar |
+| 03/11 | `medir` usa `time.perf_counter` e devolve média e desvio amostral (N − 1), sem aquecimento nem descarte de outliers (P0-AVAL) | Relógio monotônico de maior resolução; as N execuções são amostra; número honesto e contrato simples | `time.time`, desvio populacional, descartar a primeira execução |
+| 03/11 | `Medicao.formatar()` acrescentado ao contrato de medição, escolhendo µs, ms ou s pela média (P0-AVAL) | Mesmo formato de tempo em todas as features, na interface e na tabela do relatório | Cada feature formata o seu |
+| 03/11 | Relatório com uma seção por arquivo, seções de feature incluídas sozinhas por `\InputIfFileExists` e `\pendente` para o que falta (P0-AVAL) | Cada dono edita só o seu arquivo, sem conflito de merge e sem mexer no `main.tex`; o que falta fica visível no PDF | Um `main.tex` único editado por todos |
+| 03/11 | Relatório compilado com `latexmk` para `relatorio/build/`, fora do Git; PDF versionado só na entrega (P0-AVAL) | Arquivos gerados não poluem o histórico nem causam conflito | Versionar o PDF a cada mudança |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
 
 ## 10. Perguntas de verificação
 Todas as perguntas das features, com resposta, agrupadas por seção.
+
+### 7. Medição de tempo (P0-AVAL)
+1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
+   `time.time()` segue o relógio do sistema, que pode ser ajustado no meio da medição.
+2. **Por que o desvio divide por N − 1?** Porque as N execuções são uma amostra; N − 1 corrige o
+   viés do desvio estimado a partir da média da própria amostra.
+3. **O que entra no tempo medido?** Só a chamada `func(*args, **kwargs)`; a leitura do GTFS e a
+   construção do grafo ficam de fora, a menos que sejam elas a função passada.
+4. **Como os testes têm gabarito exato para algo que depende da máquina?** Trocam
+   `medicao._relogio` por um relógio falso que devolve leituras conhecidas (1, 2 e 3 s dão
+   média 2 e desvio 1).
+5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
+   `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.

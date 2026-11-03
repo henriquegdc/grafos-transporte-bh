@@ -1,0 +1,40 @@
+% Seção: Avaliação de desempenho
+% Dono: Rafael · Orçamento: 1 página · docs/fontes/plano-de-projeto.md §14.1
+% Conteúdo: complexidade teórica e tempos medidos de cada algoritmo; comparação com
+% NetworkX só se a etapa opcional (F-AVAL-OPC) acontecer.
+% A tabela é preenchida na F-AVAL (RF-AVA-02) com os números registrados nos arquivos
+% de feature. Nenhum número entra aqui sem o comando que o gerou.
+\section{Avaliação de desempenho}\label{sec:avaliacao}
+
+\subsection{Metodologia de medição}
+
+Todos os tempos deste relatório foram obtidos com a mesma função,
+\texttt{medir}, do módulo \texttt{transporte.util.medicao}. Ela executa o
+algoritmo $N$ vezes com os mesmos argumentos (por padrão, $N = 5$) e
+cronometra cada execução isoladamente com \texttt{time.perf\_counter}, o
+relógio monotônico de maior resolução do Python~\cite{python-perf-counter}.
+Só a chamada do algoritmo fica dentro do intervalo medido: a leitura do GTFS e
+a construção do grafo são medidas à parte, quando interessam. O resultado é a
+média $\bar{t}$ e o desvio padrão amostral
+\[
+  s = \sqrt{\frac{1}{N-1}\sum_{i=1}^{N}(t_i - \bar{t})^2},
+\]
+com divisor $N - 1$ porque as $N$ execuções são uma amostra do tempo do
+algoritmo naquela máquina, e não a população inteira. Com $N = 1$, o desvio é
+reportado como zero.
+
+Cada tempo é acompanhado do tamanho do grafo ($|V|$ e $|E|$ da visão usada) e
+da máquina em que foi medido, porque tempo de parede só é comparável dentro da
+mesma máquina e da mesma rede. A complexidade teórica de cada algoritmo vem da
+docstring da função correspondente, justificada no arquivo da feature.
+
+\subsection{Complexidade e tempos medidos}
+
+\pendente{Tabela consolidada (F-AVAL, RF-AVA-02): algoritmo, visão, complexidade
+teórica, $|V|$, $|E|$, tempo médio $\pm$ desvio e $N$, com os números
+registrados por cada dono na rede real.}
+
+\subsection{Comparação com o NetworkX}
+
+\pendente{Só se a etapa opcional F-AVAL-OPC acontecer (16/11 a 18/11); caso
+contrário, esta subseção sai.}
