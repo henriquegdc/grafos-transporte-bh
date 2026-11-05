@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `fix/P0-GRAFO-ajustes-revisao` (ajustes pedidos na revisão do PR #35).
 - **Onde parou:** etapas 1 e 2 concluídas e integradas na `main` pelo PR #35 (aprovado pelo Henrique em 05/11, squash `7b73a09`); decisões G1 a G6 aceitas. Ajustes da revisão feitos nesta branch: `caminho` e `caminho_arestas` passam a validar o destino (187 testes do núcleo verdes).
-- **Próximo passo:** subir esta branch e abrir um PR curto para o Henrique (Refs #2). Em paralelo, começar a F-MET (graus e Brandes sobre o `Grafo` genérico não dependem do G_P). Itens do DoD para depois: etapa 5 (tempo medido com `medir` quando o G_P real existir) e etapa 6 (Como funciona e por quê com a justificativa das complexidades, perguntas de verificação, diagrama de sequência do Dijkstra, seção do relatório e roteiro do vídeo).
+- **Próximo passo:** aguardar a revisão do Henrique no PR #36 (Refs #2). Em paralelo, começar a F-MET (graus e Brandes sobre o `Grafo` genérico não dependem do G_P). Itens do DoD para depois: etapa 5 (tempo medido com `medir` quando o G_P real existir) e etapa 6 (Como funciona e por quê com a justificativa das complexidades, perguntas de verificação, diagrama de sequência do Dijkstra, seção do relatório e roteiro do vídeo).
 - **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo,test_buscas}.py`, este arquivo.
 - **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (187 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
@@ -113,3 +113,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### PR 05/11/2026: branch `feat/P0-GRAFO-nucleo` subida para revisão do Henrique (Closes #2).
 ### Merge 05/11/2026: PR #35 aprovado pelo Henrique e integrado na `main` (squash `7b73a09`); decisões G1 a G6 aceitas.
 ### Sessão 05/11/2026: ajustes da revisão na branch `fix/P0-GRAFO-ajustes-revisao`: `caminho` e `caminho_arestas` validam o destino (destino negativo devolvia caminho errado sem erro); 9 testes novos, 187 no total.
+### PR 05/11/2026: #36 aberto com os ajustes da revisão do #35.
