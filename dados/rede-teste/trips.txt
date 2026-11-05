@@ -1,0 +1,6 @@
+route_id,service_id,trip_id
+L1,UTIL,t1
+L1,UTIL,t2
+L1,UTIL,t3
+L2,UTIL,f1
+L1,EXTRA,extra
