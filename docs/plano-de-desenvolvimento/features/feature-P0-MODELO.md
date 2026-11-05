@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 29/10, Henrique, branch `feat/P0-MODELO` (um PR só, no fim da feature).
-- **Onde parou:** diagramas UML globais e contrato dos construtores prontos; decisões D1 a D7 registradas; PR #33 aberto para a `main`, aguardando 1 aprovação.
-- **Próximo passo:** conseguir 1 aprovação no PR #33; combinar com o Miguel o contrato da `Rede` (pendência abaixo) e, com ele, a rede de teste com G_P e G_E esperados calculados à mão; depois, implementar `construir_gp` com testes (G_P até 02/11).
-- **Arquivos tocados:** `docs/diagramas/*`, `src/transporte/modelo/{parametros,visoes,construtores}.py`.
-- **Como testar:** `PYTHONPATH=src python -c "import transporte.modelo.construtores"` importa sem erro; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`. Ainda não há pytest (as funções são só contrato).
-- **Bloqueios:** depende de contratos de P0-GRAFO e P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
+- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-construtores` (PR #33 já integrado na `main`).
+- **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
+- **Próximo passo:** confirmar as decisões D8 a D11 (abaixo); abrir o PR desta branch (Refs #4); mandar ao Miguel o protocolo `RedeConstrutores` como proposta de contrato da `Rede`; responder ao Thiago no #37 que o piso entrou. Quando a `Rede` existir: etapa 3 (rede de teste e feed real, adaptador se os campos diferirem) e etapa 5 (tempo com `medir`). Depois, F-ROTA.
+- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/classes.{puml,png}`, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
+- **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
+- **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
 
 ## Objetivo
 Modelagem, UML e construtores de G_P e G_E. Fecha:
@@ -26,10 +26,10 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | em andamento | 29/10: diagramas UML globais prontos; assinaturas dos construtores com `estado: planejado`; implementação depende da rede de teste (31/10) e do núcleo (01/11) |
+| Núcleo (algoritmo) | concluído | 05/11: construtores de G_P e G_E, grade espacial da caminhada, salvar e carregar, `baldeacoes` |
+| Modelo e dados | em andamento | 05/11: construtores prontos contra o protocolo `RedeConstrutores`; falta ligar à `Rede` real (P0-DADOS não iniciada) |
 | Interface | não iniciado | |
-| Testes | não iniciado | |
+| Testes | em andamento | 05/11: 33 verdes (gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle); teste de mutação à mão: filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. Falta a rede de teste do Miguel |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
@@ -55,7 +55,7 @@ _3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a re
 ## Critérios de aceite
 - [ ] RF-GRF-04: Construir a visão G_P (paradas) a partir do modelo normalizado
 - [ ] RF-GRF-05: Construir a visão G_E (parada × linha) com arestas de embarque, viagem, desembarque e caminhada
-- [ ] RF-GRF-07: Salvar e carregar grafos construídos, para não reprocessar o GTFS a cada execução
+- [x] RF-GRF-07: Salvar e carregar grafos construídos, para não reprocessar o GTFS a cada execução (05/11: `salvar` e `carregar` com pickle, testados)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
@@ -76,9 +76,9 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
+| 1 | Contrato (assinaturas com estado "planejado") | concluída (PR #33) |
+| 2 | Algoritmo com testes de corretude | concluída em 05/11 |
+| 3 | Integração com a visão do grafo e com os dados reais | bloqueada: falta a `Rede` (P0-DADOS) |
 | 4 | Página na interface | |
 | 5 | Tempo medido na rede real e complexidade justificada | |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
@@ -91,7 +91,10 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS); `Resultado(dist, pred)` (Thiago, P0-GRAFO). Confirmar com eles quando publicarem os contratos em 30/10 e ajustar o diagrama.
+- **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS): confirmar quando ele publicar o contrato. ~~`Resultado(dist, pred)` (Thiago)~~ **feito em 05/11:** diagrama com `Resultado(origem, dist, pred, pred_aresta)` e `caminho_arestas`, como na `main`.
+- **Rede (Miguel):** mandar o protocolo `RedeConstrutores` de `construtores.py` como proposta: `paradas` e `padroes` como no diagrama, mais `viagens[padrão] -> list[list[int]]`, os horários de cada viagem alinhados com `padrao.paradas`. Se a `Rede` dele sair diferente, um adaptador fino resolve sem mexer nos construtores.
+- **Piso de 1 s (Thiago, F-MET):** responder no PR #37 que o piso entrou (`Parametros.peso_minimo_s`).
+- **docs/fontes/modelagem.md §3.4:** acrescentada a regra do piso, decidida pelo Henrique em 05/11 (mesmo procedimento de D1 a D7: decisão no GUIA §8 e regra na fonte). Avisar o grupo no PR.
 - ~~**Decisões de modelagem embutidas no diagrama**~~ **decidido em 29/10/2026:** mantidas e registradas no `docs/GUIA.md` §8. Texto original: hierarquia `Visao` com uma subclasse por visão; `construir_ge` recebe a tabela de intervalos de F-ESPERA (espera constante até 06/11); salvar e carregar ficam nos construtores (RF-GRF-07).
 - **Contrato da Rede (Miguel):** `partidas[(padrão, parada)] -> list[int]` perde a identidade da viagem. Para calcular o tempo entre paradas consecutivas (D2) é preciso saber qual horário da parada seguinte pertence à mesma viagem. Pedir ao Miguel que a Rede guarde as viagens (por exemplo `viagens[padrão] -> list[list[int]]`, uma lista de horários por viagem, na ordem das paradas) ou garanta o mesmo número e a mesma ordem de horários em todas as paradas do padrão.
 
@@ -105,6 +108,13 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 - **D6. Espera provisória.** Até a tabela de intervalos de F-ESPERA (06/11), todo embarque usa `espera_padrao_s = 300` (5 min). Alternativa: estimar H/2 dentro do construtor, o que duplicaria o trabalho de F-ESPERA. **Recomendo os 300 s provisórios.** Padrão sem partida na faixa não recebe aresta de embarque.
 - **D7. Formato de salvar e carregar.** (a) pickle; (b) JSON. **Recomendo (a):** uma linha de código e rápido; o arquivo é cache local gerado pela própria ferramenta, fora do Git (`dados/cache/`), e nunca é lido de fonte externa, que é o único caso em que pickle é inseguro.
 
+### Decisões a tomar (propostas em 05/11/2026 e já aplicadas no código; o dono confirma ou troca)
+
+- **D8. Diferença de horário negativa entre paradas consecutivas.** (a) fica fora da mediana; trecho sem nenhuma diferença válida recebe o piso de 1 s; (b) levantar erro; (c) descartar a viagem inteira. **Recomendo (a):** é erro de cadastro isolado; erro derrubaria a construção da rede inteira, e descartar a viagem jogaria fora os outros trechos válidos dela. O trecho continua existindo porque está na sequência do padrão.
+- **D9. Embarque e desembarque nas pontas do padrão.** Sem embarque na última parada e sem desembarque na primeira. **Recomendo:** essas arestas nunca estão num caminho útil e só aumentam o grafo.
+- **D10. "Padrão com partida na faixa".** (a) alguma viagem tem o primeiro horário dentro da faixa; (b) alguma viagem passa pela parada dentro da faixa. **Recomendo (a)** por ser a definição de partida e casar com a tabela de intervalos de F-ESPERA, que é por (padrão, faixa). Limitação: ônibus que sai às 08h55 e passa numa parada às 09h20 não dá embarque nessa parada no entrepico.
+- **D11. Linha circular (padrão que repete uma parada).** Uma plataforma só por (parada, padrão), com um embarque e um desembarque. **Recomendo:** é o que a chave do contrato `plataforma[(parada, padrão)]` já implica. Limitação: o passageiro pode "dar a volta" e seguir no início do padrão, o que nem sempre é possível na rede real.
+
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Henrique.
@@ -113,3 +123,6 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 29/10/2026: assinaturas de parametros.py, visoes.py e construtores.py com estado: planejado; diagrama de classes sincronizado; decisões D1 a D7 propostas com recomendação.
 ### Decisão 29/10/2026: D1 a D7 aceitas pela recomendação; `dados/cache/` no .gitignore.
 ### PR 29/10/2026: #33 aberto (UML global, contrato dos construtores e decisões D1 a D7).
+### Merge 05/11/2026: PR #33 integrado na `main`.
+### Decisão 05/11/2026: piso de 1 s nas arestas de viagem e de caminhada (M2 da F-MET), aceito pelo Henrique; registrado no GUIA §8 e no modelagem.md §3.4.
+### Sessão 05/11/2026: etapa 2 na branch `feat/P0-MODELO-construtores`: construtores de G_P e G_E, salvar, carregar e `baldeacoes` contra o protocolo `RedeConstrutores`; 33 testes, 243 na suíte; diagrama de classes com `Resultado` atualizado; decisões D8 a D11 propostas.

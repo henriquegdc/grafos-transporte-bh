@@ -29,6 +29,7 @@ package "transporte.dados  (Miguel)" {
     +linhas: dict[str, Linha]
     +padroes: dict[str, Padrao]
     +{field} partidas: dict[(padrão, parada), list[int]]
+    +{field} viagens: dict[padrão, list[list[int]]]  (proposta P0-MODELO)
     +recortar(caixa, linhas): Rede
   }
   class leitor_gtfs <<module>> {
@@ -53,13 +54,16 @@ package "transporte.grafo  (Thiago)" {
     +vazio(): bool
   }
   class Resultado {
+    +origem: int
     +dist: list[float]
     +pred: list[int]
+    +pred_aresta: list[int]
   }
   class buscas <<module>> {
     +bfs(g, origem): Resultado
     +dijkstra(g, origem, destino): Resultado
     +caminho(r, destino): list[int]
+    +caminho_arestas(r, destino): list[int]
   }
 }
 
@@ -68,6 +72,7 @@ package "transporte.modelo  (Henrique)" {
     +raio_caminhada_m: float = 300
     +velocidade_caminhada_ms: float = 1.2
     +espera_padrao_s: float = 300
+    +peso_minimo_s: float = 1
     +faixas: tuple[FaixaHoraria, ...]
     +faixa(nome): FaixaHoraria
   }

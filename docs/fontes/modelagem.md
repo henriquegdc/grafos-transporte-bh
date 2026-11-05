@@ -71,6 +71,7 @@ Mudar um parâmetro depois exige linha no registro de decisões do `docs/GUIA.md
 - **Faixas horárias:** 06h a 09h, 09h a 16h, 16h a 19h e 19h a 24h; horários entre 0h e 6h não entram na estimativa de intervalos.
 - **Espera provisória:** 300 s em todo embarque até a tabela de intervalos de F-ESPERA (06/11); padrão sem partida na faixa não recebe aresta de embarque.
 - **Persistência:** visões salvas com pickle em `dados/cache/`, fora do Git.
+- **Piso de peso (05/11):** arestas de viagem e de caminhada têm peso mínimo de 1 s. O GTFS arredonda horários e paradas no mesmo ponto ficam a 0 m; 0 s entre paradas distintas é artefato e quebraria a contagem de caminhos mínimos do Brandes (F-MET). O desembarque continua com peso 0.
 
 **Representação no núcleo.** Grafo dirigido e ponderado, com vértices numerados de 0 a n-1 e lista de adjacência. Os atributos de vértice e de aresta ficam em estruturas paralelas. Espaço O(V + E). Vértices e arestas podem ser desativados sem reconstruir o grafo, o que F-RES usa para simular falhas.
 
