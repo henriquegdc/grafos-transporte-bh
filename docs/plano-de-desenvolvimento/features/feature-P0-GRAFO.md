@@ -10,11 +10,11 @@
 
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
-- **Onde parou:** etapa 1 concluída: contrato publicado com `estado: planejado` em `heap.py`, `grafo.py` e `buscas.py` (assinaturas do §9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas com recomendação.
-- **Próximo passo:** commitar o contrato e avisar o grupo dos acréscimos ao §9; preparar o ambiente Python 3.12 com pytest e networkx; implementar `HeapMin` com testes (etapa 2a), depois `Grafo` (2b) e `bfs`, `dijkstra`, `caminho` (2c).
-- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, este arquivo.
-- **Como testar:** `PYTHONPATH=src python -c "import transporte.grafo.buscas"` importa sem erro; ainda não há pytest (só contrato).
-- **Bloqueios:** nenhum de outra feature. Não há Python instalado na máquina do Thiago (só o `uv`), então ainda não dá para rodar testes localmente.
+- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2a concluída: `HeapMin` implementado (`estado: implementado`) com 29 testes verdes.
+- **Próximo passo:** etapa 2b, implementar `Grafo` (construção, consulta, desativação e `reverso`) com testes; depois 2c, `bfs`, `dijkstra`, `caminho` e `caminho_arestas`, com gabarito à mão e comparação com o NetworkX.
+- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/test_heap.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (29 testes em 05/11); `ruff check src tests`.
+- **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
 
 ## Objetivo
 Núcleo de grafos, heap e buscas. Fecha:
@@ -30,7 +30,7 @@ Núcleo de grafos, heap e buscas. Fecha:
 | Núcleo (algoritmo) | em andamento | 05/11: contrato publicado (estado: planejado); implementação pendente |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
-| Testes | não iniciado | |
+| Testes | em andamento | 05/11: 29 testes do HeapMin verdes (gabarito à mão e comparação com sorted); faltam Grafo e buscas |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
@@ -76,7 +76,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | Etapa | Escopo | Situação |
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 |
-| 2 | Algoritmo com testes de corretude | |
+| 2 | Algoritmo com testes de corretude | em andamento: 2a HeapMin concluída em 05/11; 2b Grafo e 2c buscas pendentes |
 | 3 | Integração com a visão do grafo e com os dados reais | |
 | 4 | Página na interface | |
 | 5 | Tempo medido na rede real e complexidade justificada | |
@@ -92,7 +92,7 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ## Pendências
 - **Avisar o grupo dos acréscimos ao contrato do §9 (G1 a G3).** São só acréscimos: nenhuma assinatura do §9 mudou. Como o agente não altera `docs/fontes/`, pedir ao grupo que o §9 do `plano-de-projeto.md` passe a apontar para os arquivos em `src/transporte/grafo/` como contrato vigente.
 - **Confirmar com o Henrique (P0-MODELO)** o `Resultado` com `pred_aresta` e a função `caminho_arestas`, que é a entrada de `VisaoGE.baldeacoes`; ele ajusta `Resultado` no `docs/diagramas/classes.puml` (pendência dele).
-- **Ambiente local:** instalar Python 3.12 (o `uv` já existe na máquina) com pytest, networkx e ruff. O `requirements.txt` e o hook são da P0-REPO (Caio) e ainda não estão na `main`.
+- ~~**Ambiente local**~~ **resolvido em 05/11/2026:** Python 3.12.14 com pytest, networkx e ruff em `.venv`, criado com `uv`. O `requirements.txt`, a configuração do pytest e o hook continuam com a P0-REPO (Caio).
 
 ### Decisões a tomar (propostas em 05/11/2026; o dono confirma ou troca)
 
@@ -107,3 +107,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Thiago.
 ### Sessão 05/11/2026: branch `feat/P0-GRAFO-nucleo`; contrato de `heap.py`, `grafo.py` e `buscas.py` publicado com estado: planejado (§9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas.
+### Sessão 05/11/2026: ambiente local com uv; etapa 2a, HeapMin implementado com 29 testes verdes.
