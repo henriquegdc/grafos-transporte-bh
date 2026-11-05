@@ -8,14 +8,16 @@ O(E) entradas e, como log E <= 2 log V, a complexidade continua O((V + E) log V)
 
 Notação: V = número de vértices, E = número de arestas.
 
-estado: planejado
+estado: implementado
 """
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 
 from transporte.grafo.grafo import Grafo
+from transporte.grafo.heap import HeapMin
 
 INF = float("inf")
 """Distância de um vértice não alcançado."""
@@ -45,6 +47,14 @@ class Resultado:
     pred_aresta: list[int]
 
 
+def _resultado_vazio(g: Grafo, origem: int) -> Resultado:
+    """Resultado em que nada foi alcançado. Valida a origem. O(V)."""
+    n = g.num_vertices()
+    if not 0 <= origem < n:
+        raise IndexError(f"vértice inexistente: {origem}")
+    return Resultado(origem, [INF] * n, [SEM_PRED] * n, [SEM_PRED] * n)
+
+
 def bfs(g: Grafo, origem: int) -> Resultado:
     """Busca em largura: caminhos com o menor número de arestas, ignorando os pesos.
 
@@ -53,7 +63,24 @@ def bfs(g: Grafo, origem: int) -> Resultado:
     Complexidade: tempo O(V + E), cada vértice entra na fila uma vez e cada aresta é
         olhada uma vez; espaço O(V).
     """
-    raise NotImplementedError("estado: planejado")
+    r = _resultado_vazio(g, origem)
+    if not g.vertice_ativo(origem):
+        return r
+    dist, pred, pred_aresta = r.dist, r.pred, r.pred_aresta
+    dist[origem] = 0.0
+    fila = deque([origem])
+    while fila:
+        u = fila.popleft()
+        proxima = dist[u] + 1
+        for v, _peso, a in g.vizinhos(u):
+            # Primeira vez que v é visto: a fila processa por camadas, então nenhum
+            # caminho achado depois pode ter menos arestas.
+            if dist[v] == INF:
+                dist[v] = proxima
+                pred[v] = u
+                pred_aresta[v] = a
+                fila.append(v)
+    return r
 
 
 def dijkstra(g: Grafo, origem: int, destino: int | None = None) -> Resultado:
@@ -71,7 +98,31 @@ def dijkstra(g: Grafo, origem: int, destino: int | None = None) -> Resultado:
     Complexidade: tempo O((V + E) log V); espaço O(V + E), por causa das entradas
         repetidas no heap.
     """
-    raise NotImplementedError("estado: planejado")
+    r = _resultado_vazio(g, origem)
+    if destino is not None and not 0 <= destino < g.num_vertices():
+        raise IndexError(f"vértice inexistente: {destino}")
+    if not g.vertice_ativo(origem):
+        return r
+    dist, pred, pred_aresta = r.dist, r.pred, r.pred_aresta
+    fechado = [False] * g.num_vertices()
+    dist[origem] = 0.0
+    heap = HeapMin()
+    heap.inserir(0.0, origem)
+    while not heap.vazio():
+        d, u = heap.extrair_min()
+        if fechado[u]:
+            continue  # entrada desatualizada da inserção preguiçosa
+        fechado[u] = True
+        if u == destino:
+            break
+        for v, peso, a in g.vizinhos(u):
+            nova = d + peso
+            if nova < dist[v]:
+                dist[v] = nova
+                pred[v] = u
+                pred_aresta[v] = a
+                heap.inserir(nova, v)
+    return r
 
 
 def caminho(r: Resultado, destino: int) -> list[int]:
@@ -81,7 +132,13 @@ def caminho(r: Resultado, destino: int) -> list[int]:
         [origem].
     Complexidade: tempo e espaço O(k), k = número de vértices do caminho.
     """
-    raise NotImplementedError("estado: planejado")
+    if r.dist[destino] == INF:
+        return []
+    vertices = [destino]
+    while vertices[-1] != r.origem:
+        vertices.append(r.pred[vertices[-1]])
+    vertices.reverse()
+    return vertices
 
 
 def caminho_arestas(r: Resultado, destino: int) -> list[int]:
@@ -91,4 +148,12 @@ def caminho_arestas(r: Resultado, destino: int) -> list[int]:
         origem devolve [].
     Complexidade: tempo e espaço O(k), k = número de arestas do caminho.
     """
-    raise NotImplementedError("estado: planejado")
+    if r.dist[destino] == INF:
+        return []
+    arestas = []
+    v = destino
+    while v != r.origem:
+        arestas.append(r.pred_aresta[v])
+        v = r.pred[v]
+    arestas.reverse()
+    return arestas

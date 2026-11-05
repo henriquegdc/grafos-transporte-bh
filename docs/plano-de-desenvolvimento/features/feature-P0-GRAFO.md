@@ -10,10 +10,10 @@
 
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
-- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2a concluída: `HeapMin` implementado com 29 testes; etapa 2b concluída: `Grafo` implementado com 57 testes (86 no total, verdes). Os dois estão com `estado: implementado`; `buscas.py` segue como contrato.
-- **Próximo passo:** etapa 2c, implementar `bfs`, `dijkstra`, `caminho` e `caminho_arestas` com gabarito à mão e comparação com o NetworkX; depois subir a branch e abrir o PR para o Henrique revisar.
-- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo}.py`, este arquivo.
-- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (86 testes em 05/11); `ruff check src tests`.
+- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2 concluída: `HeapMin` (29 testes), `Grafo` (57) e `bfs`, `dijkstra`, `caminho`, `caminho_arestas` (92), 178 testes verdes; os três módulos estão com `estado: implementado`. Os quatro critérios de aceite estão atendidos.
+- **Próximo passo:** subir a branch e abrir o PR para o Henrique revisar (`Closes #2`); confirmar as decisões G1 a G6. Depois, etapa 5 (tempo medido com `medir` quando G_P real existir) e etapa 6 (Como funciona e por quê, perguntas de verificação, diagrama de sequência do Dijkstra).
+- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo,test_buscas}.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (178 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
 
 ## Objetivo
@@ -27,10 +27,10 @@ Núcleo de grafos, heap e buscas. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | em andamento | 05/11: HeapMin e Grafo implementados; buscas pendentes |
+| Núcleo (algoritmo) | concluído | 05/11: HeapMin, Grafo, bfs, dijkstra, caminho e caminho_arestas implementados; aguardando PR |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
-| Testes | em andamento | 05/11: 86 verdes. HeapMin (29: gabarito à mão e comparação com sorted); Grafo (57: gabarito à mão, casos de borda e comparação com o NetworkX); faltam as buscas |
+| Testes | concluído | 05/11: 178 verdes. HeapMin (29: gabarito à mão e comparação com sorted); Grafo (57) e buscas (92): gabarito à mão, casos de borda e comparação com o NetworkX em grafos aleatórios com falhas |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
@@ -51,17 +51,17 @@ _A escrever a cada etapa concluída do plano de implementação, para um colega 
 _3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
 ## Critérios de aceite
-- [ ] RF-GRF-01: Estrutura própria de grafo dirigido e ponderado, com lista de adjacência
-- [ ] RF-GRF-02: BFS e Dijkstra genéricos, com reconstrução de caminho
-- [ ] RF-GRF-03: Desativar e reativar vértices e arestas sem reconstruir o grafo
-- [ ] RF-GRF-08: Fila de prioridade própria (heap binário de mínimo) usada pelos algoritmos de caminho mínimo
+- [x] RF-GRF-01: Estrutura própria de grafo dirigido e ponderado, com lista de adjacência (`grafo.py`; `tests/grafo/test_grafo.py`)
+- [x] RF-GRF-02: BFS e Dijkstra genéricos, com reconstrução de caminho (`buscas.py`; `tests/grafo/test_buscas.py`, comparação com o NetworkX)
+- [x] RF-GRF-03: Desativar e reativar vértices e arestas sem reconstruir o grafo (flags O(1) em `grafo.py`; testes de desativação em `test_grafo.py` e `test_buscas.py`)
+- [x] RF-GRF-08: Fila de prioridade própria (heap binário de mínimo) usada pelos algoritmos de caminho mínimo (`heap.py`, usado por `dijkstra`; `tests/grafo/test_heap.py`)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
+- [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (178 testes em 05/11)
 - [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [ ] Página ou bloco na interface funcionando com o dataset real
@@ -76,7 +76,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | Etapa | Escopo | Situação |
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 |
-| 2 | Algoritmo com testes de corretude | em andamento: 2a HeapMin e 2b Grafo concluídas em 05/11; 2c buscas pendente |
+| 2 | Algoritmo com testes de corretude | concluída em 05/11 (2a HeapMin, 2b Grafo, 2c buscas) |
 | 3 | Integração com a visão do grafo e com os dados reais | |
 | 4 | Página na interface | |
 | 5 | Tempo medido na rede real e complexidade justificada | |
@@ -109,3 +109,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 05/11/2026: branch `feat/P0-GRAFO-nucleo`; contrato de `heap.py`, `grafo.py` e `buscas.py` publicado com estado: planejado (§9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas.
 ### Sessão 05/11/2026: ambiente local com uv; etapa 2a, HeapMin implementado com 29 testes verdes.
 ### Sessão 05/11/2026: etapa 2b, Grafo implementado com 57 testes verdes (86 no total).
+### Sessão 05/11/2026: etapa 2c, bfs, dijkstra, caminho e caminho_arestas implementados com 92 testes (178 no total); critérios de aceite RF-GRF-01, 02, 03 e 08 atendidos.
