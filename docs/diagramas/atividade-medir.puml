@@ -1,0 +1,37 @@
+@startuml atividade-medir
+' Diagrama de atividade da função medir (P0-AVAL, RF-AVA-01).
+' Estado: implementado. Código: src/transporte/util/medicao.py.
+!pragma layout smetana
+title Atividade · medir(func, *args, repeticoes=N, **kwargs)
+
+start
+if (repeticoes é int e não é bool?) then (não)
+  :TypeError;
+  stop
+endif
+if (repeticoes >= 1?) then (não)
+  :ValueError;
+  note right: func não chega a ser executada
+  stop
+endif
+:tempos = [ ];
+repeat
+  :inicio = perf_counter();
+  :func(*args, **kwargs);
+  note right
+    resultado descartado;
+    exceção de func se propaga
+  end note
+  :fim = perf_counter();
+  :tempos.append(fim - inicio);
+repeat while (len(tempos) < N?) is (sim)
+->não;
+:media = soma(tempos) / N;
+if (N == 1?) then (sim)
+  :desvio = 0.0;
+else (não)
+  :desvio = raiz( soma((t - media)²) / (N - 1) );
+endif
+:devolve Medicao(media_s, desvio_s, repeticoes=N);
+stop
+@enduml
