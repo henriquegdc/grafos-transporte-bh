@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-construtores` (PR #33 já integrado na `main`).
 - **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
-- **Próximo passo:** confirmar as decisões D8 a D11 (abaixo); abrir o PR desta branch (Refs #4); mandar ao Miguel o protocolo `RedeConstrutores` como proposta de contrato da `Rede`; responder ao Thiago no #37 que o piso entrou. Quando a `Rede` existir: etapa 3 (rede de teste e feed real, adaptador se os campos diferirem) e etapa 5 (tempo com `medir`). Depois, F-ROTA.
+- **Próximo passo:** conseguir 1 aprovação no PR #38 (Refs #4); confirmar as decisões D8 a D11 (abaixo); mandar ao Miguel o protocolo `RedeConstrutores` como proposta de contrato da `Rede`; responder ao Thiago no #37 que o piso entrou. Quando a `Rede` existir: etapa 3 (rede de teste e feed real, adaptador se os campos diferirem) e etapa 5 (tempo com `medir`). Depois, F-ROTA.
 - **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/classes.{puml,png}`, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
 - **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
@@ -126,3 +126,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Merge 05/11/2026: PR #33 integrado na `main`.
 ### Decisão 05/11/2026: piso de 1 s nas arestas de viagem e de caminhada (M2 da F-MET), aceito pelo Henrique; registrado no GUIA §8 e no modelagem.md §3.4.
 ### Sessão 05/11/2026: etapa 2 na branch `feat/P0-MODELO-construtores`: construtores de G_P e G_E, salvar, carregar e `baldeacoes` contra o protocolo `RedeConstrutores`; 33 testes, 243 na suíte; diagrama de classes com `Resultado` atualizado; decisões D8 a D11 propostas.
+### PR 05/11/2026: #38 aberto (construtores, piso de 1 s e decisões D8 a D11 propostas).
