@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (sobre a do PR #40): Introdução, Plano de desenvolvimento e README da Etapa 1, v1.
 - **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
-- **Próximo passo:** abrir o PR da Etapa 1 (empilhado sobre o #40) e conseguir aprovação nos PRs #38, #40 e no da Etapa 1, nessa ordem; combinar com o Thiago a seção Fundamentação (dona dupla); mandar ao Miguel o protocolo `RedeConstrutores`. Quando a `Rede` existir: etapa 3 e etapa 5. F-ROTA segue no PR #39.
+- **Próximo passo:** conseguir aprovação nos PRs #38, #40 e #41 (Etapa 1), nessa ordem; combinar com o Thiago a seção Fundamentação (dona dupla); mandar ao Miguel o protocolo `RedeConstrutores`. Quando a `Rede` existir: etapa 3 e etapa 5. F-ROTA segue no PR #39.
 - **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/{modelagem,introducao,plano}.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo,casos-de-uso}.png`, `docs/diagramas/casos-de-uso.{puml,png}` (dpi 200), `README.md` §3, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
 - **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
@@ -133,3 +133,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### PR 05/11/2026: #40 aberto (seção Modelagem do relatório), empilhado sobre o #38.
 ### Decisão 05/11/2026: D8 a D11 aceitas pela recomendação.
 ### Sessão 05/11/2026: Etapa 1 v1 na branch `feat/P0-MODELO-etapa1`: Introdução e Plano no relatório, seção 3 do README com o diagrama de classes; diagrama de casos de uso a 200 dpi.
+### PR 05/11/2026: #41 aberto (Introdução, Plano e README da Etapa 1), empilhado sobre o #40.
