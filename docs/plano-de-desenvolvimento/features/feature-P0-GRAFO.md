@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** publicar as assinaturas de `src/transporte/grafo/heap.py`, `grafo.py` e `buscas.py` com `estado: planejado` (`docs/fontes/plano-de-projeto.md` §9).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** nenhum.
+- **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
+- **Onde parou:** etapa 1 concluída: contrato publicado com `estado: planejado` em `heap.py`, `grafo.py` e `buscas.py` (assinaturas do §9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas com recomendação.
+- **Próximo passo:** commitar o contrato e avisar o grupo dos acréscimos ao §9; preparar o ambiente Python 3.12 com pytest e networkx; implementar `HeapMin` com testes (etapa 2a), depois `Grafo` (2b) e `bfs`, `dijkstra`, `caminho` (2c).
+- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src python -c "import transporte.grafo.buscas"` importa sem erro; ainda não há pytest (só contrato).
+- **Bloqueios:** nenhum de outra feature. Não há Python instalado na máquina do Thiago (só o `uv`), então ainda não dá para rodar testes localmente.
 
 ## Objetivo
 Núcleo de grafos, heap e buscas. Fecha:
@@ -27,7 +27,7 @@ Núcleo de grafos, heap e buscas. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
+| Núcleo (algoritmo) | em andamento | 05/11: contrato publicado (estado: planejado); implementação pendente |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
 | Testes | não iniciado | |
@@ -75,7 +75,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
+| 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 |
 | 2 | Algoritmo com testes de corretude | |
 | 3 | Integração com a visão do grafo e com os dados reais | |
 | 4 | Página na interface | |
@@ -90,8 +90,20 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- Nenhuma.
+- **Avisar o grupo dos acréscimos ao contrato do §9 (G1 a G3).** São só acréscimos: nenhuma assinatura do §9 mudou. Como o agente não altera `docs/fontes/`, pedir ao grupo que o §9 do `plano-de-projeto.md` passe a apontar para os arquivos em `src/transporte/grafo/` como contrato vigente.
+- **Confirmar com o Henrique (P0-MODELO)** o `Resultado` com `pred_aresta` e a função `caminho_arestas`, que é a entrada de `VisaoGE.baldeacoes`; ele ajusta `Resultado` no `docs/diagramas/classes.puml` (pendência dele).
+- **Ambiente local:** instalar Python 3.12 (o `uv` já existe na máquina) com pytest, networkx e ruff. O `requirements.txt` e o hook são da P0-REPO (Caio) e ainda não estão na `main`.
+
+### Decisões a tomar (propostas em 05/11/2026; o dono confirma ou troca)
+
+- **G1. Resultado das buscas.** (a) `Resultado(origem, dist, pred, pred_aresta)` com `INF` e `SEM_PRED = -1`; (b) só `dist` e `pred`, como no diagrama. **Recomendo (a):** `pred` sozinho não distingue arestas paralelas nem diz o tipo do trecho, e `VisaoGE.baldeacoes` (P0-MODELO) recebe ids de aresta. Custa uma lista a mais, O(V).
+- **G2. Acessores a mais no Grafo.** `num_vertices`, `num_arestas`, `rotulo`, `aresta(a) -> (origem, destino, peso, tipo)`, `vertice_ativo` e `aresta_ativa`. **Recomendo aceitar:** os consumidores precisam percorrer os vértices (Brandes, Tarjan, eficiência) e ler o tipo das arestas (baldeações), e sem isso cada um acessaria atributos internos.
+- **G3. Reativação individual.** Acrescentar `reativar_vertice` e `reativar_aresta`, além do `reativar_tudo` do §9. **Recomendo aceitar:** o RF-GRF-03 pede "desativar e reativar vértices e arestas", e o ranking de criticidade (F-RES-2) desliga um candidato por vez; reativar tudo seria O(V + E) a cada candidato contra O(1).
+- **G4. Pesos validados na inserção.** `adicionar_aresta` recusa peso negativo, infinito ou NaN (ValueError). **Recomendo aceitar:** todo peso do projeto é tempo em segundos, e o Dijkstra só é correto com pesos não negativos; validar na inserção custa O(1) e evita um erro silencioso dentro da busca.
+- **G5. Semântica da desativação.** Vértice desativado some das buscas junto com as arestas que tocam nele, sem alterá-las; origem desativada não alcança nada, nem a si mesma. **Recomendo aceitar:** é o que "a parada fechou" significa para a F-RES, e reativar devolve o grafo exatamente ao estado anterior.
+- **G6. Empates no heap.** Desempate pelo menor item. **Recomendo aceitar:** torna a ordem de extração e os caminhos de mesmo custo determinísticos, o que os testes com gabarito exigem.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Thiago.
+### Sessão 05/11/2026: branch `feat/P0-GRAFO-nucleo`; contrato de `heap.py`, `grafo.py` e `buscas.py` publicado com estado: planejado (§9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas.
