@@ -53,7 +53,8 @@ class Rede:
     linhas: dict[str, Linha]
     padroes: dict[str, Padrao]
     partidas: dict[tuple[str, str], list[int]]
-    viagens: dict[str, Viagem] = field(default_factory=dict)
+    viagens: dict[str, list[tuple[int, ...]]] = field(default_factory=dict)
+    viagens_por_id: dict[str, Viagem] = field(default_factory=dict)
     frequencias: tuple[Frequencia, ...] = ()
     dia: str = ""
     inconsistencias: list[str] = field(default_factory=list)
@@ -103,7 +104,7 @@ class Rede:
         for freq in self.frequencias:
             freq_por_viagem.setdefault(freq.viagem_id, []).append(freq)
         viagens_por_padrao: dict[str, list[Viagem]] = {}
-        for viagem in self.viagens.values():
+        for viagem in self.viagens_por_id.values():
             viagens_por_padrao.setdefault(viagem.padrao_id, []).append(viagem)
         for padrao in self.padroes.values():
             if padrao.linha_id not in linhas_novas:
@@ -143,26 +144,28 @@ class Rede:
                             )
                         )
         rede = Rede(
-            paradas,
-            linhas_novas,
-            padroes,
-            {},
-            viagens,
-            tuple(frequencias),
-            self.dia,
-            self.inconsistencias.copy(),
+            paradas=paradas,
+            linhas=linhas_novas,
+            padroes=padroes,
+            partidas={},
+            viagens_por_id=viagens,
+            frequencias=tuple(frequencias),
+            dia=self.dia,
+            inconsistencias=self.inconsistencias.copy(),
         )
         rede.recalcular_partidas()
         return rede
 
     def recalcular_partidas(self) -> None:
-        """Reconstrói partidas, inclusive frequências. Tempo O(N log N), espaço O(N)."""
+        """Reconstrói viagens por padrão e partidas. Tempo O(N log N), espaço O(N)."""
         self.partidas = {}
+        self.viagens = {}
         freq_por_viagem: dict[str, list[Frequencia]] = {}
         for freq in self.frequencias:
             freq_por_viagem.setdefault(freq.viagem_id, []).append(freq)
-        for viagem in self.viagens.values():
+        for viagem in self.viagens_por_id.values():
             padrao = self.padroes[viagem.padrao_id]
+            self.viagens.setdefault(padrao.id, []).append(viagem.horarios)
             frequencias = freq_por_viagem.get(viagem.id)
             if frequencias:
                 for freq in frequencias:

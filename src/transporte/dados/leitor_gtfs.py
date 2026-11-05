@@ -227,7 +227,16 @@ def _montar(caminho: Path, tabelas: dict[str, list[dict[str, str]]], dia: date) 
             frequencias.append(Frequencia(ident, inicio, fim, intervalo))
         except (KeyError, TypeError, ValueError):
             erros.append(f"frequência da viagem {ident}: horário ou intervalo inválido")
-    rede = Rede(paradas, linhas, padroes, {}, viagens, tuple(frequencias), dia.isoformat(), erros)
+    rede = Rede(
+        paradas=paradas,
+        linhas=linhas,
+        padroes=padroes,
+        partidas={},
+        viagens_por_id=viagens,
+        frequencias=tuple(frequencias),
+        dia=dia.isoformat(),
+        inconsistencias=erros,
+    )
     rede.recalcular_partidas()
     return rede
 

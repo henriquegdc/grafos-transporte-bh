@@ -17,21 +17,25 @@ class TestGTFS(unittest.TestCase):
     def test_dia_padrao_e_partidas(self) -> None:
         rede = ler(REDE)
         self.assertEqual(rede.dia, "2026-11-04")
-        self.assertEqual(set(rede.viagens), {"t1", "t2", "t3", "f1"})
-        padrao = rede.viagens["t1"].padrao_id
+        self.assertEqual(set(rede.viagens_por_id), {"t1", "t2", "t3", "f1"})
+        padrao = rede.viagens_por_id["t1"].padrao_id
         self.assertEqual(rede.padroes[padrao].paradas, ("A", "B", "C"))
         self.assertEqual(rede.partidas[(padrao, "A")], [28800, 30000, 87000])
-        self.assertEqual(rede.viagens["t1"].horarios, (28800, 29100, 29400))
+        self.assertEqual(rede.viagens_por_id["t1"].horarios, (28800, 29100, 29400))
+        self.assertEqual(
+            rede.viagens[padrao],
+            [(28800, 29100, 29400), (30000, 30300, 30600), (87000, 87300, 87600)],
+        )
 
     def test_frequencia_expandida(self) -> None:
         rede = ler(REDE)
-        padrao = rede.viagens["f1"].padrao_id
+        padrao = rede.viagens_por_id["f1"].padrao_id
         self.assertEqual(rede.partidas[(padrao, "A")], list(range(32400, 36000, 600)))
         self.assertEqual(rede.partidas[(padrao, "D")], list(range(32880, 36480, 600)))
 
     def test_excecao_do_calendario(self) -> None:
         rede = ler(REDE, date(2026, 11, 11))
-        self.assertEqual(set(rede.viagens), {"extra"})
+        self.assertEqual(set(rede.viagens_por_id), {"extra"})
 
     def test_recorte_por_linha_e_caixa(self) -> None:
         rede = ler(REDE)
@@ -40,7 +44,7 @@ class TestGTFS(unittest.TestCase):
         self.assertEqual(set(recorte.paradas), {"A", "B"})
         self.assertEqual(set(recorte.linhas), {"L1"})
         self.assertEqual({p.paradas for p in recorte.padroes.values()}, {("A", "B")})
-        self.assertEqual(recorte.viagens["t1"].horarios, (28800, 29100))
+        self.assertEqual(recorte.viagens_por_id["t1"].horarios, (28800, 29100))
         self.assertEqual(recorte.inconsistencias, ["erro de exemplo"])
         self.assertIsNot(recorte.inconsistencias, rede.inconsistencias)
 
@@ -49,7 +53,7 @@ class TestGTFS(unittest.TestCase):
         recorte = rede.recortar((-19.9021, -43.9001, -19.8999, -43.8999))
         self.assertEqual(set(recorte.paradas), {"A", "C"})
         self.assertFalse(recorte.padroes)
-        self.assertFalse(recorte.viagens)
+        self.assertFalse(recorte.viagens_por_id)
 
     def test_recorte_por_linha_remove_paradas_de_outras_linhas(self) -> None:
         rede = ler(REDE)
@@ -60,7 +64,7 @@ class TestGTFS(unittest.TestCase):
 
     def test_recorte_preserva_frequencias(self) -> None:
         recorte = ler(REDE).recortar(linhas={"L2"})
-        padrao = recorte.viagens["f1"].padrao_id
+        padrao = recorte.viagens_por_id["f1"].padrao_id
         self.assertEqual(set(recorte.paradas), {"A", "D"})
         self.assertEqual(recorte.partidas[(padrao, "A")], list(range(32400, 36000, 600)))
         self.assertEqual(recorte.partidas[(padrao, "D")], list(range(32880, 36480, 600)))
