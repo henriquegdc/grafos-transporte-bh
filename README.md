@@ -28,11 +28,15 @@ O mesmo dado vira visões de grafo diferentes, cada uma escolhida pela pergunta 
 | Visão | Vértices | Responde |
 |---|---|---|
 | G_P · paradas | Paradas | Centralidades, eficiência estrutural, falhas |
-| G_E · parada × linha | Paradas e plataformas (parada, linha) | Trajeto mais rápido, espera, tempos origem-destino |
-| G_L · linhas | Linhas | Mínimo de baldeações |
+| G_E · parada × linha | Paradas e plataformas (parada, padrão de linha) | Trajeto mais rápido, espera, tempos origem-destino |
+| G_L · linhas | Padrões de linha | Mínimo de baldeações |
 | G_T · dependente do horário | Paradas, com partidas por aresta | Simulação com quadro de horários |
 
-Justificativa, parâmetros, algoritmos e complexidades em `docs/fontes/modelagem.md`; diagramas UML em `docs/diagramas/`.
+Um padrão é uma linha com uma sequência exata de paradas. Em G_E, trocar de linha obriga a desembarcar, voltar à parada e pagar um novo embarque, que carrega a espera; por isso um único Dijkstra soma caminhada, espera, viagem e baldeações. O tempo entre paradas é a mediana das viagens do dia típico, a caminhada liga paradas a até 300 m (1,2 m/s) e toda aresta de viagem ou caminhada tem piso de 1 s.
+
+![Diagrama de classes do modelo normalizado, dos parâmetros e das visões](docs/diagramas/classes-modelo.png)
+
+Justificativa, parâmetros, algoritmos e complexidades em `docs/fontes/modelagem.md` e na seção Modelagem do relatório (`relatorio/secoes/modelagem.tex`); decisões com o porquê em `docs/GUIA.md` §8; diagramas UML completos (classes, componentes e casos de uso) em `docs/diagramas/`.
 
 ## 4. Plano de desenvolvimento
 

@@ -1,6 +1,45 @@
 % Seção: Introdução
 % Dono: Henrique · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: Contexto, problema, objetivos e as seis perguntas
+% Fontes: docs/fontes/REQUISITOS.md §3.1; diagrama docs/diagramas/casos-de-uso.puml.
 \section{Introdução}\label{sec:intro}
 
-\pendente{Contexto, problema, objetivos e as seis perguntas. Dono: Henrique.}
+Uma rede de ônibus é, por natureza, um grafo: paradas ligadas por linhas que passam
+nelas em sequência, com tempos de viagem, intervalos entre partidas e trechos a pé entre
+paradas próximas. Belo Horizonte publica a programação da sua rede no formato
+GTFS~\cite{gtfs-reference}, o padrão aberto de dados de transporte público, o que
+permite estudar a rede real em vez de um exemplo de livro.
+
+Este trabalho atende ao tema 5 da disciplina, que pede a construção de grafos a partir
+de linhas de ônibus, metrô ou trem, com simulação de trajetos, tempo de espera e
+eficiência. O objetivo é uma ferramenta em Python que lê o GTFS dos ônibus de Belo
+Horizonte, monta grafos com estrutura e algoritmos implementados pelo grupo, sem
+bibliotecas prontas de grafo, e responde seis perguntas sobre a rede, cada uma a cargo
+de um integrante:
+
+\begin{enumerate}
+  \setlength{\itemsep}{0pt}
+  \item Qual o trajeto mais rápido de A a B, somando caminhada, espera e viagem?
+  \item Quanto tempo se espera, e como isso muda com o horário de saída?
+  \item Qual o trajeto com menos baldeações, e quanto tempo ele custa a mais?
+  \item Quais paradas são estruturalmente críticas para a rede?
+  \item Quão eficiente é a rede, e quais regiões são mal atendidas?
+  \item O que acontece quando uma parada ou uma linha sai de operação?
+\end{enumerate}
+
+As três primeiras perguntas tratam de trajetos e espera, do ponto de vista do
+passageiro; as três últimas, da estrutura e da robustez da rede como um todo. A
+Figura~\ref{fig:casos-de-uso} mostra a ferramenta pelos casos de uso de quem analisa a
+rede. A análise usa os horários programados de um dia típico: a ferramenta simula e
+compara cenários, mas não é um aplicativo de navegação em tempo real.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.65\textwidth]{casos-de-uso}
+\caption{Casos de uso da ferramenta. Cada caso essencial corresponde a uma das seis
+perguntas; as extensões são os requisitos desejáveis.}
+\label{fig:casos-de-uso}
+\end{figure}
+
+A Seção~\ref{sec:modelagem} mostra como o GTFS vira grafos e a Seção~\ref{sec:plano},
+como o grupo se organizou; as seguintes trazem os resultados e as limitações.

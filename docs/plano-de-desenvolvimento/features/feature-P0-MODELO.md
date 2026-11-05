@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-relatorio` (sobre a do PR #38): seção Modelagem do relatório, v1.
+- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (sobre a do PR #40): Introdução, Plano de desenvolvimento e README da Etapa 1, v1.
 - **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
-- **Próximo passo:** conseguir 1 aprovação no PR #40 (seção Modelagem, empilhado sobre o #38); conseguir 1 aprovação no PR #38 (Refs #4); mandar ao Miguel o protocolo `RedeConstrutores`. Depois: Introdução, Plano e README da Etapa 1; quando a `Rede` existir, etapa 3 e etapa 5. F-ROTA segue no PR #39.
-- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/modelagem.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo}.png`, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
+- **Próximo passo:** abrir o PR da Etapa 1 (empilhado sobre o #40) e conseguir aprovação nos PRs #38, #40 e no da Etapa 1, nessa ordem; combinar com o Thiago a seção Fundamentação (dona dupla); mandar ao Miguel o protocolo `RedeConstrutores`. Quando a `Rede` existir: etapa 3 e etapa 5. F-ROTA segue no PR #39.
+- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/{modelagem,introducao,plano}.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo,casos-de-uso}.png`, `docs/diagramas/casos-de-uso.{puml,png}` (dpi 200), `README.md` §3, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
 - **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
 
@@ -32,7 +32,7 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 | Testes | em andamento | 05/11: 33 verdes (gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle); teste de mutação à mão: filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. Falta a rede de teste do Miguel |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
-| Relatório | em andamento | 05/11: seção 4 (Modelagem) v1 em `relatorio/secoes/modelagem.tex`, com a tabela das visões, o exemplo de G_E e o diagrama de classes recortado; compilada em 05/11 com MiKTeX 25.12 (pdflatex + bibtex), sem erro nem referência indefinida, cerca de 2,5 páginas |
+| Relatório | em andamento | 05/11: Etapa 1 v1 das seções do Henrique, compiladas com MiKTeX 25.12 sem erro nem referência indefinida: Introdução (cerca de 1,1 página, com o diagrama de casos de uso), Modelagem (cerca de 2,5) e Plano (cerca de 0,4); Introdução e Plano somam 1,5, o orçamento das duas. Falta a Fundamentação, com o Thiago |
 | Vídeo | não iniciado | |
 
 ## Especificação
@@ -92,6 +92,8 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 
 ## Pendências
 - **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS): confirmar quando ele publicar o contrato. ~~`Resultado(dist, pred)` (Thiago)~~ **feito em 05/11:** diagrama com `Resultado(origem, dist, pred, pred_aresta)` e `caminho_arestas`, como na `main`.
+- **Plano de desenvolvimento (relatório):** o texto diz que o gancho de pre-commit barra biblioteca de grafo em `src/`; o gancho é da P0-REPO (Caio) e ainda não existe. Conferir antes da versão final.
+- **Fundamentação (Thiago e Henrique):** combinar a divisão; a seção continua com `\pendente`.
 - **Rede (Miguel):** mandar o protocolo `RedeConstrutores` de `construtores.py` como proposta: `paradas` e `padroes` como no diagrama, mais `viagens[padrão] -> list[list[int]]`, os horários de cada viagem alinhados com `padrao.paradas`. Se a `Rede` dele sair diferente, um adaptador fino resolve sem mexer nos construtores.
 - **Piso de 1 s (Thiago, F-MET):** responder no PR #37 que o piso entrou (`Parametros.peso_minimo_s`).
 - **docs/fontes/modelagem.md §3.4:** acrescentada a regra do piso, decidida pelo Henrique em 05/11 (mesmo procedimento de D1 a D7: decisão no GUIA §8 e regra na fonte). Avisar o grupo no PR.
@@ -130,3 +132,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 05/11/2026: seção Modelagem do relatório (v1) na branch `feat/P0-MODELO-relatorio`; figuras `ge-exemplo` e `classes-modelo` em PlantUML.
 ### PR 05/11/2026: #40 aberto (seção Modelagem do relatório), empilhado sobre o #38.
 ### Decisão 05/11/2026: D8 a D11 aceitas pela recomendação.
+### Sessão 05/11/2026: Etapa 1 v1 na branch `feat/P0-MODELO-etapa1`: Introdução e Plano no relatório, seção 3 do README com o diagrama de classes; diagrama de casos de uso a 200 dpi.
