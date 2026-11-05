@@ -19,10 +19,11 @@ vigência do feed quando o usuário não passa uma data.
 O fluxo é: validar os arquivos necessários, selecionar os serviços ativos, percorrer
 `stop_times.txt` em fluxo, agrupar viagens da mesma linha com a mesma sequência exata
 de paradas e construir a `Rede`. Cada parada mantém o seu `stop_id`, inclusive quando
-dois sentidos usam pontos próximos. A rede guarda tanto as partidas por padrão/parada
-quanto os horários associados a cada viagem. Essa segunda forma permite calcular a
-diferença de tempo entre paradas consecutivas do mesmo ônibus; uma lista de horários
-por parada perderia a identidade da viagem.
+dois sentidos usam pontos próximos. A rede guarda partidas por padrão/parada,
+`viagens[padrão]` com as sequências de horários alinhadas à sequência de paradas e
+`viagens_por_id` para conservar os identificadores GTFS. Assim o construtor calcula a
+diferença entre paradas consecutivas do mesmo ônibus; uma lista de horários por parada
+perderia essa relação.
 
 Horários como `24:10:00` são válidos: representam 00:10 do dia seguinte dentro da
 mesma jornada de serviço. Linhas inválidas são relatadas em `Rede.inconsistencias` e

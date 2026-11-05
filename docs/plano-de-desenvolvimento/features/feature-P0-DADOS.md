@@ -10,11 +10,11 @@
 
 ## Retomada
 - **Última sessão:** 05/11/2026, branch `feat/P0-DADOS-gtfs`.
-- **Onde parou:** somente P0-DADOS nesta branch; revisão técnica do contrato e recorte no feed real feitos. PR e integração na interface pendentes.
-- **Próximo passo:** Miguel alinhar com Henrique como G_E representará uma parada repetida no mesmo padrão; revisar as decisões rascunhadas no `docs/GUIA.md` e o relatório; validar a compilação LaTeX em ambiente com TeX; abrir o PR de P0-DADOS.
+- **Onde parou:** somente P0-DADOS nesta branch; contrato ajustado ao `RedeConstrutores` do PR #38 e G_P/G_E testados na rede de teste e no recorte real. PR e interface pendentes.
+- **Próximo passo:** abrir PR de P0-DADOS; Miguel revisar as decisões rascunhadas no `docs/GUIA.md` e o relatório, validar a compilação LaTeX em ambiente com TeX e combinar a integração com P0-MODELO/P0-UI.
 - **Arquivos tocados:** `src/transporte/dados/{modelo,leitor_gtfs}.py`, `scripts/baixar_gtfs.py`, `dados/rede-teste/`, `tests/dados/test_leitor_gtfs.py`, `docs/diagramas/atividade-p0-dados.{puml,png}`, `docs/GUIA.md`, `relatorio/secoes/dados.tex`, este arquivo.
 - **Como testar:** `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/grafos-uv-cache uv run --no-project --offline --with pytest --with ruff --with networkx python -m pytest -q`, `UV_CACHE_DIR=/private/tmp/grafos-uv-cache uv run --no-project --offline --with ruff ruff check .` e `plantuml -tpng -failfast2 docs/diagramas/atividade-p0-dados.puml`.
-- **Bloqueios:** o contrato de `VisaoGE.plataforma[(parada, padrão)]` não distingue visitas repetidas à mesma parada; página com dados reais depende de P0-UI; hook e distribuição LaTeX não estão disponíveis nesta `main`; DoD exige PR aprovado.
+- **Bloqueios:** o PR #38 de P0-MODELO ainda está aberto e sua decisão D11 sobre parada repetida aguarda confirmação do grupo; página com dados reais depende de P0-UI; hook e distribuição LaTeX não estão disponíveis nesta `main`; DoD exige PR aprovado.
 
 ## Objetivo
 Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
@@ -39,14 +39,14 @@ Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
 ## Especificação
 Contrato inicial em `docs/fontes/plano-de-projeto.md` §9. Publicar as assinaturas com o comentário `estado: planejado` antes de implementar; trocar para `implementado` quando os testes passarem. Feed bruto em `dados/brutos/` (fora do Git, baixado por script); rede de teste em `dados/rede-teste/`.
 
-Assinaturas publicadas e implementadas: `Parada`, `Linha`, `Padrao`, `Viagem`, `Frequencia`, `Rede.recortar(caixa, linhas)`, `ler(caminho, dia=None)` e `validar(caminho)`. `Rede.viagens` conserva a identidade e a sequência de horários de cada viagem para que P0-MODELO calcule tempos entre paradas; `Rede.partidas[(padrao, parada)]` mantém a interface prevista no plano. `caixa` usa `(lat_min, lon_min, lat_max, lon_max)`.
+Assinaturas publicadas e implementadas: `Parada`, `Linha`, `Padrao`, `Viagem`, `Frequencia`, `Rede.recortar(caixa, linhas)`, `ler(caminho, dia=None)` e `validar(caminho)`. `Rede.viagens[padrão]` reúne as sequências de horários por viagem exigidas por `RedeConstrutores` no PR #38; `Rede.viagens_por_id[id]` conserva a identidade GTFS de cada viagem. `Rede.partidas[(padrao, parada)]` mantém a interface prevista no plano. `caixa` usa `(lat_min, lon_min, lat_max, lon_max)`.
 
 ## Como funciona e por quê
 O leitor transforma linhas, paradas e horários do GTFS em objetos sem construir grafo. Seleciona uma quarta-feira ativa (a mais próxima da versão do feed, quando informada), aplica o calendário e suas exceções, agrupa viagens da mesma linha que percorrem a mesma sequência exata de paradas e expande as partidas de `frequencies.txt`. Guarda os horários por viagem porque uma lista de partidas por parada sozinha não revela quais duas passagens pertencem ao mesmo ônibus. Horários acima de 24h representam viagens que continuam após a meia-noite; descartá-los apagaria serviço válido.
 
 O recorte mantém somente linhas e paradas selecionadas. Se o corte separa dois trechos de um padrão, cria padrões distintos para evitar uma ligação direta inexistente. O leitor percorre as linhas do CSV em O(R + N log N) de tempo e O(R + N) de espaço, onde N inclui as partidas expandidas e a ordenação; `stop_times.txt` é processado em fluxo porque o feed real é grande. O recorte custa O(N log N + P + V) de tempo e O(N + P + V) de espaço. Linhas inválidas são relatadas e não entram na rede; a validação atual se concentra no dia escolhido, não em todos os serviços do calendário.
 
-Revisão do contrato: `Rede.viagens[id].horarios` mantém a ordem posicional de `Padrao.paradas` e permite calcular a mediana do tempo entre paradas consecutivas exigida por P0-MODELO. `Rede.partidas[(padrão, parada)]` permanece disponível, mas reúne todas as visitas quando uma viagem passa mais de uma vez pelo mesmo `stop_id`. O contrato publicado de `VisaoGE.plataforma[(parada, padrão)]` também reúne essas posições; Henrique precisa decidir como representá-las antes de construir G_E, para não permitir atalhos indevidos.
+Revisão do contrato: cada sequência em `Rede.viagens[padrão]` mantém a ordem posicional de `Padrao.paradas` e permite calcular a mediana do tempo entre paradas consecutivas exigida por P0-MODELO. `Rede.partidas[(padrão, parada)]` permanece disponível, mas reúne todas as visitas quando uma viagem passa mais de uma vez pelo mesmo `stop_id`. O PR #38 implementa uma plataforma por par `(parada, padrão)` para linhas circulares (D11); a decisão ainda aguarda confirmação do grupo.
 
 ## Perguntas de verificação
 1. Por que `Rede` guarda os horários por viagem? Para relacionar passagens consecutivas do mesmo ônibus e calcular o tempo de viagem.
@@ -86,11 +86,13 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | rascunhos preparados; falta revisão por Miguel e compilação do relatório |
 
 ## Resultados para o relatório
-Execução de 05/11/2026 com `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(r.dia,len(r.paradas),len(r.linhas),len(r.padroes),len(r.viagens),len(r.inconsistencias))'`: dia 04/11/2026; 9.659 paradas (V), 303 linhas, 698 padrões, 24.503 viagens e 0 inconsistências reportadas para o serviço selecionado. E não se aplica ao modelo de dados. Fonte: [GTFS convencional da PBH](https://ckan.pbh.gov.br/dataset/77764a7e-63fc-4111-ace3-fb7d3037953a/resource/f0fa78dc-74c3-49fa-8971-c310a76a07fa/download/gtfsfiles.zip); arquivo baixado em 05/11/2026, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2` (metadados em `dados/brutos/bhtrans.json`, fora do Git).
+Execução de 05/11/2026 com `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(r.dia,len(r.paradas),len(r.linhas),len(r.padroes),len(r.viagens_por_id),len(r.inconsistencias))'`: dia 04/11/2026; 9.659 paradas (V), 303 linhas, 698 padrões, 24.503 viagens e 0 inconsistências reportadas para o serviço selecionado. E não se aplica ao modelo de dados. Fonte: [GTFS convencional da PBH](https://ckan.pbh.gov.br/dataset/77764a7e-63fc-4111-ace3-fb7d3037953a/resource/f0fa78dc-74c3-49fa-8971-c310a76a07fa/download/gtfsfiles.zip); arquivo baixado em 05/11/2026, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2` (metadados em `dados/brutos/bhtrans.json`, fora do Git).
 
 Comando de medição: `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; from transporte.util.medicao import medir; print(medir(ler,"dados/brutos/bhtrans.zip",repeticoes=3))'`. Média observada: 7,753 s; desvio amostral: 0,114 s; 3 repetições. Máquina: MacBook Air, Apple M4, 16 GB, arm64, Python 3.14.6.
 
-Revisão do recorte real: `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); ids=set(list(r.linhas)[:5]); c=r.recortar((-19.95,-43.98,-19.88,-43.88),ids); print(len(c.paradas),len(c.linhas),len(c.padroes),len(c.viagens))'` produziu 267 paradas, 5 linhas, 10 padrões e 507 viagens. As referências de padrões para linhas/paradas e de viagens para padrões foram verificadas como válidas na mesma execução.
+Revisão do recorte real: `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); ids=set(list(r.linhas)[:5]); c=r.recortar((-19.95,-43.98,-19.88,-43.88),ids); print(len(c.paradas),len(c.linhas),len(c.padroes),len(c.viagens_por_id))'` produziu 267 paradas, 5 linhas, 10 padrões e 507 viagens. As referências de padrões para linhas/paradas e de viagens para padrões foram verificadas como válidas na mesma execução.
+
+Integração local com o código do PR #38, sem alterar sua branch: após carregar o mesmo recorte, `construir_gp(c)` produziu V=267 e E=1.458; `construir_ge(c,"pico_manha")` produziu V=559 e E=2.037. O comando usado foi `PYTHONPATH=/private/tmp/grafos-pr38-integration/src python3 -c 'from transporte.dados.leitor_gtfs import ler; from transporte.modelo.construtores import construir_gp, construir_ge; r=ler("dados/brutos/bhtrans.zip"); ids=set(list(r.linhas)[:5]); c=r.recortar((-19.95,-43.98,-19.88,-43.88),ids); gp=construir_gp(c); ge=construir_ge(c,"pico_manha"); print(gp.grafo.num_vertices(),gp.grafo.num_arestas(),ge.grafo.num_vertices(),ge.grafo.num_arestas())'`.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. Mostrar o problema: o GTFS tem linhas, paradas, viagens e calendários em CSVs separados; a ferramenta precisa reuni-los sem perder a identidade de cada viagem.
@@ -99,14 +101,15 @@ Revisão do recorte real: `PYTHONPATH=src python3 -c 'from transporte.dados.leit
 4. Explicar que `stop_times.txt` é percorrido em fluxo, o custo O(R + N log N), o resultado medido no feed real e a limitação de validar apenas o serviço do dia escolhido. Encerrar com a integração às visões de grafo, sem afirmar que já está pronta.
 
 ## Pendências
-- Miguel revisar o contrato da `Rede` com Henrique e integrar o modelo aos construtores G_P/G_E quando P0-MODELO estiver implementado.
-- A execução de `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(sum(len(p.paradas)!=len(set(p.paradas)) for p in r.padroes.values()))'` encontrou 387 padrões com `stop_id` repetido no feed real. O mapa de plataformas de P0-MODELO precisa de uma decisão sobre ocorrências repetidas; não alterar o arquivo da feature de Henrique nesta branch.
+- ~~Alinhar `Rede.viagens` ao contrato de P0-MODELO.~~ Ajustado ao protocolo `RedeConstrutores` do PR #38 e testado com os construtores desse PR em rede pequena e recorte real.
+- A execução de `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(sum(len(p.paradas)!=len(set(p.paradas)) for p in r.padroes.values()))'` encontrou 387 padrões com `stop_id` repetido no feed real. O PR #38 implementa a regra D11 para linhas circulares; falta o grupo confirmar a decisão e integrar esse PR.
 - Página da interface, hook, compilação e revisão do relatório, revisão por Miguel do guia e roteiro, e PR aprovado ainda necessários para o DoD.
 - Decisões de 05/11 registradas como rascunho no `docs/GUIA.md` aguardam revisão de Miguel.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Miguel.
-### Sessão 05/11/2026: contrato publicado, leitor e recorte implementados, rede de teste criada; GTFS convencional baixado e lido; pytest (214) e ruff verdes; tempos medidos no feed real. Aguardando revisão e integração.
+### Sessão 05/11/2026: contrato publicado, leitor e recorte implementados, rede de teste criada; GTFS convencional baixado e lido; pytest (214, ainda incluindo o rascunho de F-ESPERA) e ruff verdes; tempos medidos no feed real. Aguardando revisão e integração.
 ### Sessão 05/11/2026: escopo da branch corrigido para conter apenas P0-DADOS; rascunho de F-ESPERA guardado fora do repositório. Diagrama UML gerado, guia e seção de dados do relatório preenchidos, roteiro específico rascunhado. Revisão do dono, LaTeX, interface e PR pendentes.
 ### Revisão 05/11/2026: contrato de G_P/G_E conferido sem alterar P0-MODELO; recorte por linha corrigido para remover paradas não atendidas e preservar inconsistências. Feed real revelou padrões com parada repetida, pendência de integração para Henrique. Testes e lint refeitos antes do commit.
+### Revisão 05/11/2026: PRs #38 a #41 examinados. `Rede.viagens` alinhada ao protocolo de P0-MODELO, com `viagens_por_id` mantendo identidade GTFS; integração local com G_P/G_E do PR #38 passou na rede de teste e no recorte real. D11 trata a parada repetida na branch de Henrique, ainda aberta. Na branch só de P0-DADOS, 211 testes e ruff verdes.
