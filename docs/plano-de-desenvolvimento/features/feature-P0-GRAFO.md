@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
 - **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2 concluída: `HeapMin` (29 testes), `Grafo` (57) e `bfs`, `dijkstra`, `caminho`, `caminho_arestas` (92), 178 testes verdes; os três módulos estão com `estado: implementado`. Os quatro critérios de aceite estão atendidos.
-- **Próximo passo:** subir a branch e abrir o PR para o Henrique revisar (`Closes #2`); confirmar as decisões G1 a G6. Depois, etapa 5 (tempo medido com `medir` quando G_P real existir) e etapa 6 (Como funciona e por quê, perguntas de verificação, diagrama de sequência do Dijkstra).
+- **Próximo passo:** branch subida em 05/11; abrir o PR pelo site do GitHub (o `gh` não está instalado) com `Closes #2`, pedir a revisão do Henrique e confirmar com ele as decisões G1 a G6. Enquanto o PR é revisado, começar a F-MET (graus e Brandes sobre o `Grafo` genérico não dependem do G_P). Itens do DoD que ficam para depois do merge: etapa 5 (tempo medido com `medir` quando o G_P real existir) e etapa 6 (Como funciona e por quê, perguntas de verificação, diagrama de sequência do Dijkstra, seção do relatório e roteiro do vídeo).
 - **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo,test_buscas}.py`, este arquivo.
 - **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (178 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
@@ -110,3 +110,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 05/11/2026: ambiente local com uv; etapa 2a, HeapMin implementado com 29 testes verdes.
 ### Sessão 05/11/2026: etapa 2b, Grafo implementado com 57 testes verdes (86 no total).
 ### Sessão 05/11/2026: etapa 2c, bfs, dijkstra, caminho e caminho_arestas implementados com 92 testes (178 no total); critérios de aceite RF-GRF-01, 02, 03 e 08 atendidos.
+### PR 05/11/2026: branch `feat/P0-GRAFO-nucleo` subida para revisão do Henrique (Closes #2).
