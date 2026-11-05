@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** publicar a assinatura da função de trajeto mais rápido (04/11) e escrever o primeiro teste com gabarito à mão sobre G_E da rede de teste.
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de P0-MODELO (G_E), P0-UI; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
+- **Última sessão:** 05/11, Henrique, branch `feat/F-ROTA-trajeto`, criada em cima de `feat/P0-MODELO-construtores` (PR #38), porque usa `construir_ge` e `baldeacoes`.
+- **Onde parou:** etapas 1 e 2 concluídas: `src/transporte/algoritmos/trajeto.py` com `Trecho`, `Trajeto` e `trajeto_mais_rapido` (`estado: implementado`), 26 testes verdes (gabarito à mão, bordas, falhas e comparação com o NetworkX em 15 redes aleatórias). RF-ROT-01 atendido sobre G_E montado à mão.
+- **Próximo passo:** abrir o PR desta branch depois do merge do #38 (ou apontado para ele); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Depois: etapa 4 (página de trajetos com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa; etapas 3 e 5 quando a `Rede` existir (P0-DADOS), fixando o X do RNF-05 com a primeira medição.
+- **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src python -m pytest tests/algoritmos/test_trajeto.py` (26 testes em 05/11); `ruff check src tests`.
+- **Bloqueios:** RF-ROT-02 depende do P0-UI (Arthur); dados reais e tempo medido dependem do P0-DADOS (Miguel, não iniciado); o merge depende do PR #38.
 
 ## Objetivo
 Trajeto mais rápido. Fecha:
@@ -25,17 +25,23 @@ Trajeto mais rápido. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
+| Núcleo (algoritmo) | concluído | 05/11: `trajeto_mais_rapido` (Dijkstra do núcleo em G_E) e reconstrução em trechos |
+| Modelo e dados | em andamento | 05/11: roda sobre o G_E do `construir_ge` (PR #38); falta a `Rede` real |
+| Interface | não iniciado | depende do contrato de página e do mapa (P0-UI) |
+| Testes | concluído | 05/11: 26 verdes. Gabarito à mão (linha direta, baldeação, troca que vence a direta, espera longa que inverte a escolha, só a pé, caminhadas encadeadas, a pé nas pontas), bordas (origem = destino, inalcançável, parada inexistente, falha e reativação) e NetworkX em 15 redes aleatórias (300 consultas: 255 com trajeto, 116 com baldeação, 195 com caminhada). Mutação à mão: agrupar a pé, agrupar ônibus e o tempo total derrubam testes |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
 | Vídeo | não iniciado | |
 
 ## Especificação
-Assinaturas públicas: a definir na etapa 1 do plano de implementação e publicadas com `estado: planejado` antes de qualquer consumidor depender delas.
+`src/transporte/algoritmos/trajeto.py`:
+
+| Símbolo | Conteúdo |
+|---|---|
+| `Trecho(tipo, paradas, tempo_s, padrao)` | Parte do trajeto com um só modo. `tipo` é `A_PE` ("caminhada"), `ESPERA` ("espera") ou `ONIBUS` ("viagem"); `paradas` da primeira à última (só uma na espera); `padrao` é None a pé |
+| `Trajeto(origem, destino, tempo_total_s, baldeacoes, trechos)` | Resultado; `tempo_por_tipo()` soma o tempo de cada tipo (serve à F-ESPERA, RF-ESP-03) |
+| `trajeto_mais_rapido(ge, origem, destino) -> Trajeto \| None` | Dijkstra do núcleo em G_E, com parada no destino; None se inalcançável; KeyError para parada inexistente. Tempo O((V + E) log V) + O(V + k) |
 
 Algoritmos previstos (docs/fontes/modelagem.md §3.5):
 - Dijkstra · visão G_E · O((V + E) log V) · Pesos não negativos
@@ -47,7 +53,7 @@ _A escrever a cada etapa concluída do plano de implementação, para um colega 
 _3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
 ## Critérios de aceite
-- [ ] RF-ROT-01: Calcular o trajeto mais rápido entre duas paradas, somando caminhada, espera, viagem e baldeações
+- [x] RF-ROT-01: Calcular o trajeto mais rápido entre duas paradas, somando caminhada, espera, viagem e baldeações (05/11, sobre G_E montado à mão; falta rodar com a rede real)
 - [ ] RF-ROT-02: Mostrar o trajeto no mapa, por trecho (a pé, espera, linha usada), com os tempos
 
 ## Definition of Done
@@ -69,10 +75,10 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
+| 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 (publicada já implementada) |
+| 2 | Algoritmo com testes de corretude | concluída em 05/11 |
+| 3 | Integração com a visão do grafo e com os dados reais | G_E pronto (PR #38); falta a `Rede` (P0-DADOS) |
+| 4 | Página na interface | bloqueada: contrato de página e mapa (P0-UI) |
 | 5 | Tempo medido na rede real e complexidade justificada | |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
 
@@ -84,8 +90,19 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- Nenhuma.
+- **F-BALD-2 (Rafael):** a função de trajeto mais rápido era para 08/11. Avisar que o contrato está em `algoritmos/trajeto.py` (no PR da F-ROTA): `trajeto_mais_rapido(ge, origem, destino)` dá `tempo_total_s` e `baldeacoes` para comparar com o trajeto de menos baldeações.
+- **F-ESPERA (Miguel):** o RF-ESP-03 decompõe o tempo em caminhada, espera e viagem; `Trajeto.tempo_por_tipo()` já faz isso para o horário médio da faixa.
+- **RNF-05:** o X (segundos por consulta) devia ter sido fixado em 03/11 depois da primeira medição, que ainda não existe (sem `Rede`). Fixar na etapa 5.
+- **PR empilhado:** esta branch parte da do PR #38; abrir o PR depois do merge dele, ou apontado para `feat/P0-MODELO-construtores`.
+
+### ~~Decisões a tomar~~ Decididas em 05/11/2026: R1 a R3 aceitas pela recomendação
+
+- **R1. Onde mora o trajeto.** (a) `src/transporte/algoritmos/trajeto.py`, função sobre `VisaoGE`; (b) método de `VisaoGE`. **Recomendo (a):** segue o padrão da F-MET (`algoritmos/centralidade.py`), deixa a visão só com estrutura, e F-ROTA-2 (A*) e F-ROTA-OPC (Yen) entram no mesmo módulo.
+- **R2. Formato do resultado.** Trechos agrupados (caminhadas seguidas viram um trecho; viagens seguidas do mesmo padrão viram um trecho de ônibus; embarque vira "espera"; desembarque, com peso 0, não aparece). Alternativa: devolver as arestas cruas. **Recomendo os trechos:** é o que o RF-ROT-02 pede ("por trecho: a pé, espera, linha usada") e o que a página desenha; as arestas continuam disponíveis por `caminho_arestas` para quem precisar.
+- **R3. Inalcançável devolve None** em vez de levantar erro. **Recomendo:** é um resultado normal numa rede com falhas (F-RES) ou recortada, e a página só precisa mostrar "sem trajeto".
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Henrique.
+### Sessão 05/11/2026: etapas 1 e 2 na branch `feat/F-ROTA-trajeto` (sobre o PR #38): `trajeto_mais_rapido`, `Trecho` e `Trajeto`; 26 testes, 269 na suíte; decisões R1 a R3 propostas.
+### Decisão 05/11/2026: R1 a R3 aceitas pela recomendação.
