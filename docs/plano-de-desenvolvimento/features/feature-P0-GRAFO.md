@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** publicar as assinaturas de `src/transporte/grafo/heap.py`, `grafo.py` e `buscas.py` com `estado: planejado` (`docs/fontes/plano-de-projeto.md` §9).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** nenhum.
+- **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
+- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2 concluída: `HeapMin` (29 testes), `Grafo` (57) e `bfs`, `dijkstra`, `caminho`, `caminho_arestas` (92), 178 testes verdes; os três módulos estão com `estado: implementado`. Os quatro critérios de aceite estão atendidos.
+- **Próximo passo:** branch subida em 05/11; abrir o PR pelo site do GitHub (o `gh` não está instalado) com `Closes #2`, pedir a revisão do Henrique e confirmar com ele as decisões G1 a G6. Enquanto o PR é revisado, começar a F-MET (graus e Brandes sobre o `Grafo` genérico não dependem do G_P). Itens do DoD que ficam para depois do merge: etapa 5 (tempo medido com `medir` quando o G_P real existir) e etapa 6 (Como funciona e por quê, perguntas de verificação, diagrama de sequência do Dijkstra, seção do relatório e roteiro do vídeo).
+- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo,test_buscas}.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (178 testes em 05/11); `ruff check src tests`.
+- **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
 
 ## Objetivo
 Núcleo de grafos, heap e buscas. Fecha:
@@ -27,10 +27,10 @@ Núcleo de grafos, heap e buscas. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
+| Núcleo (algoritmo) | concluído | 05/11: HeapMin, Grafo, bfs, dijkstra, caminho e caminho_arestas implementados; aguardando PR |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
-| Testes | não iniciado | |
+| Testes | concluído | 05/11: 178 verdes. HeapMin (29: gabarito à mão e comparação com sorted); Grafo (57) e buscas (92): gabarito à mão, casos de borda e comparação com o NetworkX em grafos aleatórios com falhas |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
@@ -51,17 +51,17 @@ _A escrever a cada etapa concluída do plano de implementação, para um colega 
 _3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
 ## Critérios de aceite
-- [ ] RF-GRF-01: Estrutura própria de grafo dirigido e ponderado, com lista de adjacência
-- [ ] RF-GRF-02: BFS e Dijkstra genéricos, com reconstrução de caminho
-- [ ] RF-GRF-03: Desativar e reativar vértices e arestas sem reconstruir o grafo
-- [ ] RF-GRF-08: Fila de prioridade própria (heap binário de mínimo) usada pelos algoritmos de caminho mínimo
+- [x] RF-GRF-01: Estrutura própria de grafo dirigido e ponderado, com lista de adjacência (`grafo.py`; `tests/grafo/test_grafo.py`)
+- [x] RF-GRF-02: BFS e Dijkstra genéricos, com reconstrução de caminho (`buscas.py`; `tests/grafo/test_buscas.py`, comparação com o NetworkX)
+- [x] RF-GRF-03: Desativar e reativar vértices e arestas sem reconstruir o grafo (flags O(1) em `grafo.py`; testes de desativação em `test_grafo.py` e `test_buscas.py`)
+- [x] RF-GRF-08: Fila de prioridade própria (heap binário de mínimo) usada pelos algoritmos de caminho mínimo (`heap.py`, usado por `dijkstra`; `tests/grafo/test_heap.py`)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
+- [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (178 testes em 05/11)
 - [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [ ] Página ou bloco na interface funcionando com o dataset real
@@ -75,8 +75,8 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
+| 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 |
+| 2 | Algoritmo com testes de corretude | concluída em 05/11 (2a HeapMin, 2b Grafo, 2c buscas) |
 | 3 | Integração com a visão do grafo e com os dados reais | |
 | 4 | Página na interface | |
 | 5 | Tempo medido na rede real e complexidade justificada | |
@@ -90,8 +90,24 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- Nenhuma.
+- **Avisar o grupo dos acréscimos ao contrato do §9 (G1 a G3).** São só acréscimos: nenhuma assinatura do §9 mudou. Como o agente não altera `docs/fontes/`, pedir ao grupo que o §9 do `plano-de-projeto.md` passe a apontar para os arquivos em `src/transporte/grafo/` como contrato vigente.
+- **Confirmar com o Henrique (P0-MODELO)** o `Resultado` com `pred_aresta` e a função `caminho_arestas`, que é a entrada de `VisaoGE.baldeacoes`; ele ajusta `Resultado` no `docs/diagramas/classes.puml` (pendência dele).
+- ~~**Ambiente local**~~ **resolvido em 05/11/2026:** Python 3.12.14 com pytest, networkx e ruff em `.venv`, criado com `uv`. O `requirements.txt`, a configuração do pytest e o hook continuam com a P0-REPO (Caio).
+
+### Decisões a tomar (propostas em 05/11/2026; o dono confirma ou troca)
+
+- **G1. Resultado das buscas.** (a) `Resultado(origem, dist, pred, pred_aresta)` com `INF` e `SEM_PRED = -1`; (b) só `dist` e `pred`, como no diagrama. **Recomendo (a):** `pred` sozinho não distingue arestas paralelas nem diz o tipo do trecho, e `VisaoGE.baldeacoes` (P0-MODELO) recebe ids de aresta. Custa uma lista a mais, O(V).
+- **G2. Acessores a mais no Grafo.** `num_vertices`, `num_arestas`, `rotulo`, `aresta(a) -> (origem, destino, peso, tipo)`, `vertice_ativo` e `aresta_ativa`. **Recomendo aceitar:** os consumidores precisam percorrer os vértices (Brandes, Tarjan, eficiência) e ler o tipo das arestas (baldeações), e sem isso cada um acessaria atributos internos.
+- **G3. Reativação individual.** Acrescentar `reativar_vertice` e `reativar_aresta`, além do `reativar_tudo` do §9. **Recomendo aceitar:** o RF-GRF-03 pede "desativar e reativar vértices e arestas", e o ranking de criticidade (F-RES-2) desliga um candidato por vez; reativar tudo seria O(V + E) a cada candidato contra O(1).
+- **G4. Pesos validados na inserção.** `adicionar_aresta` recusa peso negativo, infinito ou NaN (ValueError). **Recomendo aceitar:** todo peso do projeto é tempo em segundos, e o Dijkstra só é correto com pesos não negativos; validar na inserção custa O(1) e evita um erro silencioso dentro da busca.
+- **G5. Semântica da desativação.** Vértice desativado some das buscas junto com as arestas que tocam nele, sem alterá-las; origem desativada não alcança nada, nem a si mesma. **Recomendo aceitar:** é o que "a parada fechou" significa para a F-RES, e reativar devolve o grafo exatamente ao estado anterior.
+- **G6. Empates no heap.** Desempate pelo menor item. **Recomendo aceitar:** torna a ordem de extração e os caminhos de mesmo custo determinísticos, o que os testes com gabarito exigem.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Thiago.
+### Sessão 05/11/2026: branch `feat/P0-GRAFO-nucleo`; contrato de `heap.py`, `grafo.py` e `buscas.py` publicado com estado: planejado (§9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas.
+### Sessão 05/11/2026: ambiente local com uv; etapa 2a, HeapMin implementado com 29 testes verdes.
+### Sessão 05/11/2026: etapa 2b, Grafo implementado com 57 testes verdes (86 no total).
+### Sessão 05/11/2026: etapa 2c, bfs, dijkstra, caminho e caminho_arestas implementados com 92 testes (178 no total); critérios de aceite RF-GRF-01, 02, 03 e 08 atendidos.
+### PR 05/11/2026: branch `feat/P0-GRAFO-nucleo` subida para revisão do Henrique (Closes #2).
