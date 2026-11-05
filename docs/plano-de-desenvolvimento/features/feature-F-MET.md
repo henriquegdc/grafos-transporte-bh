@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `feat/F-MET-centralidades`.
 - **Onde parou:** etapa 1 concluída (contrato); etapa 2 concluída: `graus`, `distribuicao_graus`, `intermediacao` (Brandes com e sem pesos) e `ranking` implementados (`estado: implementado`), com 190 testes verdes (gabarito à mão e comparação com o NetworkX). Decisões M1 a M4 aceitas pelo Thiago em 05/11.
-- **Próximo passo:** subir a branch e abrir o PR (Refs #10, porque RF-MET-03 ainda depende da interface); pedir ao Henrique o piso de 1 s no G_P (pendência M2). Depois: etapa 3 (rodar sobre o G_P da rede de teste quando `construir_gp` existir), etapa 4 (página com ranking e mapa de calor, quando o P0-UI publicar o contrato de página e o mapa), etapa 5 (tempo com `medir` na rede real) e etapa 6.
+- **Próximo passo:** aguardar a revisão do Henrique no PR #37 (Refs #10; o pedido do piso de 1 s no G_P, pendência M2, está na descrição do PR). Depois: etapa 3 (rodar sobre o G_P da rede de teste quando `construir_gp` existir), etapa 4 (página com ranking e mapa de calor, quando o P0-UI publicar o contrato de página e o mapa), etapa 5 (tempo com `medir` na rede real) e etapa 6.
 - **Arquivos tocados:** `src/transporte/algoritmos/centralidade.py`, `tests/algoritmos/test_centralidade.py`, este arquivo.
 - **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/algoritmos` (190 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** o algoritmo não depende de ninguém, porque roda sobre o `Grafo` genérico. A etapa 3 (G_P real) depende de P0-MODELO e P0-DADOS; a etapa 4 (página e mapa de calor) depende do contrato de página e do componente de mapa de P0-UI.
@@ -117,3 +117,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 05/11/2026: branch `feat/F-MET-centralidades`; contrato de `centralidade.py` publicado com estado: planejado; decisões M1 a M4 propostas.
 ### Decisão 05/11/2026: M1 a M4 aceitas pela recomendação.
 ### Sessão 05/11/2026: etapa 2, graus, distribuição, Brandes e ranking implementados com 190 testes verdes; RF-MET-01 e RF-MET-02 atendidos.
+### PR 05/11/2026: #37 aberto para revisão do Henrique (Refs #10).
