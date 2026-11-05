@@ -154,6 +154,28 @@ def test_destino_inexistente_levanta_index_error(g, destino):
         dijkstra(g, 0, destino)
 
 
+@pytest.mark.parametrize("reconstruir", [caminho, caminho_arestas])
+@pytest.mark.parametrize("destino", [6, -1, -6, 100])
+def test_reconstrucao_com_destino_inexistente_levanta_index_error(
+    g, reconstruir, destino
+):
+    r = dijkstra(g, 0)
+    with pytest.raises(IndexError):
+        reconstruir(r, destino)
+
+
+def test_destino_negativo_nao_devolve_caminho_errado():
+    # Caso apontado na revisão do PR #35: num grafo 0 -> 1 -> 2, caminho(r, -1) devolvia
+    # [0, 1, -1], o caminho até o vértice 2 com o id trocado, sem erro.
+    g = novo_grafo(3, [(0, 1, 1), (1, 2, 1)])
+    r = dijkstra(g, 0)
+    with pytest.raises(IndexError):
+        caminho(r, -1)
+    with pytest.raises(IndexError):
+        caminho_arestas(r, -1)
+    assert caminho(r, 2) == [0, 1, 2]
+
+
 def test_grafo_com_um_vertice():
     g = novo_grafo(1, [])
     assert dijkstra(g, 0).dist == [0.0]
