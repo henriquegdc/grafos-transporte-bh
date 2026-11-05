@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 03/11, Rafael, branch `feat/P0-AVAL-medicao-relatorio`.
-- **Onde parou:** `medir` implementado e testado (23 testes verdes, ruff limpo); relatório SBC compilando com 3 páginas, uma seção por arquivo; guia, decisões e diagrama `.puml` escritos. Falta gerar o PNG do diagrama, commitar, abrir o PR e conseguir 1 aprovação.
-- **Próximo passo:** gerar `docs/diagramas/atividade-medir.png` com o mesmo comando do Henrique (`java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/atividade-medir.puml`); revisar e commitar; abrir o PR com `Closes #6`; avisar o grupo que `medir` está pronto e onde cada um escreve no relatório (`relatorio/README.md`). Depois, começar a F-BALD.
-- **Arquivos tocados:** `src/transporte/util/medicao.py`, `tests/util/test_medicao.py`, `relatorio/` (todo), `docs/diagramas/atividade-medir.puml`, `docs/GUIA.md` (§7, §8 e §10), este arquivo.
+- **Última sessão:** 05/11, Rafael, branch `feat/P0-AVAL-medicao-relatorio`.
+- **Onde parou:** PR aberto e revisado. Código aprovado na revisão (24 testes verdes, ruff limpo); os pedidos do revisor foram atendidos: `plantuml-1.2026.9.jar` removido do Git e `*.jar` no `.gitignore`, `relatorio/figuras/.gitkeep` criado, este arquivo alinhado aos commits (o `atividade-medir.png` já está commitado desde `dc3a656`) e DoD corrigido (hook e tempo na rede real como "não aplicável", com o motivo). Falta a descrição do PR preenchida (com `Closes #6`) e o título em Conventional Commits.
+- **Próximo passo:** commitar e subir as correções; trocar o título do PR para `feat(P0-AVAL): medir e estrutura do relatório SBC` e preencher a descrição com `Closes #6`; pedir nova revisão. O merge será por squash, para o jar não entrar no histórico da `main`. Depois do merge: avisar o grupo que `medir` está pronto, que o contrato ganhou `Medicao.formatar()` e onde cada um escreve no relatório (`relatorio/README.md`); começar a F-BALD.
+- **Arquivos tocados:** `src/transporte/util/medicao.py`, `tests/util/test_medicao.py`, `relatorio/` (todo), `docs/diagramas/atividade-medir.puml` e `.png`, `docs/GUIA.md` (§7, §8 e §10), `.gitignore`, este arquivo.
 - **Como testar:** `PYTHONPATH=src pytest tests/util` (no PowerShell: `$env:PYTHONPATH="src"; pytest tests/util`); `ruff check src tests`; relatório: `cd relatorio && latexmk` gera `relatorio/build/main.pdf`.
 - **Bloqueios:** nenhum. O `pytest` ainda precisa de `PYTHONPATH=src` até o P0-REPO publicar a configuração do projeto (ver Pendências).
 
@@ -90,12 +90,12 @@ Complexidade de `medir`: tempo O(N · T) mais O(N) para a média e o desvio, em 
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde. O hook do P0-REPO ainda não existe; `ruff check src tests` está limpo e `pytest` está verde em 03/11
+- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde. Hook: não aplicável até o P0-REPO (o hook ainda não existe). No lugar dele, `ruff check src tests` está limpo e `pytest` está verde (24 testes, 03/11, confirmado pelo revisor no PR)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com o NetworkX: não aplicável (o NetworkX não tem medição de tempo); a comparação equivalente é contra `statistics.mean` e `statistics.stdev`
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [x] Tempo medido com `medir`: não há algoritmo de grafo, então foi medido o custo da própria medição, com a máquina (ver Resultados)
+- [x] Tempo medido na rede real: não aplicável. A P0-AVAL não tem algoritmo de grafo para rodar na rede real; no lugar, foi medido o custo da própria medição e a resolução do relógio, com a máquina (ver Resultados)
 - [x] Página ou bloco na interface: não aplicável (a página "Desempenho" é da F-AVAL-OPC, RF-AVA-05)
-- [ ] Diagrama UML da feature (atividade) em `docs/diagramas/`: `atividade-medir.puml` escrito; falta gerar o `.png`
+- [x] Diagrama UML da feature (atividade) em `docs/diagramas/`: `atividade-medir.puml` e `atividade-medir.png` (commit `dc3a656`)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório: não há `relatorio/secoes/P0-AVAL.tex` porque a P0-AVAL é a própria estrutura do relatório; a metodologia de medição está em `relatorio/secoes/avaliacao.tex` (§8.1)
@@ -110,7 +110,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | não aplicável: a medição recebe qualquer função |
 | 4 | Página na interface | não aplicável: a página é da F-AVAL-OPC |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 03/11 (custo da medição; complexidade na Especificação) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 03/11, exceto o PNG do diagrama |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 03/11 (PNG do diagrama commitado em `dc3a656`) |
 | 7 | Relatório SBC: template, `main.tex`, uma seção por arquivo, compilando | concluída em 03/11 (3 páginas, sem erro nem aviso) |
 
 ## Resultados para o relatório
@@ -144,11 +144,13 @@ Trecho de cerca de 30 s dentro da parte de avaliação de desempenho do vídeo d
 - **Relatório:** nomes completos, curso, instituição e e-mails dos seis em `relatorio/main.tex` (marcados com `\pendente`). Preciso dos dados com o grupo.
 - **Relatório:** seções da Etapa 1 em v1 hoje (03/11), a cargo do Henrique, nos arquivos já criados em `relatorio/secoes/`.
 - **Relatório:** a referência do feed GTFS da BHTrans (URL e data) entra em `relatorio/referencias.bib` pelo Miguel.
-- **Contrato:** `Medicao.formatar()` foi acrescentado ao contrato do §9 (sem mudar a assinatura de `medir`). Avisar o grupo; não altera `docs/fontes/`.
-- **Diagrama:** gerar `docs/diagramas/atividade-medir.png` a partir do `.puml`.
+- **Contrato:** `Medicao.formatar()` foi acrescentado ao contrato do §9 (sem mudar a assinatura de `medir`). Avisar o grupo; não altera `docs/fontes/`. Lembrado também pelo revisor do PR.
+- **PR:** título em Conventional Commits (`feat(P0-AVAL): medir e estrutura do relatório SBC`, vira a mensagem do squash) e descrição preenchida com `Closes #6`.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Rafael.
 ### Sessão 03/11/2026: medição e relatório.
-`medir` e `Medicao` implementados com 23 testes (relógio falso para o gabarito) e publicados direto como `estado: implementado`, com atraso de dois dias sobre o prazo de 01/11. Acréscimo ao contrato: `Medicao.formatar()`. Relatório SBC montado com o template oficial (zip da SBC de 07/2024), uma seção por arquivo e seções de feature incluídas sozinhas; compila com `latexmk` em 3 páginas. Seções 8.1 (metodologia de medição) e 10 (responsabilidades) em v1. Guia §7 e §10 escritos e 4 decisões registradas em §8. Diagrama de atividade em `.puml`; PNG pendente.
+`medir` e `Medicao` implementados com 23 testes (relógio falso para o gabarito) e publicados direto como `estado: implementado`, com atraso de dois dias sobre o prazo de 01/11. Acréscimo ao contrato: `Medicao.formatar()`. Relatório SBC montado com o template oficial (zip da SBC de 07/2024), uma seção por arquivo e seções de feature incluídas sozinhas; compila com `latexmk` em 3 páginas. Seções 8.1 (metodologia de medição) e 10 (responsabilidades) em v1. Guia §7 e §10 escritos e 4 decisões registradas em §8. Diagrama de atividade em `.puml`; PNG gerado e commitado em `dc3a656`.
+### Sessão 05/11/2026: correções pedidas na revisão do PR.
+O revisor aprovou o código (24 testes verdes, ruff limpo) e pediu: tirar do Git o `plantuml-1.2026.9.jar` (30 MB, ferramenta, não projeto), alinhar este arquivo aos commits (PNG do diagrama já commitado), não marcar no DoD o que não foi feito (hook e tempo na rede real), criar `relatorio/figuras/` no Git e preencher a descrição do PR com `Closes #6`. Feito: jar removido do índice e `*.jar` no `.gitignore` (o arquivo continua local para gerar diagramas), `relatorio/figuras/.gitkeep`, Retomada reescrita, DoD e pendências corrigidos. Integração combinada por squash merge, para o jar não ficar no histórico da `main`.
