@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 05/11, Henrique, branch `feat/F-ROTA-trajeto`, criada em cima de `feat/P0-MODELO-construtores` (PR #38), porque usa `construir_ge` e `baldeacoes`.
 - **Onde parou:** etapas 1 e 2 concluídas: `src/transporte/algoritmos/trajeto.py` com `Trecho`, `Trajeto` e `trajeto_mais_rapido` (`estado: implementado`), 26 testes verdes (gabarito à mão, bordas, falhas e comparação com o NetworkX em 15 redes aleatórias). RF-ROT-01 atendido sobre G_E montado à mão.
-- **Próximo passo:** abrir o PR desta branch depois do merge do #38 (ou apontado para ele); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Depois: etapa 4 (página de trajetos com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa; etapas 3 e 5 quando a `Rede` existir (P0-DADOS), fixando o X do RNF-05 com a primeira medição.
+- **Próximo passo:** conseguir 1 aprovação no PR #39 (empilhado sobre o #38; a base vira `main` quando o #38 for integrado); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Depois: etapa 4 (página de trajetos com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa; etapas 3 e 5 quando a `Rede` existir (P0-DADOS), fixando o X do RNF-05 com a primeira medição.
 - **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests/algoritmos/test_trajeto.py` (26 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** RF-ROT-02 depende do P0-UI (Arthur); dados reais e tempo medido dependem do P0-DADOS (Miguel, não iniciado); o merge depende do PR #38.
@@ -93,7 +93,7 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 - **F-BALD-2 (Rafael):** a função de trajeto mais rápido era para 08/11. Avisar que o contrato está em `algoritmos/trajeto.py` (no PR da F-ROTA): `trajeto_mais_rapido(ge, origem, destino)` dá `tempo_total_s` e `baldeacoes` para comparar com o trajeto de menos baldeações.
 - **F-ESPERA (Miguel):** o RF-ESP-03 decompõe o tempo em caminhada, espera e viagem; `Trajeto.tempo_por_tipo()` já faz isso para o horário médio da faixa.
 - **RNF-05:** o X (segundos por consulta) devia ter sido fixado em 03/11 depois da primeira medição, que ainda não existe (sem `Rede`). Fixar na etapa 5.
-- **PR empilhado:** esta branch parte da do PR #38; abrir o PR depois do merge dele, ou apontado para `feat/P0-MODELO-construtores`.
+- **PR empilhado:** o #39 tem base `feat/P0-MODELO-construtores`; integrar o #38 primeiro.
 
 ### ~~Decisões a tomar~~ Decididas em 05/11/2026: R1 a R3 aceitas pela recomendação
 
@@ -106,3 +106,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Dono 29/10/2026: feature atribuída a Henrique.
 ### Sessão 05/11/2026: etapas 1 e 2 na branch `feat/F-ROTA-trajeto` (sobre o PR #38): `trajeto_mais_rapido`, `Trecho` e `Trajeto`; 26 testes, 269 na suíte; decisões R1 a R3 propostas.
 ### Decisão 05/11/2026: R1 a R3 aceitas pela recomendação.
+### PR 05/11/2026: #39 aberto, empilhado sobre o #38.
