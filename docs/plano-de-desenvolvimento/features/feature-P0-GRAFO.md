@@ -10,10 +10,10 @@
 
 ## Retomada
 - **Última sessão:** 05/11, Thiago, branch `feat/P0-GRAFO-nucleo`.
-- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2a concluída: `HeapMin` implementado (`estado: implementado`) com 29 testes verdes.
-- **Próximo passo:** etapa 2b, implementar `Grafo` (construção, consulta, desativação e `reverso`) com testes; depois 2c, `bfs`, `dijkstra`, `caminho` e `caminho_arestas`, com gabarito à mão e comparação com o NetworkX.
-- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/test_heap.py`, este arquivo.
-- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (29 testes em 05/11); `ruff check src tests`.
+- **Onde parou:** etapa 1 concluída (contrato de `heap.py`, `grafo.py` e `buscas.py`); etapa 2a concluída: `HeapMin` implementado com 29 testes; etapa 2b concluída: `Grafo` implementado com 57 testes (86 no total, verdes). Os dois estão com `estado: implementado`; `buscas.py` segue como contrato.
+- **Próximo passo:** etapa 2c, implementar `bfs`, `dijkstra`, `caminho` e `caminho_arestas` com gabarito à mão e comparação com o NetworkX; depois subir a branch e abrir o PR para o Henrique revisar.
+- **Arquivos tocados:** `src/transporte/grafo/{heap,grafo,buscas}.py`, `tests/grafo/{test_heap,test_grafo}.py`, este arquivo.
+- **Como testar:** `PYTHONPATH=src .venv/Scripts/python -m pytest tests/grafo` (86 testes em 05/11); `ruff check src tests`.
 - **Bloqueios:** nenhum. Ambiente local criado em 05/11 com `uv` (Python 3.12.14, pytest, networkx, ruff em `.venv`); o `PYTHONPATH=src` é necessário até a P0-REPO publicar a configuração do pytest.
 
 ## Objetivo
@@ -27,10 +27,10 @@ Núcleo de grafos, heap e buscas. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | em andamento | 05/11: contrato publicado (estado: planejado); implementação pendente |
+| Núcleo (algoritmo) | em andamento | 05/11: HeapMin e Grafo implementados; buscas pendentes |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
-| Testes | em andamento | 05/11: 29 testes do HeapMin verdes (gabarito à mão e comparação com sorted); faltam Grafo e buscas |
+| Testes | em andamento | 05/11: 86 verdes. HeapMin (29: gabarito à mão e comparação com sorted); Grafo (57: gabarito à mão, casos de borda e comparação com o NetworkX); faltam as buscas |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | não iniciado | |
@@ -76,7 +76,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | Etapa | Escopo | Situação |
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 |
-| 2 | Algoritmo com testes de corretude | em andamento: 2a HeapMin concluída em 05/11; 2b Grafo e 2c buscas pendentes |
+| 2 | Algoritmo com testes de corretude | em andamento: 2a HeapMin e 2b Grafo concluídas em 05/11; 2c buscas pendente |
 | 3 | Integração com a visão do grafo e com os dados reais | |
 | 4 | Página na interface | |
 | 5 | Tempo medido na rede real e complexidade justificada | |
@@ -108,3 +108,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Dono 29/10/2026: feature atribuída a Thiago.
 ### Sessão 05/11/2026: branch `feat/P0-GRAFO-nucleo`; contrato de `heap.py`, `grafo.py` e `buscas.py` publicado com estado: planejado (§9 mais os acréscimos G1 a G3); decisões G1 a G6 propostas.
 ### Sessão 05/11/2026: ambiente local com uv; etapa 2a, HeapMin implementado com 29 testes verdes.
+### Sessão 05/11/2026: etapa 2b, Grafo implementado com 57 testes verdes (86 no total).
