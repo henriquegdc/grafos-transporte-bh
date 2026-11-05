@@ -1,0 +1,5 @@
+stop_id,stop_name,stop_lat,stop_lon
+A,Origem,-19.9000,-43.9000
+B,Meio,-19.9010,-43.9010
+C,Destino,-19.9020,-43.9000
+D,Desvio,-19.9000,-43.9020

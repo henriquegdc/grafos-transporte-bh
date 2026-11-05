@@ -1,0 +1,30 @@
+@startuml atividade-p0-dados
+' Fluxo de leitura e recorte de P0-DADOS.
+!pragma layout smetana
+title P0-DADOS · leitura e recorte do GTFS
+
+start
+:Receber pasta ou ZIP GTFS;
+if (arquivos obrigatórios presentes?) then (não)
+  :Informar erro de entrada;
+  stop
+endif
+:Ler calendário, paradas, linhas e viagens;
+:Selecionar quarta-feira ativa ou dia informado;
+:Aplicar calendar_dates.txt;
+:Percorrer stop_times.txt em fluxo;
+if (linha ou viagem inválida?) then (sim)
+  :Registrar inconsistência;
+  :Ignorar viagem inválida;
+endif
+:Agrupar viagens por linha e sequência exata de paradas;
+:Guardar horários por viagem e partidas por padrão/parada;
+:Expandir frequencies.txt quando presente;
+if (recorte solicitado?) then (sim)
+  :Filtrar linhas e paradas;
+  :Separar trechos desconectados do mesmo padrão;
+  :Reconstruir viagens e partidas do recorte;
+endif
+:Devolver Rede normalizada e inconsistências;
+stop
+@enduml
