@@ -259,8 +259,8 @@ def construir_ge(
         faixa: nome de uma faixa de params.faixas; define a espera nas arestas de embarque.
         params: parâmetros da modelagem; None usa os valores padrão.
         esperas: (id do padrão, nome da faixa) -> espera esperada no embarque, em segundos,
-            calculada pela F-ESPERA (RF-ESP-02: H/2 com intervalo regular, E[H²]/(2 E[H])
-            com intervalo irregular) e aplicada sem transformação. None, ou par ausente da
+            calculada pela F-ESPERA (RF-ESP-02: H/2 na versão essencial; E[H²]/(2 E[H])
+            para comparar o efeito de intervalos irregulares) e aplicada sem transformação. None, ou par ausente da
             tabela, usa params.espera_padrao_s.
     Saída: VisaoGE com o grafo, os mapas de paradas e plataformas e a faixa usada. Os
         vértices de parada vêm primeiro, na ordem de rede.paradas; depois as plataformas,
