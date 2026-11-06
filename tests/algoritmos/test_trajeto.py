@@ -48,7 +48,7 @@ class Rede:
     viagens: dict[str, list[list[int]]] = field(default_factory=dict)
 
 
-def ge(paradas, padroes, intervalos=None):
+def ge(paradas, padroes, esperas=None):
     """paradas: [(id, milésimos de grau ao norte)]; padroes: [(id, seq, tempos)], com
     tempos = durações entre paradas seguidas de uma viagem que parte às 07h."""
     r = Rede()
@@ -60,7 +60,7 @@ def ge(paradas, padroes, intervalos=None):
             horarios.append(horarios[-1] + d)
         r.padroes[pid] = Padrao(pid, tuple(seq))
         r.viagens[pid] = [horarios]
-    return construir_ge(r, "pico_manha", intervalos=intervalos)
+    return construir_ge(r, "pico_manha", esperas=esperas)
 
 
 # Paradas a 1112 m umas das outras (sem caminhada), salvo indicação.
@@ -100,11 +100,11 @@ def test_baldeacao_vence_linha_direta_lenta():
 
 
 def test_espera_longa_faz_preferir_a_linha_direta():
-    # Intervalos de 1 h nas linhas da troca: espera de 1800 s em cada uma.
+    # Espera de 1800 s (intervalo regular de 1 h) nas linhas da troca.
     # Direta: 300 + 2000 = 2300. Com troca: 1800 + 100 + 1800 + 100 = 3800.
     padroes = [("LENTA", "AC", [2000]), ("P2", "AB", [100]), ("P3", "BC", [100])]
-    intervalos = {("P2", "pico_manha"): 3600.0, ("P3", "pico_manha"): 3600.0}
-    t = trajeto_mais_rapido(ge(LONGE, padroes, intervalos), "A", "C")
+    esperas = {("P2", "pico_manha"): 1800.0, ("P3", "pico_manha"): 1800.0}
+    t = trajeto_mais_rapido(ge(LONGE, padroes, esperas), "A", "C")
     assert (t.tempo_total_s, t.baldeacoes) == (2300.0, 0)
     assert [tr.padrao for tr in t.trechos] == ["LENTA", "LENTA"]
 
@@ -194,8 +194,9 @@ def _rede_aleatoria(rnd):
     for k in range(12):
         seq = rnd.sample(nomes, rnd.randint(2, 8))
         padroes.append((f"L{k}", seq, [rnd.randint(1, 20) * 30 for _ in seq[1:]]))
-    intervalos = {(f"L{k}", "pico_manha"): rnd.randint(2, 30) * 60.0 for k in range(12)}
-    return ge(paradas, padroes, intervalos), nomes
+    # Esperas de 1 a 15 min (metade de intervalos de 2 a 30 min).
+    esperas = {(f"L{k}", "pico_manha"): rnd.randint(2, 30) * 30.0 for k in range(12)}
+    return ge(paradas, padroes, esperas), nomes
 
 
 @pytest.mark.parametrize("semente", range(15))
