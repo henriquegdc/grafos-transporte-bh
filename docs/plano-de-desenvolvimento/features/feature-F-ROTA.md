@@ -10,8 +10,8 @@
 
 ## Retomada
 - **Última sessão:** 05/11, Henrique, branch `feat/F-ROTA-trajeto` (PR #39, sobre o #38): etapa 5, tempo medido no feed real com `benchmarks/medir_modelo_rota.py`, usando a `Rede` do PR #42 (P0-DADOS, em revisão); etapa 6 em rascunho (Como funciona, perguntas, diagrama de sequência, GUIA §5.1 e §10, roteiro do vídeo).
-- **Onde parou:** etapas 1, 2 e 5 concluídas; etapa 6 com tudo menos a seção do relatório. `trajeto_mais_rapido` rodou em 200 consultas no G_E real (V = 46.100, E = 208.956): 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX (ver Resultados). O X do RNF-05 está proposto como R4.
-- **Próximo passo:** decidir R4 (X do RNF-05); conseguir 1 aprovação no PR #39 (a base vira `main` quando o #38 for integrado); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Quando o #42 entrar: teste de integração com a rede de teste (etapa 3). Revisar o rascunho da etapa 6 (Henrique); seção do relatório quando houver os intervalos da F-ESPERA (tempo total e baldeações dependem deles). Etapa 4 (página com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa.
+- **Onde parou:** etapas 1, 2 e 5 concluídas; etapa 6 com tudo menos a seção do relatório. `trajeto_mais_rapido` rodou em 200 consultas no G_E real (V = 46.100, E = 208.956): 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX (ver Resultados). RNF-05 fixado em 1 s (R4) e atendido com folga.
+- **Próximo passo:** conseguir 1 aprovação no PR #39 (a base vira `main` quando o #38 for integrado); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Quando o #42 entrar: teste de integração com a rede de teste (etapa 3). Revisar o rascunho da etapa 6 (Henrique); seção do relatório quando houver os intervalos da F-ESPERA (tempo total e baldeações dependem deles). Etapa 4 (página com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa.
 - **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajeto.{puml,png}`, `docs/GUIA.md` §5.1 e §10, este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests/algoritmos/test_trajeto.py` (26 testes em 05/11); `ruff check src tests benchmarks`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip` (precisa do PR #42 e do feed baixado por `scripts/baixar_gtfs.py`).
 - **Bloqueios:** RF-ROT-02 depende do P0-UI (Arthur); teste de integração e merge do script de medição dependem do PR #42 (P0-DADOS, mudança pedida em 05/11); o merge depende do PR #38.
@@ -29,7 +29,7 @@ Trajeto mais rápido. Fecha:
 | Modelo e dados | em andamento | 05/11: roda sobre o G_E do `construir_ge` (PR #38) montado da `Rede` real do PR #42; falta o teste de integração depois do merge do #42 |
 | Interface | não iniciado | depende do contrato de página e do mapa (P0-UI) |
 | Testes | concluído | 05/11: 26 verdes. Gabarito à mão (linha direta, baldeação, troca que vence a direta, espera longa que inverte a escolha, só a pé, caminhadas encadeadas, a pé nas pontas), bordas (origem = destino, inalcançável, parada inexistente, falha e reativação) e NetworkX em 15 redes aleatórias (300 consultas: 255 com trajeto, 116 com baldeação, 195 com caminhada). Mutação à mão: agrupar a pé, agrupar ônibus e o tempo total derrubam testes |
-| Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã; ver Resultados. X do RNF-05 a decidir (R4) |
+| Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã; ver Resultados. RNF-05 (X = 1 s, R4) atendido |
 | Guia (explicação e quiz) | em andamento | 05/11: rascunho de Como funciona e 5 perguntas, copiado para o `docs/GUIA.md` §5.1 e §10; Henrique revisa |
 | Relatório | não iniciado | espera os intervalos da F-ESPERA para ter resultado de tempo total e baldeações |
 | Vídeo | em andamento | 05/11: rascunho do roteiro; a parte de interface espera o P0-UI |
@@ -150,12 +150,12 @@ Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
 ## Pendências
 - **F-BALD-2 (Rafael):** a função de trajeto mais rápido era para 08/11. Avisar que o contrato está em `algoritmos/trajeto.py` (no PR da F-ROTA): `trajeto_mais_rapido(ge, origem, destino)` dá `tempo_total_s` e `baldeacoes` para comparar com o trajeto de menos baldeações.
 - **F-ESPERA (Miguel):** o RF-ESP-03 decompõe o tempo em caminhada, espera e viagem; `Trajeto.tempo_por_tipo()` já faz isso para o horário médio da faixa.
-- **RNF-05:** o X (segundos por consulta) devia ter sido fixado em 03/11; a primeira medição saiu em 05/11. Ver R4.
+- ~~**RNF-05:** fixar o X~~ **feito em 05/11:** X = 1 s (R4), registrado no `docs/GUIA.md` §8 e no `docs/fontes/REQUISITOS.md`. Medido: pior caso 162,2 ms em 200 consultas; refazer a conferência quando a página existir.
 - **PR empilhado:** o #39 tem base `feat/P0-MODELO-construtores`; integrar o #38 primeiro.
 - **Script de medição:** `benchmarks/medir_modelo_rota.py` importa `transporte.dados`, que chega com o PR #42; até lá só roda com o código do #42 junto. O import fica dentro de `main()` para o módulo continuar importável.
 - **Espera real:** refazer a medição de tempo total e baldeações quando a F-ESPERA publicar os intervalos (ver limitação em Resultados).
 
-### Decisão a tomar: R4, o X do RNF-05
+### ~~Decisão a tomar~~ Decidida em 05/11/2026: R4 aceita pela recomendação; registrada no `docs/GUIA.md` §8 e no `docs/fontes/REQUISITOS.md` (RNF-05)
 
 - **R4.** Fixar X = 1 s por consulta de trajeto na rede completa de BH. **Recomendo:** a pior consulta medida levou 162,2 ms e a média 75,8 ms, o que deixa margem de cerca de 6 vezes para máquinas mais lentas e para a montagem dos trechos na página. A construção do G_E (cerca de 0,35 s) fica fora, porque a página monta a visão uma vez por faixa e reaproveita. Alternativa: X = 0,5 s, mais apertado (3 vezes o pior caso), com risco de falhar em notebook mais fraco.
 
@@ -173,3 +173,4 @@ Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
 ### PR 05/11/2026: #39 aberto, empilhado sobre o #38.
 ### Sessão 05/11/2026: etapa 5 no feed real com a `Rede` do PR #42: 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX em 200 consultas; `benchmarks/medir_modelo_rota.py`; R4 (X do RNF-05) proposta.
 ### Sessão 05/11/2026: etapa 6 em rascunho: Como funciona e por quê, 5 perguntas de verificação, diagrama `sequencia-trajeto`, `docs/GUIA.md` §5.1 e §10 e roteiro do vídeo.
+### Decisão 05/11/2026: R4 aceita: RNF-05 com X = 1 s por consulta; GUIA §8 e REQUISITOS.md atualizados.
