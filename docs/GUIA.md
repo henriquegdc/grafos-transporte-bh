@@ -14,6 +14,70 @@ O que é cada arquivo do GTFS, como viram o modelo normalizado, armadilhas, reco
 G_P, G_E, G_L e G_T: o que é vértice, o que é aresta, que pergunta cada uma responde e por quê.
 Espera esperada e paradoxo da inspeção. Parâmetros e seus motivos.
 
+### Construtores de G_P e G_E (P0-MODELO)
+
+Os construtores, em `src/transporte/modelo/construtores.py`, transformam a `Rede` normalizada
+da P0-DADOS nas duas visões usadas por F-ROTA, F-ESPERA, F-MET, F-EFI e F-RES. Eles leem só
+três campos da `Rede` (protocolo `RedeConstrutores`): `paradas`, `padroes` e `viagens[padrão]`,
+que dá os horários de cada viagem na ordem das paradas. A identidade da viagem importa: o tempo
+de A a B sai da subtração de horários **do mesmo ônibus**.
+
+```python
+from transporte.modelo.construtores import construir_gp, construir_ge
+
+gp = construir_gp(rede)                 # VisaoGP: um vértice por parada
+ge = construir_ge(rede, "pico_manha")   # VisaoGE: paradas + plataformas, para uma faixa
+ge.vertice_da_parada["A"]; ge.plataforma[("A", padrao_id)]
+```
+
+**G_P.** Um vértice por parada. Uma aresta VIAGEM a → b para cada par de paradas
+consecutivas em algum padrão, com peso igual à mediana das diferenças de horário de todas as
+viagens que passam por ali (D2). Arestas CAMINHADA nos dois sentidos entre paradas a até 300 m,
+com peso distância / 1,2 m/s. Exemplo: viagens de 300, 360 e 300 s de A a B dão 300 s; se uma
+tivesse −500 s (erro de cadastro), ela ficaria fora e a mediana de 60 e 80 seria 70 (D8).
+
+**G_E.** Em G_P, continuar no ônibus e trocar de ônibus custam o mesmo. G_E cria uma
+**plataforma** por (parada, padrão): para trocar de linha é preciso desembarcar (0 s), voltar à
+parada e embarcar de novo, pagando a espera da nova linha (figura `docs/diagramas/ge-exemplo.png`;
+passo a passo em `docs/diagramas/atividade-construir-ge.png`).
+
+1. EMBARQUE parada → plataforma, com peso H/2 (H da tabela da F-ESPERA; 300 s enquanto ela não
+   existe), só se alguma viagem do padrão parte na faixa (D10) e nunca na última parada (D9).
+2. VIAGEM plataforma → plataforma seguinte, com a mediana daquele padrão.
+3. DESEMBARQUE plataforma → parada, peso 0, nunca na primeira parada (D9).
+4. CAMINHADA como em G_P.
+
+Assim um único Dijkstra soma caminhada, espera, viagem e baldeações, e as baldeações de um
+caminho são os embarques menos um (`VisaoGE.baldeacoes`). Uma linha circular usa uma plataforma
+só por parada (D11).
+
+**Caminhada sem O(V²).** Comparar as 9.659 paradas de BH duas a duas daria cerca de 93 milhões
+de distâncias. A grade espacial põe cada parada numa célula do tamanho do raio e só compara
+paradas de células vizinhas (9 por parada). A projeção usa o cosseno da maior latitude e a
+célula tem 0,1% de folga, para nenhum par dentro do raio escapar; um teste confere a grade
+contra a busca ingênua em 10 redes aleatórias.
+
+**Complexidade.** Com V paradas, L plataformas, N horários e K pares a até o raio: G_P em
+O(V + K + N log N) esperado (cada horário entra em uma diferença; as medianas ordenam), G_E em
+O(V + K + L + N log N); O(V²) no pior caso da grade, com tudo numa célula. No feed real
+(05/11, `feature-P0-MODELO.md`), G_P com 9.659 vértices e 122.732 arestas sai em 312,8 ms, e
+G_E com 46.100 vértices e cerca de 208 mil arestas em 342 a 365 ms por faixa.
+
+Por quê:
+
+- **Mediana:** um horário errado desloca a média, quase não move a mediana.
+- **Piso de 1 s em viagem e caminhada:** o GTFS arredonda horários (43 arestas de viagem do G_P
+  terminam no piso); peso 0 entre paradas distintas quebra a contagem de caminhos do Brandes.
+  O desembarque fica com 0, porque não leva tempo e só liga a plataforma à própria parada.
+- **Um G_E por faixa:** a espera muda ao longo do dia; um G_E só, com a espera média do dia,
+  esconderia a diferença entre pico e entrepico.
+- **pickle em `salvar` e `carregar` (D7):** o arquivo é cache local da ferramenta, nunca vem
+  de fora.
+
+Limitações: um tempo de viagem por trecho para o dia todo; ônibus que sai às 08h55 não dá
+embarque às 09h20 no entrepico (D10); numa linha circular dá para "dar a volta" (D11); cada
+variante de itinerário tem espera própria (D1); caminhada em linha reta, sem ruas.
+
 ## 4. Núcleo do grafo e heap (Thiago)
 Lista de adjacência, desativação de vértices e arestas, heap binário, BFS e Dijkstra,
 inserção preguiçosa, complexidades.
@@ -130,6 +194,21 @@ Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, interm
 
 ## 10. Perguntas de verificação
 Todas as perguntas das features, com resposta, agrupadas por seção.
+
+### 3. Construtores de G_P e G_E (P0-MODELO)
+1. **Por que G_E tem vértices de plataforma?** Para que trocar de linha custe alguma coisa:
+   trocar obriga a desembarcar, voltar à parada e pagar um novo embarque, com a espera da nova
+   linha. Em G_P a aresta não sabe em que linha o passageiro está.
+2. **Como se conta o número de baldeações de um trajeto em G_E?** Embarques no caminho menos
+   um; um trajeto só a pé tem 0.
+3. **Por que o tempo entre paradas é a mediana, e o que acontece com uma diferença negativa?**
+   A mediana resiste a horários errados. A diferença negativa fica fora; se não sobrar nenhuma,
+   o trecho recebe o piso de 1 s, porque existe na sequência do padrão (D8).
+4. **Por que montar a caminhada não custa O(V²)?** A grade espacial só compara cada parada com
+   as 9 células vizinhas: O(V + K) esperado.
+5. **Por que viagem e caminhada têm piso de 1 s, mas o desembarque fica com 0?** Peso 0 entre
+   paradas distintas é artefato do arredondamento e quebra a contagem de caminhos do Brandes;
+   desembarcar não leva tempo e só liga a plataforma à própria parada.
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
