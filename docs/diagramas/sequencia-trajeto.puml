@@ -1,0 +1,40 @@
+@startuml sequencia-trajeto
+' Diagrama de sequência de trajeto_mais_rapido (F-ROTA, RF-ROT-01).
+' Estado: implementado. Código: src/transporte/algoritmos/trajeto.py.
+!pragma teoz true
+skinparam dpi 150
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+title Sequência · trajeto_mais_rapido(ge, origem, destino)
+hide footbox
+
+participant "Página de trajetos\n(P0-UI)" as UI
+participant "trajeto_mais_rapido" as T
+participant "VisaoGE" as GE
+participant "buscas\n(núcleo)" as B
+participant "_trechos" as TR
+
+UI -> T : origem, destino, ge da faixa
+T -> GE : vertice_da_parada[origem], [destino]
+GE --> T : s, t (KeyError se a parada não existe)
+T -> B : dijkstra(ge.grafo, s, t)
+note right of B : heap próprio; para quando t é fechado
+B --> T : Resultado(dist, pred, pred_aresta)
+alt dist[t] == INF
+  T --> UI : None (sem trajeto)
+else alcançável
+  T -> B : caminho_arestas(r, t)
+  B --> T : arestas do caminho, na ordem
+  T -> GE : baldeacoes(arestas)
+  GE --> T : embarques - 1
+  T -> TR : _trechos(ge, arestas)
+  note right of TR
+    caminhadas seguidas: um trecho a pé
+    embarque: espera
+    viagens do mesmo padrão: um trecho de ônibus
+    desembarque: fecha o trecho
+  end note
+  TR --> T : trechos
+  T --> UI : Trajeto(tempo_total_s, baldeacoes, trechos)
+end
+@enduml

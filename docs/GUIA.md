@@ -23,6 +23,52 @@ Uma subseção por feature, copiada e ajustada de "Como funciona e por quê" do 
 5.1 Trajeto mais rápido · 5.2 Espera · 5.3 Baldeações · 5.4 Centralidades · 5.5 Eficiência ·
 5.6 Falhas · 5.7 Desejáveis e opcionais que foram feitas.
 
+### 5.1 Trajeto mais rápido (F-ROTA)
+
+Dadas duas paradas, `trajeto_mais_rapido` acha o trajeto que chega mais cedo em média, somando
+caminhada, espera e viagem, e diz o que fazer em cada parte.
+
+```python
+from transporte.algoritmos.trajeto import trajeto_mais_rapido
+
+ge = construir_ge(rede, "pico_manha")
+t = trajeto_mais_rapido(ge, "A", "C")   # None se não houver trajeto
+t.tempo_total_s, t.baldeacoes, t.trechos, t.tempo_por_tipo()
+```
+
+Em G_E, trocar de linha obriga a desembarcar, voltar à parada e pagar um novo embarque, que
+carrega a espera da nova linha (seção 3). Por isso basta um Dijkstra, sem penalidade arbitrária
+por baldeação. Passo a passo (`docs/diagramas/sequencia-trajeto.png`):
+
+1. Traduz as paradas em vértices de G_E; parada inexistente dá KeyError.
+2. Roda o `dijkstra` do núcleo a partir da origem, parando quando o destino sai do heap. Com
+   pesos não negativos, a distância de um vértice fechado é definitiva. Destino inalcançável
+   devolve None.
+3. Reconstrói o caminho por **arestas** (`caminho_arestas`), porque o tipo de cada passo está
+   na aresta.
+4. Baldeações = embarques − 1.
+5. Agrupa em trechos: caminhadas seguidas viram um trecho a pé; embarque vira espera; viagens
+   seguidas do mesmo padrão viram um trecho de ônibus, fechado pelo desembarque.
+
+Exemplo, com pesos inventados: de A a C, L1 de A a B e L2 de B a C, espera de 300 s nas duas e
+viagens de 240 e 180 s. Total 300 + 240 + 0 + 300 + 180 = 1.020 s, em quatro trechos (espera
+L1, ônibus L1, espera L2, ônibus L2) e uma baldeação. Se andar de A a C levasse menos, o
+trajeto seria um trecho a pé só.
+
+**Complexidade.** O((V + E) log V) do Dijkstra com heap binário e inserção preguiçosa (O(V + E)
+entradas no heap, cada uma O(log V)), mais O(V + k) da reconstrução; espaço O(V + E). No feed
+real (05/11, `feature-F-ROTA.md`), no G_E com V = 46.100 e E = 208.956: 75,8 ms por consulta em
+média e 162,2 ms no pior caso de 200 consultas, com 0 divergências contra o NetworkX.
+
+Por quê: função em `algoritmos/` e não método da visão, para o A\* e o Yen entrarem no mesmo
+módulo (R1); trechos em vez de arestas cruas, porque é o que a página desenha (R2); None em vez
+de erro, porque não haver trajeto é normal numa rede com falhas (R3).
+
+Limitações: o tempo é o esperado para quem chega à parada num instante qualquer da faixa (espera
+H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica os intervalos, toda
+espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
+caminhada em linha reta, só entre paradas.
+
 ## 6. Interface (Arthur)
 Como as páginas se organizam, o componente de mapa, o cache da rede.
 
@@ -124,6 +170,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Sem embarque na última parada do padrão e sem desembarque na primeira (D9) | Essas arestas nunca estão num caminho útil e só aumentam o G_E | Criar as quatro arestas em toda plataforma |
 | 05/11 | Padrão com partida na faixa = alguma viagem com o primeiro horário na faixa (D10) | É a definição de partida e casa com a tabela de intervalos de F-ESPERA, por (padrão, faixa); ônibus que sai às 08h55 não dá embarque às 09h20 no entrepico (limitação) | Alguma viagem passar pela parada dentro da faixa |
 | 05/11 | Linha circular usa uma plataforma por (parada, padrão) (D11) | É o que a chave do contrato `plataforma[(parada, padrão)]` implica; o passageiro pode dar a volta e seguir no início do padrão (limitação) | Uma plataforma por ocorrência da parada no padrão |
+| 05/11 | RNF-05: a consulta de trajeto responde em até 1 s na rede completa (R4 da F-ROTA) | Na primeira medição (feed real, G_E com 46.100 vértices), a média foi 75,8 ms e o pior caso de 200 consultas 162,2 ms: margem de cerca de 6 vezes para máquina mais lenta e para a página. A construção do G_E fica fora, porque é feita uma vez por faixa | X = 0,5 s, com margem de 3 vezes |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
@@ -143,3 +190,15 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    média 2 e desvio 1).
 5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
    `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.
+
+### 5.1 Trajeto mais rápido (F-ROTA)
+1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque
+   em G_E trocar de linha passa por uma aresta de embarque, que pesa a espera da nova linha.
+2. **Por que o caminho é reconstruído por arestas e não por vértices?** O tipo do passo
+   (caminhada, embarque, viagem, desembarque) está na aresta; dele saem os trechos e as baldeações.
+3. **Por que dá para parar o Dijkstra quando o destino sai do heap?** Com pesos não negativos, a
+   distância de um vértice fechado é definitiva.
+4. **O tempo total é o horário de chegada de quem sai agora?** Não: é o tempo esperado para quem
+   chega à parada num instante qualquer da faixa (espera H/2 em cada embarque).
+5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem
+   trajeto"; é normal com paradas ou linhas desativadas (F-RES).
