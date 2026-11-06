@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (sobre a do PR #40): Introdução, Plano de desenvolvimento e README da Etapa 1, v1.
-- **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
-- **Próximo passo:** conseguir aprovação nos PRs #38, #40 e #41 (Etapa 1), nessa ordem; combinar com o Thiago a seção Fundamentação (dona dupla); mandar ao Miguel o protocolo `RedeConstrutores`. Quando a `Rede` existir: etapa 3 e etapa 5. F-ROTA segue no PR #39.
+- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (PR #41): revisão do PR #42 (P0-DADOS, mudança pedida) e etapa 5, construtores medidos no feed real com a `Rede` do #42 (`benchmarks/medir_modelo_rota.py`, no PR #39).
+- **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado. A `Rede` do PR #42 atende o protocolo sem adaptador; no feed real, G_P sai em 0,31 s e G_E em cerca de 0,35 s por faixa (ver Resultados).
+- **Próximo passo:** conseguir aprovação nos PRs #38, #40 e #41, nessa ordem; acompanhar a correção do item 1 no PR #42 (frequências em `Rede.viagens`); quando o #42 entrar, etapa 3 (teste de integração com a rede de teste do Miguel); combinar com o Thiago a seção Fundamentação (dona dupla). Depois: etapa 6. F-ROTA segue no PR #39.
 - **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/{modelagem,introducao,plano}.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo,casos-de-uso}.png`, `docs/diagramas/casos-de-uso.{puml,png}` (dpi 200), `README.md` §3, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
-- **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
+- **Bloqueios:** a etapa 3 depende do merge do PR #42 (P0-DADOS, mudança pedida em 05/11).
 
 ## Objetivo
 Modelagem, UML e construtores de G_P e G_E. Fecha:
@@ -27,10 +27,10 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 05/11: construtores de G_P e G_E, grade espacial da caminhada, salvar e carregar, `baldeacoes` |
-| Modelo e dados | em andamento | 05/11: construtores prontos contra o protocolo `RedeConstrutores`; falta ligar à `Rede` real (P0-DADOS não iniciada) |
+| Modelo e dados | em andamento | 05/11: a `Rede` do PR #42 atende o protocolo `RedeConstrutores` sem adaptador; G_P e G_E montados do feed real. Falta o teste de integração depois do merge do #42 |
 | Interface | não iniciado | |
 | Testes | em andamento | 05/11: 33 verdes (gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle); teste de mutação à mão: filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. Falta a rede de teste do Miguel |
-| Desempenho (tempo medido) | não iniciado | |
+| Desempenho (tempo medido) | concluído | 05/11: G_P 312,8 ms, G_E 342 a 365 ms por faixa no feed real; ver Resultados |
 | Guia (explicação e quiz) | não iniciado | |
 | Relatório | em andamento | 05/11: Etapa 1 v1 das seções do Henrique, compiladas com MiKTeX 25.12 sem erro nem referência indefinida: Introdução (cerca de 1,1 página, com o diagrama de casos de uso), Modelagem (cerca de 2,5) e Plano (cerca de 0,4); Introdução e Plano somam 1,5, o orçamento das duas. Falta a Fundamentação, com o Thiago |
 | Vídeo | não iniciado | |
@@ -64,7 +64,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (05/11)
 - [ ] Página ou bloco na interface funcionando com o dataset real
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
@@ -78,13 +78,25 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída (PR #33) |
 | 2 | Algoritmo com testes de corretude | concluída em 05/11 |
-| 3 | Integração com a visão do grafo e com os dados reais | bloqueada: falta a `Rede` (P0-DADOS) |
+| 3 | Integração com a visão do grafo e com os dados reais | em andamento: construtores rodam no feed real com a `Rede` do PR #42; falta o teste de integração na rede de teste, depois do merge do #42 |
 | 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
+| 5 | Tempo medido na rede real e complexidade justificada | tempo medido em 05/11; a justificativa da complexidade entra no "Como funciona" (etapa 6) |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
 
 ## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+_Todo número vem com o comando que o gerou._
+
+**Construção das visões, 05/11/2026.** Comando: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip` (script no PR #39), sobre os construtores do PR #38 com a leitura do PR #42 (`77b0fbd`, ainda não integrado). Feed: GTFS convencional da PBH baixado em 05/11/2026, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2` (o mesmo do arquivo da P0-DADOS), serviço de 04/11/2026: 9.659 paradas, 698 padrões, 24.503 viagens. Máquina: Intel Core i5-13600KF, 31,8 GB, Windows 11, Python 3.14.3. Tempos com `medir`, n = 5; a leitura do GTFS não entra.
+
+| Visão | V | E | Tempo |
+|---|---|---|---|
+| G_P | 9.659 | 122.732 | 312,8 ms ± 5,8 ms |
+| G_E, pico da manhã | 46.100 | 208.956 | 341,9 ms ± 13,1 ms |
+| G_E, entrepico | 46.100 | 207.205 | 365,0 ms ± 32,9 ms |
+| G_E, pico da tarde | 46.100 | 208.550 | 346,3 ms ± 12,4 ms |
+| G_E, noite | 46.100 | 206.868 | 361,8 ms ± 20,1 ms |
+
+Do mesmo feed, numa checagem avulsa em 05/11 (script de revisão do PR #42, não versionado): no G_E do pico da manhã, 110.178 das 208.956 arestas são de caminhada, 36.385 de viagem, 36.121 de desembarque e 26.272 de embarque; 387 dos 698 padrões repetem alguma parada (D11); 1.949 trechos entre paradas consecutivas têm 0 s no GTFS e recebem o piso de 1 s; 189 paradas não estão em nenhum padrão do dia e ficam só com caminhada. Antes de ir para o relatório, refazer esses números com o script versionado.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
@@ -94,7 +106,9 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 - **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS): confirmar quando ele publicar o contrato. ~~`Resultado(dist, pred)` (Thiago)~~ **feito em 05/11:** diagrama com `Resultado(origem, dist, pred, pred_aresta)` e `caminho_arestas`, como na `main`.
 - **Plano de desenvolvimento (relatório):** o texto diz que o gancho de pre-commit barra biblioteca de grafo em `src/`; o gancho é da P0-REPO (Caio) e ainda não existe. Conferir antes da versão final.
 - **Fundamentação (Thiago e Henrique):** combinar a divisão; a seção continua com `\pendente`.
-- **Rede (Miguel):** mandar o protocolo `RedeConstrutores` de `construtores.py` como proposta: `paradas` e `padroes` como no diagrama, mais `viagens[padrão] -> list[list[int]]`, os horários de cada viagem alinhados com `padrao.paradas`. Se a `Rede` dele sair diferente, um adaptador fino resolve sem mexer nos construtores.
+- ~~**Rede (Miguel):** mandar o protocolo `RedeConstrutores`~~ **feito em 05/11:** o PR #42 publica `Rede.viagens[padrão]` no formato do protocolo; conferido no feed real sem adaptador.
+- **Frequências na Rede (PR #42, item 1 da revisão):** viagem com `frequencies.txt` entra em `Rede.viagens` só como a de referência, e a D10 perde embarques (na rede de teste, L2 fica sem embarque na faixa 09:30 a 10:00). O feed real não tem `frequencies.txt`. Pedida mudança ao Miguel em 05/11; conferir a correção antes de aprovar.
+- **D8 e o leitor do Miguel:** o leitor do PR #42 descarta a viagem inteira quando os horários decrescem (opção c da D8), então o filtro de negativos dos construtores só age em redes montadas por outro caminho. No feed real há 0 viagens nessa situação; sem efeito hoje, mas registrar na Modelagem se o grupo mantiver as duas regras.
 - **Piso de 1 s (Thiago, F-MET):** responder no PR #37 que o piso entrou (`Parametros.peso_minimo_s`).
 - **docs/fontes/modelagem.md §3.4:** acrescentada a regra do piso, decidida pelo Henrique em 05/11 (mesmo procedimento de D1 a D7: decisão no GUIA §8 e regra na fonte). Avisar o grupo no PR.
 - ~~**Decisões de modelagem embutidas no diagrama**~~ **decidido em 29/10/2026:** mantidas e registradas no `docs/GUIA.md` §8. Texto original: hierarquia `Visao` com uma subclasse por visão; `construir_ge` recebe a tabela de intervalos de F-ESPERA (espera constante até 06/11); salvar e carregar ficam nos construtores (RF-GRF-07).
@@ -134,3 +148,5 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Decisão 05/11/2026: D8 a D11 aceitas pela recomendação.
 ### Sessão 05/11/2026: Etapa 1 v1 na branch `feat/P0-MODELO-etapa1`: Introdução e Plano no relatório, seção 3 do README com o diagrama de classes; diagrama de casos de uso a 200 dpi.
 ### PR 05/11/2026: #41 aberto (Introdução, Plano e README da Etapa 1), empilhado sobre o #40.
+### Revisão 05/11/2026: PR #42 (P0-DADOS) revisado com mudança pedida (frequências fora de `Rede.viagens`); a `Rede` atende `RedeConstrutores` sem adaptador.
+### Sessão 05/11/2026: etapa 5 no feed real com a `Rede` do PR #42: G_P em 312,8 ms (V = 9.659, E = 122.732), G_E em 342 a 365 ms por faixa (V = 46.100, E de 206.868 a 208.956).
