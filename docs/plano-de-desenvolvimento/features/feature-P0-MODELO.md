@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (PR #41): revisão do PR #42 (P0-DADOS, mudança pedida) e etapa 5, construtores medidos no feed real com a `Rede` do #42 (`benchmarks/medir_modelo_rota.py`, no PR #39).
-- **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado. A `Rede` do PR #42 atende o protocolo sem adaptador; no feed real, G_P sai em 0,31 s e G_E em cerca de 0,35 s por faixa (ver Resultados).
-- **Próximo passo:** conseguir aprovação nos PRs #38, #40 e #41, nessa ordem; acompanhar a correção do item 1 no PR #42 (frequências em `Rede.viagens`); quando o #42 entrar, etapa 3 (teste de integração com a rede de teste do Miguel); combinar com o Thiago a seção Fundamentação (dona dupla). Depois: etapa 6. F-ROTA segue no PR #39.
-- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/{modelagem,introducao,plano}.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo,casos-de-uso}.png`, `docs/diagramas/casos-de-uso.{puml,png}` (dpi 200), `README.md` §3, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
+- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-etapa1` (PR #41): revisão do PR #42 (P0-DADOS, mudança pedida); etapa 5, construtores medidos no feed real com a `Rede` do #42 (`benchmarks/medir_modelo_rota.py`, no PR #39); etapa 6 em rascunho (Como funciona, perguntas, diagrama de atividade, GUIA §3 e §10, roteiro do vídeo).
+- **Onde parou:** etapas 2 e 5 concluídas; etapa 6 com tudo menos a seção do relatório com resultado. Etapa 2: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado. A `Rede` do PR #42 atende o protocolo sem adaptador; no feed real, G_P sai em 0,31 s e G_E em cerca de 0,35 s por faixa (ver Resultados).
+- **Próximo passo:** conseguir aprovação nos PRs #38, #40 e #41, nessa ordem; acompanhar a correção do item 1 no PR #42 (frequências em `Rede.viagens`); quando o #42 entrar, etapa 3 (teste de integração com a rede de teste do Miguel); combinar com o Thiago a seção Fundamentação (dona dupla); revisar o rascunho da etapa 6 (Henrique); pôr na Modelagem do relatório um parágrafo de resultado (tempos e tamanhos do G_P e do G_E) depois do merge do #42. F-ROTA segue no PR #39.
+- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo,atividade-construir-ge}.{puml,png}`, `relatorio/secoes/{modelagem,introducao,plano}.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo,casos-de-uso}.png`, `docs/diagramas/casos-de-uso.{puml,png}` (dpi 200), `README.md` §3, `docs/GUIA.md` §3, §8 e §10, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
 - **Bloqueios:** a etapa 3 depende do merge do PR #42 (P0-DADOS, mudança pedida em 05/11).
 
@@ -31,9 +31,9 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 | Interface | não iniciado | |
 | Testes | em andamento | 05/11: 33 verdes (gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle); teste de mutação à mão: filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. Falta a rede de teste do Miguel |
 | Desempenho (tempo medido) | concluído | 05/11: G_P 312,8 ms, G_E 342 a 365 ms por faixa no feed real; ver Resultados |
-| Guia (explicação e quiz) | não iniciado | |
+| Guia (explicação e quiz) | em andamento | 05/11: rascunho de Como funciona e 5 perguntas, copiado para o `docs/GUIA.md` §3 e §10; Henrique revisa |
 | Relatório | em andamento | 05/11: Etapa 1 v1 das seções do Henrique, compiladas com MiKTeX 25.12 sem erro nem referência indefinida: Introdução (cerca de 1,1 página, com o diagrama de casos de uso), Modelagem (cerca de 2,5) e Plano (cerca de 0,4); Introdução e Plano somam 1,5, o orçamento das duas. Falta a Fundamentação, com o Thiago |
-| Vídeo | não iniciado | |
+| Vídeo | em andamento | 05/11: rascunho do roteiro; a parte de interface espera o P0-UI |
 
 ## Especificação
 Construtores de G_P e G_E a partir do modelo normalizado (`docs/fontes/modelagem.md` §3.4). Contrato publicado com `estado: planejado`; o diagrama de classes (`docs/diagramas/classes.png`) mostra as mesmas assinaturas.
@@ -47,10 +47,62 @@ Construtores de G_P e G_E a partir do modelo normalizado (`docs/fontes/modelagem
 Complexidade (V paradas, L plataformas, N horários, K pares a até o raio): `construir_gp` em O(V² + N log N); `construir_ge` em O(V² + L + N log N); o V² cai para O(V + K) com grade espacial.
 
 ## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
+
+**O problema.** O GTFS descreve a rede como tabelas: paradas com coordenadas, viagens e o horário de cada viagem em cada parada. Os algoritmos das features precisam de um grafo dirigido e ponderado. Os construtores fazem essa passagem, a partir da `Rede` normalizada da P0-DADOS, para duas visões: G_P (paradas) e G_E (parada × linha). G_L e G_T são de outros donos.
+
+**O que os construtores leem.** Só três coisas da `Rede`, descritas no protocolo `RedeConstrutores`: `paradas` (id, lat, lon), `padroes` (id e sequência de paradas) e `viagens[padrão]`, uma lista de horários por viagem, alinhada com a sequência do padrão. Um padrão é uma linha mais uma sequência exata de paradas (D1). A identidade da viagem importa: para saber quanto o ônibus leva de A a B, é preciso subtrair horários **do mesmo ônibus**, e uma lista de partidas por parada não diz qual horário de B pertence a qual horário de A.
+
+**G_P, passo a passo.**
+
+1. Um vértice por parada, na ordem de `rede.paradas`.
+2. Para cada padrão e cada par de paradas consecutivas (a, b), junta as diferenças `horário[b] − horário[a]` de todas as viagens do padrão. Trechos iguais de padrões diferentes vão para a mesma lista; diferenças negativas ficam de fora (D8).
+3. Uma aresta VIAGEM a → b por trecho, com peso = mediana da lista (D2) e piso de 1 s. Lista vazia (só havia negativas) dá o piso.
+4. Arestas CAMINHADA nos dois sentidos entre paradas a até 300 m, com peso = distância / 1,2 m/s e o mesmo piso.
+
+Exemplo: três viagens levam 300, 360 e 300 s de A a B; a aresta A → B pesa 300 s. Se uma viagem tivesse −500 s (erro de cadastro), a mediana de 60 e 80 seria 70. Duas paradas a 240 m ganham caminhada de 200 s em cada sentido.
+
+**G_E, passo a passo.** Em G_P, continuar no mesmo ônibus e trocar de ônibus custam o mesmo, porque a aresta não sabe em que linha o passageiro está. G_E separa as linhas em **plataformas**, um vértice por (parada, padrão), ligado à parada por embarque e desembarque. Para trocar de linha é preciso desembarcar (0 s), voltar à parada e embarcar de novo, pagando a espera da nova linha (figura `docs/diagramas/ge-exemplo.png`). O diagrama de atividade está em `docs/diagramas/atividade-construir-ge.png`.
+
+1. Um vértice por parada; depois, padrão a padrão, um vértice de plataforma por (parada, padrão), criado uma vez só mesmo que o padrão repita a parada (D11).
+2. Se alguma viagem do padrão parte (primeiro horário) dentro da faixa (D10), cria EMBARQUE parada → plataforma em todas as paradas menos a última (D9). Peso: H/2, com H o intervalo da tabela da F-ESPERA para (padrão, faixa), ou 300 s enquanto ela não existe (D6).
+3. VIAGEM plataforma → plataforma seguinte, com a mediana das diferenças daquele padrão e o piso.
+4. DESEMBARQUE plataforma → parada, peso 0, em todas as paradas menos a primeira (D9).
+5. CAMINHADA entre paradas, como em G_P.
+
+Com isso, um único Dijkstra soma caminhada, espera, viagem e baldeações, sem penalidade arbitrária por baldeação: ela já custa a espera da nova linha. O número de baldeações de um caminho é o número de arestas de embarque menos um (`VisaoGE.baldeacoes`).
+
+**Caminhada sem O(V²).** Comparar todas as paradas entre si dá 9.659² ≈ 93 milhões de distâncias na rede de BH. A grade espacial projeta as coordenadas em metros e põe cada parada numa célula de lado igual ao raio; duas paradas a até 300 m estão sempre em células vizinhas, então cada parada só é comparada com as 9 células em volta. A projeção usa o cosseno da maior latitude, que encolhe as distâncias leste-oeste, e a célula tem 0,1% de folga; assim nenhum par dentro do raio escapa. Um teste compara a grade com a busca ingênua em 10 redes aleatórias.
+
+**Complexidade.** V paradas, L plataformas (soma dos tamanhos dos padrões), N horários (soma, sobre as viagens, do número de paradas) e K pares a até o raio.
+
+- G_P: O(V) para os vértices; cada horário entra em no máximo uma diferença, então juntar as listas custa O(N) e as medianas, que ordenam, O(N log N); a grade custa O(V + K) esperado, porque cada célula tem um número limitado de paradas quando a densidade é limitada. Total O(V + K + N log N); espaço O(V + E). No pior caso, todas as paradas na mesma célula, a grade degenera em O(V²).
+- G_E: o mesmo, mais O(L) plataformas e no máximo 3 arestas por plataforma, e O(viagens) por padrão para testar a faixa. Total O(V + K + L + N log N).
+- `salvar` e `carregar`: O(V + E).
+
+Medido em 05/11 no feed real (ver Resultados): G_P com 9.659 vértices e 122.732 arestas em 312,8 ms; G_E com 46.100 vértices e cerca de 208 mil arestas em 342 a 365 ms por faixa.
+
+**Decisões e alternativas descartadas.** Estão na tabela do `docs/GUIA.md` §8 (D1 a D11 e o piso). As que mais mudam o resultado:
+
+- **Mediana, não média (D2):** um horário cadastrado errado desloca a média, mas quase não move a mediana.
+- **Piso de 1 s (M2):** o GTFS arredonda horários, e no feed real há 1.949 diferenças de 0 s entre paradas consecutivas de uma mesma viagem, e 43 arestas de viagem do G_P terminam no piso (mediana de até 1 s). Peso 0 entre paradas distintas não é tempo real e quebra a contagem de caminhos mínimos do Brandes (F-MET). O desembarque continua com 0, porque desembarcar não leva tempo e não cria empate entre caminhos.
+- **G_E por faixa:** a espera muda ao longo do dia, então cada faixa tem seu G_E. Alternativa descartada: um G_E só, com a espera média do dia, que esconderia a diferença entre pico e entrepico (pergunta 2).
+- **Salvar com pickle (D7):** uma linha de código; o arquivo é cache local da ferramenta e nunca vem de fora, que é o único caso em que pickle é inseguro.
+
+**Limitações.**
+
+- O tempo de viagem de um trecho é um só para o dia todo (D2); o trânsito do pico não aparece.
+- Ônibus que sai às 08h55 e passa numa parada às 09h20 não dá embarque nela no entrepico (D10).
+- Numa linha circular, o passageiro pode "dar a volta" e seguir no início do padrão (D11); no feed real, 387 dos 698 padrões repetem alguma parada.
+- Cada variante de itinerário é um padrão com espera própria (D1), o que superestima a espera de quem aceitaria qualquer variante da mesma linha.
+- Caminhada em linha reta, sem ruas.
 
 ## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
+
+1. **Por que G_E tem vértices de plataforma?** Para que trocar de linha custe alguma coisa: a aresta de G_P não sabe em que linha o passageiro está. Em G_E, trocar obriga a desembarcar, voltar à parada e pagar um novo embarque, que carrega a espera da nova linha.
+2. **Como se conta o número de baldeações de um trajeto em G_E?** Embarques no caminho menos um (`VisaoGE.baldeacoes`); um trajeto só a pé tem 0.
+3. **Por que o tempo entre paradas é a mediana, e o que acontece com uma diferença negativa?** A mediana resiste a horários errados de cadastro. Diferença negativa fica fora; se não sobrar nenhuma, o trecho recebe o piso de 1 s, porque ele existe na sequência do padrão (D8).
+4. **Por que montar a caminhada não custa O(V²)?** A grade espacial põe cada parada numa célula do tamanho do raio, e cada parada só é comparada com as 9 células vizinhas: O(V + K) esperado.
+5. **Por que viagem e caminhada têm piso de 1 s, mas o desembarque fica com 0?** Peso 0 entre paradas distintas é artefato do arredondamento do GTFS e cria empates que quebram a contagem de caminhos do Brandes. Desembarcar não leva tempo e só liga a plataforma à própria parada.
 
 ## Critérios de aceite
 - [ ] RF-GRF-04: Construir a visão G_P (paradas) a partir do modelo normalizado
@@ -63,11 +115,11 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
+- [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (05/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (05/11)
 - [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (05/11: `atividade-construir-ge`)
+- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (05/11, rascunho; Henrique revisa)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
 - [ ] Roteiro do vídeo escrito no arquivo da feature
@@ -80,8 +132,8 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 2 | Algoritmo com testes de corretude | concluída em 05/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | em andamento: construtores rodam no feed real com a `Rede` do PR #42; falta o teste de integração na rede de teste, depois do merge do #42 |
 | 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | tempo medido em 05/11; a justificativa da complexidade entra no "Como funciona" (etapa 6) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída em 05/11 (tempo em Resultados; complexidade em Como funciona) |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | em andamento: rascunho de 05/11 (Como funciona, perguntas, `atividade-construir-ge`, GUIA §3 e §10, roteiro); falta o parágrafo de resultado na Modelagem do relatório e a revisão do Henrique |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -96,11 +148,18 @@ _Todo número vem com o comando que o gerou._
 | G_E, pico da tarde | 46.100 | 208.550 | 346,3 ms ± 12,4 ms |
 | G_E, noite | 46.100 | 206.868 | 361,8 ms ± 20,1 ms |
 
-Do mesmo feed, numa checagem avulsa em 05/11 (script de revisão do PR #42, não versionado): no G_E do pico da manhã, 110.178 das 208.956 arestas são de caminhada, 36.385 de viagem, 36.121 de desembarque e 26.272 de embarque; 387 dos 698 padrões repetem alguma parada (D11); 1.949 trechos entre paradas consecutivas têm 0 s no GTFS e recebem o piso de 1 s; 189 paradas não estão em nenhum padrão do dia e ficam só com caminhada. Antes de ir para o relatório, refazer esses números com o script versionado.
+Do mesmo feed, numa checagem avulsa em 05/11 (script de revisão do PR #42, não versionado): no G_E do pico da manhã, 110.178 das 208.956 arestas são de caminhada, 36.385 de viagem, 36.121 de desembarque e 26.272 de embarque; 387 dos 698 padrões repetem alguma parada (D11); há 1.949 diferenças de 0 s entre paradas consecutivas de uma mesma viagem (contadas por viagem); ficam no piso de 1 s 43 das 12.554 arestas de viagem do G_P e 181 das 36.385 do G_E do pico da manhã, e nenhuma de caminhada; 189 paradas não estão em nenhum padrão do dia e ficam só com caminhada. Antes de ir para o relatório, refazer esses números com o script versionado.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
 3. Algoritmo e complexidade. 4. Resultado e limitação.
+
+Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
+
+1. **Problema (25 s):** o GTFS é tabela, os algoritmos precisam de grafo. Mostrar `stop_times.txt` ao lado do G_E de exemplo (`ge-exemplo.png`): as mesmas viagens viram vértices e arestas.
+2. **Na ferramenta (35 s):** escolher a faixa horária e mostrar no mapa as paradas e as arestas de caminhada de um bairro; trocar de faixa e mostrar um padrão que deixa de ter embarque.
+3. **Como funciona (50 s):** plataforma por (parada, padrão) e por que baldear custa a espera; mediana das viagens com o piso de 1 s; grade espacial da caminhada em vez de comparar todos os pares. Complexidade: O(V + K + L + N log N).
+4. **Resultado e limitação (30 s):** feed real em cerca de 0,3 s por visão (V = 46.100 no G_E); limitações: um tempo de viagem para o dia todo e a regra de partida na faixa (D10).
 
 ## Pendências
 - **Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS): confirmar quando ele publicar o contrato. ~~`Resultado(dist, pred)` (Thiago)~~ **feito em 05/11:** diagrama com `Resultado(origem, dist, pred, pred_aresta)` e `caminho_arestas`, como na `main`.
@@ -150,3 +209,4 @@ Do mesmo feed, numa checagem avulsa em 05/11 (script de revisão do PR #42, não
 ### PR 05/11/2026: #41 aberto (Introdução, Plano e README da Etapa 1), empilhado sobre o #40.
 ### Revisão 05/11/2026: PR #42 (P0-DADOS) revisado com mudança pedida (frequências fora de `Rede.viagens`); a `Rede` atende `RedeConstrutores` sem adaptador.
 ### Sessão 05/11/2026: etapa 5 no feed real com a `Rede` do PR #42: G_P em 312,8 ms (V = 9.659, E = 122.732), G_E em 342 a 365 ms por faixa (V = 46.100, E de 206.868 a 208.956).
+### Sessão 05/11/2026: etapa 6 em rascunho: Como funciona e por quê, 5 perguntas de verificação, diagrama `atividade-construir-ge`, `docs/GUIA.md` §3 e §10 e roteiro do vídeo; arestas no piso de 1 s contadas no feed real (43 de 12.554 de viagem no G_P).
