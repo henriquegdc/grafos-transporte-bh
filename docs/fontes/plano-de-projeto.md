@@ -11,10 +11,10 @@
 |---|---|---|---|
 | A | Thiago | (a preencher) | Núcleo do grafo e centralidades |
 | B | Miguel | (a preencher) | Dados e tempo de espera |
-| C | Henrique | (a preencher) | Modelagem e trajeto mais rápido (caminho crítico, seção 6.2) |
+| C | Henrique | (a preencher) | Modelagem e trajeto mais rápido (caminho crítico, seção 6.2); integração do relatório e montagem do vídeo |
 | D | Arthur | (a preencher) | Interface e eficiência |
 | E | Caio | (a preencher) | Repositório, guia, entrega e falhas |
-| F | Rafael | (a preencher) | Relatório e baldeações |
+| F | Rafael | (a preencher) | Baldeações e desempenho |
 
 O usuário GitHub é preenchido na criação do repositório; é por ele que as issues são atribuídas e que o agente identifica quem está pedindo tarefa (seção 12.6).
 
@@ -127,11 +127,11 @@ O enunciado diz que "somente serão avaliadas entregas que tenham todos os itens
 | 2 | Diagramas UML da modelagem | 1 | Figuras no relatório, fontes em `docs/diagramas/` | Henrique (globais) e cada dono (da sua feature) | Globais em 03/11; por feature até 11/11 |
 | 3 | Protótipo funcional com interface gráfica que mostra os resultados | 2 | Aplicação Streamlit | Todos; Arthur integra | Congelamento em 15/11 |
 | 4 | Código versionado no Git, com histórico e commits individuais | 2 e 3 | Repositório público no GitHub | Todos; Caio cuida do repositório | Contínuo |
-| 5 | Relatório técnico em LaTeX, template SBC, 12 a 15 páginas | 3 | `.tex` e PDF | Rafael integra; cada dono escreve sua parte | Completo em 19/11; final em 20/11 |
-| 6 | Responsabilidades e o que cada membro fez | 3 | Seção do relatório | Rafael | 20/11 |
+| 5 | Relatório técnico em LaTeX, template SBC, 12 a 15 páginas | 3 | `.tex` e PDF | Henrique integra; cada dono escreve sua parte | Completo em 19/11; final em 20/11 |
+| 6 | Responsabilidades e o que cada membro fez | 3 | Seção do relatório | Henrique | 20/11 |
 | 7 | Slides da apresentação | 3 | PDF | Arthur | 19/11 |
 | 8 | Apresentação presencial de 10 min com demonstração, todos participando | 3 | Presencial | Todos | A partir de 24/11; ordem a confirmar |
-| 9 | Vídeo de 12 a 18 min, cada aluno mostrando as próprias features | 3 | Link enviado no Canvas junto com o `.zip` | Cada um grava o seu trecho; Caio monta e publica | 20/11 |
+| 9 | Vídeo de 12 a 18 min, cada aluno mostrando as próprias features | 3 | Link enviado no Canvas junto com o `.zip` | Cada um grava o seu trecho; Henrique monta e publica | 20/11 |
 | 10 | Arquivo `.zip` com o código-fonte, o `.tex` e o PDF do relatório | Entrega | `.zip` | Caio | 21/11 |
 | 11 | Envio no Canvas por cada um dos seis | Entrega | O mesmo `.zip` e o link do vídeo | Cada um | 21/11 (limite: 22/11, 23:59) |
 | 12 | Guia do projeto com perguntas de verificação (exigência do grupo, não do enunciado) | Interna | `docs/GUIA.md` | Caio integra; cada dono escreve a sua parte | 17/11 |
@@ -332,7 +332,7 @@ Regras do calendário:
 | Qualquer feature incompleta | 15/11 | Sai do escopo e vira limitação no relatório |
 | Alguma essencial ou desejável sem DoD | 15/11 | A etapa opcional de benchmark não acontece |
 | Guia com lacunas | 17/11 | Caio lista as lacunas; cada dono completa até 18/11 |
-| Relatório fora de 12 a 15 páginas | 19/11 | Rafael corta pelas seções com folga, seguindo o orçamento da seção 14.1 |
+| Relatório fora de 12 a 15 páginas | 19/11 | Henrique corta pelas seções com folga, seguindo o orçamento da seção 14.1 |
 
 ### 7.4 Feriados e o TI5
 
@@ -761,8 +761,8 @@ O relatório fica em `relatorio/`, com o template oficial da SBC, um `main.tex` 
 | 7 | Funcionalidades e resultados | Uma subseção por feature, com tela, resultado e complexidade | Cada dono | 4 |
 | 8 | Avaliação de desempenho | Complexidade teórica e tempos medidos de cada algoritmo; comparação com NetworkX se a etapa opcional acontecer | Rafael | 1 |
 | 9 | Limitações e conclusão | O que o modelo não captura e o que fica para depois | Caio | 1 |
-| 10 | Responsabilidades | Quem fez o quê, a partir da tabela-mestre e do `git log` | Rafael | 0,5 |
-| | Referências | | Rafael | 0,5 |
+| 10 | Responsabilidades | Quem fez o quê, a partir da tabela-mestre e do `git log` | Henrique | 0,5 |
+| | Referências | | Henrique | 0,5 |
 | | **Total** | | | **14** |
 
 O orçamento deixa uma página de folga até o limite de 15 e duas acima do mínimo de 12. Marcos: seções da Etapa 1 em v1 em 03/11; rascunho de todas as seções em 15/11; relatório completo em 19/11; versão final em 20/11.
@@ -798,7 +798,7 @@ Todos falam, como o enunciado exige. Os slides derivam do relatório, e Arthur o
 | Fechamento: desempenho e limitações | Rafael | 1 min |
 | **Total** | | **14,5 a 17,5 min** |
 
-O enunciado pede foco no funcionamento e nas features de cada aluno, por isso abertura e fechamento são curtos. Cada dono grava o seu trecho por captura de tela depois do congelamento, até 18/11, seguindo o roteiro do arquivo da feature. Caio monta o vídeo até 20/11, publica e distribui o link, que cada um envia no Canvas junto com o `.zip`.
+O enunciado pede foco no funcionamento e nas features de cada aluno, por isso abertura e fechamento são curtos. Cada dono grava o seu trecho por captura de tela depois do congelamento, até 18/11, seguindo o roteiro do arquivo da feature. Henrique monta o vídeo até 20/11, publica e distribui o link, que cada um envia no Canvas junto com o `.zip`.
 
 ## 15. Riscos e mitigações
 
@@ -848,6 +848,7 @@ Esta tabela é o início do registro de decisões do `docs/GUIA.md`.
 | Congelamento em 15/11 | A semana de 16/11 é do TI5 | Congelar em 18/11 |
 | Nomes: Thiago, Miguel, Henrique, Arthur, Caio e Rafael nas frentes A a F | Ver seção 6.2 | |
 | Henrique fica com a frente C (modelagem e trajeto mais rápido), o caminho crítico | Pedido dele; a frente alimenta 5 das 6 features essenciais e concentra o que é avaliado na Etapa 1 | Henrique em dados e espera |
+| Henrique integra o relatório final (itens 5 e 6) e monta o vídeo (item 9), decidido em 06/11 | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo (plano aprovado em 29/10) |
 | Arquivo de feature com seção Retomada, reescrita ao fim de toda sessão | Qualquer agente novo precisa saber onde parou e o próximo passo sem reler o código | Só status por camada |
 | Todos os arquivos de feature e as issues criados na abertura do repositório | Cada integrante clona, pergunta ao agente o que fazer e começa no mesmo dia | Cada dono cria os seus quando começar |
 
