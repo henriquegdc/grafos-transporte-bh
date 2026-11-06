@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11, Henrique, branch `feat/F-ROTA-trajeto` (PR #39, sobre o #38): etapa 5, tempo medido no feed real com `benchmarks/medir_modelo_rota.py`, usando a `Rede` do PR #42 (P0-DADOS, em revisão).
-- **Onde parou:** etapas 1, 2 e 5 concluídas. `trajeto_mais_rapido` rodou em 200 consultas no G_E real (V = 46.100, E = 208.956): 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX (ver Resultados). O X do RNF-05 está proposto como R4.
-- **Próximo passo:** decidir R4 (X do RNF-05); conseguir 1 aprovação no PR #39 (a base vira `main` quando o #38 for integrado); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Quando o #42 entrar: teste de integração com a rede de teste (etapa 3). Depois: etapa 6 e etapa 4 (página com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa.
-- **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, `benchmarks/medir_modelo_rota.py`, este arquivo.
+- **Última sessão:** 05/11, Henrique, branch `feat/F-ROTA-trajeto` (PR #39, sobre o #38): etapa 5, tempo medido no feed real com `benchmarks/medir_modelo_rota.py`, usando a `Rede` do PR #42 (P0-DADOS, em revisão); etapa 6 em rascunho (Como funciona, perguntas, diagrama de sequência, GUIA §5.1 e §10, roteiro do vídeo).
+- **Onde parou:** etapas 1, 2 e 5 concluídas; etapa 6 com tudo menos a seção do relatório. `trajeto_mais_rapido` rodou em 200 consultas no G_E real (V = 46.100, E = 208.956): 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX (ver Resultados). O X do RNF-05 está proposto como R4.
+- **Próximo passo:** decidir R4 (X do RNF-05); conseguir 1 aprovação no PR #39 (a base vira `main` quando o #38 for integrado); avisar o Rafael (F-BALD-2) e o Miguel (F-ESPERA, RF-ESP-03) do contrato. Quando o #42 entrar: teste de integração com a rede de teste (etapa 3). Revisar o rascunho da etapa 6 (Henrique); seção do relatório quando houver os intervalos da F-ESPERA (tempo total e baldeações dependem deles). Etapa 4 (página com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa.
+- **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajeto.{puml,png}`, `docs/GUIA.md` §5.1 e §10, este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests/algoritmos/test_trajeto.py` (26 testes em 05/11); `ruff check src tests benchmarks`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip` (precisa do PR #42 e do feed baixado por `scripts/baixar_gtfs.py`).
 - **Bloqueios:** RF-ROT-02 depende do P0-UI (Arthur); teste de integração e merge do script de medição dependem do PR #42 (P0-DADOS, mudança pedida em 05/11); o merge depende do PR #38.
 
@@ -30,9 +30,9 @@ Trajeto mais rápido. Fecha:
 | Interface | não iniciado | depende do contrato de página e do mapa (P0-UI) |
 | Testes | concluído | 05/11: 26 verdes. Gabarito à mão (linha direta, baldeação, troca que vence a direta, espera longa que inverte a escolha, só a pé, caminhadas encadeadas, a pé nas pontas), bordas (origem = destino, inalcançável, parada inexistente, falha e reativação) e NetworkX em 15 redes aleatórias (300 consultas: 255 com trajeto, 116 com baldeação, 195 com caminhada). Mutação à mão: agrupar a pé, agrupar ônibus e o tempo total derrubam testes |
 | Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã; ver Resultados. X do RNF-05 a decidir (R4) |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
+| Guia (explicação e quiz) | em andamento | 05/11: rascunho de Como funciona e 5 perguntas, copiado para o `docs/GUIA.md` §5.1 e §10; Henrique revisa |
+| Relatório | não iniciado | espera os intervalos da F-ESPERA para ter resultado de tempo total e baldeações |
+| Vídeo | em andamento | 05/11: rascunho do roteiro; a parte de interface espera o P0-UI |
 
 ## Especificação
 `src/transporte/algoritmos/trajeto.py`:
@@ -47,10 +47,46 @@ Algoritmos previstos (docs/fontes/modelagem.md §3.5):
 - Dijkstra · visão G_E · O((V + E) log V) · Pesos não negativos
 
 ## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
+
+**O problema.** Dadas duas paradas, achar o trajeto que chega mais cedo, em média, somando caminhada, espera e viagem, e dizer ao passageiro o que fazer em cada parte: andar até onde, esperar qual linha, descer onde.
+
+**A visão: G_E.** Em G_P, ficar no ônibus e trocar de ônibus custam o mesmo, porque a aresta não sabe em que linha o passageiro está. Em G_E cada (parada, padrão) é uma plataforma; trocar de linha obriga a desembarcar, voltar à parada e pagar um novo embarque, que carrega a espera da nova linha (`docs/GUIA.md` §3). Por isso o problema vira um caminho mínimo comum: um único Dijkstra soma as quatro coisas, sem penalidade arbitrária por baldeação.
+
+**Passo a passo** (`trajeto_mais_rapido(ge, origem, destino)`; diagrama de sequência em `docs/diagramas/sequencia-trajeto.png`):
+
+1. Traduz as paradas em vértices de parada de G_E (`ge.vertice_da_parada`); parada inexistente dá KeyError.
+2. Roda o `dijkstra` do núcleo (heap binário próprio, sem `heapq`) a partir da origem, parando quando o destino é fechado. Destino com distância infinita devolve None.
+3. Reconstrói o caminho como lista de **arestas** (`caminho_arestas`), porque o tipo de cada passo (caminhada, embarque, viagem, desembarque) está na aresta.
+4. Conta as baldeações: embarques menos um (`ge.baldeacoes`).
+5. Agrupa as arestas em trechos: caminhadas seguidas viram um trecho a pé; embarque vira espera; viagens seguidas do mesmo padrão viram um trecho de ônibus, que o desembarque fecha (o desembarque pesa 0 e não vira trecho).
+
+Exemplo (figura `ge-exemplo` do relatório, com pesos inventados para a conta): de A a C, L1 de A a B e L2 de B a C, espera de 300 s nas duas e viagens de 240 s e 180 s. O Dijkstra acha 300 + 240 + 0 + 300 + 180 = 1.020 s. Os trechos são: espera de L1 em A (300 s), ônibus L1 de A a B (240 s), espera de L2 em B (300 s) e ônibus L2 de B a C (180 s). São dois embarques, então uma baldeação. Se andar de A a C levasse menos de 1.020 s, o trajeto seria um trecho a pé só, com 0 baldeações.
+
+**Por que parar no destino é correto.** Com pesos não negativos, quando o Dijkstra tira um vértice do heap, a distância dele já é a mínima. Ao fechar o destino, nada que ainda está no heap melhora essa distância, então continuar só gastaria tempo.
+
+**Complexidade.** V e E de G_E, k arestas no caminho. O Dijkstra com heap binário e inserção preguiçosa insere no máximo uma entrada por relaxamento bem-sucedido, então o heap recebe O(V + E) entradas, cada uma custando O(log V): O((V + E) log V). Parar no destino não muda o pior caso, mas na prática fecha só os vértices mais próximos que ele. A reconstrução custa O(V) para inverter os mapas da visão e O(k) para percorrer o caminho. Espaço O(V + E), pelas entradas do heap. Medido em 05/11 no feed real (ver Resultados): G_E com V = 46.100 e E = 208.956, 75,8 ms por consulta em média e 162,2 ms no pior caso de 200 consultas.
+
+**Decisões e alternativas descartadas** (R1 a R3, decididas em 05/11):
+
+- **Função em `algoritmos/trajeto.py`, não método da visão (R1):** a visão fica só com estrutura, e o A\* (F-ROTA-2) e o Yen (F-ROTA-OPC) entram no mesmo módulo.
+- **Trechos agrupados, não arestas cruas (R2):** é o que o RF-ROT-02 pede e o que a página desenha; as arestas continuam disponíveis por `caminho_arestas`.
+- **Inalcançável devolve None (R3):** numa rede com falhas (F-RES) ou recortada, não haver trajeto é resultado normal, não erro.
+- **Sem penalidade por baldeação:** a baldeação já custa a espera da nova linha. Quem quer menos baldeações usa a F-BALD, que compara com este trajeto.
+
+**Limitações.**
+
+- O tempo é o **esperado** para quem chega à parada num instante qualquer da faixa (espera H/2), não o de um horário de saída exato; não é um planejador de viagem em tempo real.
+- Enquanto a F-ESPERA não publica os intervalos, toda espera é 300 s (D6). Com isso baldear sai barato: na medição de 05/11, 31 de 200 trajetos tinham 3 ou mais baldeações.
+- Uma viagem que começa no fim de uma faixa e continua na seguinte só conta na faixa em que parte (D10).
+- Caminhada em linha reta, sem ruas, até 300 m entre paradas; não há caminhada da origem do passageiro até a primeira parada.
 
 ## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
+
+1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque em G_E trocar de linha obriga a passar por uma aresta de embarque, que pesa a espera da nova linha; a baldeação vira custo comum do caminho.
+2. **Por que o caminho é reconstruído por arestas e não por vértices?** Porque o tipo do passo (caminhada, embarque, viagem, desembarque) está na aresta; é dele que saem os trechos e a contagem de baldeações.
+3. **Por que dá para parar o Dijkstra quando o destino sai do heap?** Com pesos não negativos, a distância de um vértice fechado é definitiva; o que resta no heap não melhora o destino.
+4. **O tempo total é o horário de chegada de quem sai agora?** Não. É o tempo esperado para quem chega à parada num instante qualquer da faixa: a espera de cada embarque é H/2.
+5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem trajeto"; isso é normal com paradas ou linhas desativadas (F-RES).
 
 ## Critérios de aceite
 - [x] RF-ROT-01: Calcular o trajeto mais rápido entre duas paradas, somando caminhada, espera, viagem e baldeações (05/11, sobre G_E montado à mão; no feed real, 200 de 200 consultas com trajeto e 0 divergências com o NetworkX)
@@ -62,11 +98,11 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
+- [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (05/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (05/11)
 - [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (05/11: `sequencia-trajeto`)
+- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (05/11, rascunho; Henrique revisa)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
 - [ ] Roteiro do vídeo escrito no arquivo da feature
@@ -79,8 +115,8 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 2 | Algoritmo com testes de corretude | concluída em 05/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | em andamento: roda no feed real com a `Rede` do PR #42; falta o teste de integração na rede de teste, depois do merge do #42 |
 | 4 | Página na interface | bloqueada: contrato de página e mapa (P0-UI) |
-| 5 | Tempo medido na rede real e complexidade justificada | tempo medido em 05/11; a justificativa da complexidade entra no "Como funciona" (etapa 6) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída em 05/11 (tempo em Resultados; complexidade em Como funciona) |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | em andamento: rascunho de 05/11 (Como funciona, perguntas, `sequencia-trajeto`, GUIA §5.1 e §10, roteiro); falta a seção do relatório e a revisão do Henrique |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -103,6 +139,13 @@ Limitação: a espera nas arestas de embarque é a padrão de 300 s, porque a ta
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
 3. Algoritmo e complexidade. 4. Resultado e limitação.
+
+Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
+
+1. **Problema (20 s):** de uma parada a outra em BH, qual o caminho que chega antes, contando a caminhada, a espera e a troca de ônibus?
+2. **Na ferramenta (45 s):** escolher origem, destino e faixa; mostrar no mapa os trechos com cores por tipo e a lista "andar até X, esperar a linha Y, descer em Z" com os tempos; trocar a faixa e mostrar o trajeto mudar.
+3. **Como funciona (45 s):** G_E de exemplo, por que trocar de linha passa pelo embarque; um Dijkstra só, parando no destino; a reconstrução em trechos. Complexidade O((V + E) log V).
+4. **Resultado e limitação (30 s):** cerca de 76 ms por consulta na rede inteira (V = 46.100), conferido com o NetworkX em 200 consultas; limitação: o tempo é o esperado da faixa, não o de um horário de saída exato.
 
 ## Pendências
 - **F-BALD-2 (Rafael):** a função de trajeto mais rápido era para 08/11. Avisar que o contrato está em `algoritmos/trajeto.py` (no PR da F-ROTA): `trajeto_mais_rapido(ge, origem, destino)` dá `tempo_total_s` e `baldeacoes` para comparar com o trajeto de menos baldeações.
@@ -129,3 +172,4 @@ Limitação: a espera nas arestas de embarque é a padrão de 300 s, porque a ta
 ### Decisão 05/11/2026: R1 a R3 aceitas pela recomendação.
 ### PR 05/11/2026: #39 aberto, empilhado sobre o #38.
 ### Sessão 05/11/2026: etapa 5 no feed real com a `Rede` do PR #42: 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX em 200 consultas; `benchmarks/medir_modelo_rota.py`; R4 (X do RNF-05) proposta.
+### Sessão 05/11/2026: etapa 6 em rascunho: Como funciona e por quê, 5 perguntas de verificação, diagrama `sequencia-trajeto`, `docs/GUIA.md` §5.1 e §10 e roteiro do vídeo.
