@@ -42,7 +42,7 @@ Construtores de G_P e G_E a partir do modelo normalizado (`docs/fontes/modelagem
 |---|---|
 | `src/transporte/modelo/parametros.py` | `FaixaHoraria(nome, inicio_s, fim_s)`, `Parametros(raio_caminhada_m=300, velocidade_caminhada_ms=1.2, espera_padrao_s=300, faixas)` |
 | `src/transporte/modelo/visoes.py` | `Visao(grafo, nome)`, `VisaoGP`, `VisaoGE` (com `baldeacoes`), constantes de tipo de aresta `VIAGEM`, `CAMINHADA`, `EMBARQUE`, `DESEMBARQUE` |
-| `src/transporte/modelo/construtores.py` | `construir_gp(rede, params)`, `construir_ge(rede, faixa, params, intervalos)`, `salvar(visao, caminho)`, `carregar(caminho)` |
+| `src/transporte/modelo/construtores.py` | `construir_gp(rede, params)`, `construir_ge(rede, faixa, params, esperas)`, `salvar(visao, caminho)`, `carregar(caminho)` |
 
 Complexidade (V paradas, L plataformas, N horários, K pares a até o raio): `construir_gp` em O(V² + N log N); `construir_ge` em O(V² + L + N log N); o V² cai para O(V + K) com grade espacial.
 
@@ -130,3 +130,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Sessão 05/11/2026: seção Modelagem do relatório (v1) na branch `feat/P0-MODELO-relatorio`; figuras `ge-exemplo` e `classes-modelo` em PlantUML.
 ### PR 05/11/2026: #40 aberto (seção Modelagem do relatório), empilhado sobre o #38.
 ### Decisão 05/11/2026: D8 a D11 aceitas pela recomendação.
+### Contrato 05/11/2026: `construir_ge` passa a receber `esperas[(padrão, faixa)]` (a espera já calculada pela F-ESPERA) em vez de `intervalos` (H, dividido por 2 no construtor), para a F-ESPERA aplicar a fórmula de intervalo irregular (RF-ESP-02); decisão do Henrique, registrada no GUIA §8; falta avisar o Miguel (F-ESPERA).
