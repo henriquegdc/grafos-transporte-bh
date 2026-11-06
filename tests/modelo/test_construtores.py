@@ -228,14 +228,31 @@ def test_ge_noite_embarca_so_no_padrao_que_parte(rede_ge):
     assert arestas(v, EMBARQUE) == {("B", "B@P2"): [300.0]}
 
 
-def test_ge_espera_vem_dos_intervalos(rede_ge):
-    v = construir_ge(rede_ge, "pico_manha", intervalos={("P1", "pico_manha"): 400.0})
-    assert arestas(v, EMBARQUE) == {("A", "A@P1"): [200.0], ("B", "B@P1"): [200.0]}
+def test_ge_espera_vem_da_tabela_sem_transformar(rede_ge):
+    # A F-ESPERA entrega a espera pronta (H/2 ou E[H²]/(2E[H])); o construtor só aplica.
+    v = construir_ge(rede_ge, "pico_manha", esperas={("P1", "pico_manha"): 437.5})
+    assert arestas(v, EMBARQUE) == {("A", "A@P1"): [437.5], ("B", "B@P1"): [437.5]}
 
 
-def test_ge_intervalo_ausente_usa_espera_padrao(rede_ge):
-    v = construir_ge(rede_ge, "pico_manha", intervalos={})
+def test_ge_espera_de_outra_faixa_nao_se_aplica(rede_ge):
+    v = construir_ge(rede_ge, "pico_manha", esperas={("P1", "noite"): 900.0})
     assert arestas(v, EMBARQUE)[("A", "A@P1")] == [300.0]
+
+
+def test_ge_espera_ausente_usa_espera_padrao(rede_ge):
+    v = construir_ge(rede_ge, "pico_manha", esperas={})
+    assert arestas(v, EMBARQUE)[("A", "A@P1")] == [300.0]
+
+
+def test_ge_espera_zero_vale(rede_ge):
+    # 0 é espera válida (não pode cair no padrão por ser falsy).
+    v = construir_ge(rede_ge, "pico_manha", esperas={("P1", "pico_manha"): 0.0})
+    assert arestas(v, EMBARQUE)[("A", "A@P1")] == [0.0]
+
+
+def test_ge_espera_negativa_levanta(rede_ge):
+    with pytest.raises(ValueError):
+        construir_ge(rede_ge, "pico_manha", esperas={("P1", "pico_manha"): -1.0})
 
 
 def test_ge_trajeto_e_baldeacoes():

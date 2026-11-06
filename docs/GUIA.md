@@ -41,7 +41,8 @@ tivesse −500 s (erro de cadastro), ela ficaria fora e a mediana de 60 e 80 ser
 parada e embarcar de novo, pagando a espera da nova linha (figura `docs/diagramas/ge-exemplo.png`;
 passo a passo em `docs/diagramas/atividade-construir-ge.png`).
 
-1. EMBARQUE parada → plataforma, com peso H/2 (H da tabela da F-ESPERA; 300 s enquanto ela não
+1. EMBARQUE parada → plataforma, com peso igual à espera da tabela `esperas` da F-ESPERA para
+   (padrão, faixa), aplicada como veio (H/2 na versão essencial; 300 s enquanto a tabela não
    existe), só se alguma viagem do padrão parte na faixa (D10) e nunca na última parada (D9).
 2. VIAGEM plataforma → plataforma seguinte, com a mediana daquele padrão.
 3. DESEMBARQUE plataforma → parada, peso 0, nunca na primeira parada (D9).
@@ -188,6 +189,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Sem embarque na última parada do padrão e sem desembarque na primeira (D9) | Essas arestas nunca estão num caminho útil e só aumentam o G_E | Criar as quatro arestas em toda plataforma |
 | 05/11 | Padrão com partida na faixa = alguma viagem com o primeiro horário na faixa (D10) | É a definição de partida e casa com a tabela de intervalos de F-ESPERA, por (padrão, faixa); ônibus que sai às 08h55 não dá embarque às 09h20 no entrepico (limitação) | Alguma viagem passar pela parada dentro da faixa |
 | 05/11 | Linha circular usa uma plataforma por (parada, padrão) (D11) | É o que a chave do contrato `plataforma[(parada, padrão)]` implica; o passageiro pode dar a volta e seguir no início do padrão (limitação) | Uma plataforma por ocorrência da parada no padrão |
+| 05/11 | `construir_ge` recebe `esperas[(padrão, faixa)]`, a espera de embarque já calculada pela F-ESPERA, e a aplica sem transformação; substitui `intervalos`, de que o construtor tirava H/2 (P0-MODELO) | Calcular a espera é do RF-ESP-02. A versão essencial usa H/2, e a comparação com E[H²]/(2 E[H]), a espera com intervalos irregulares, é resultado a discutir (`modelagem.md`, espera esperada); dividindo H por 2 no construtor, essa comparação exigiria passar E[H²]/E[H] num campo chamado "intervalo". Mudado antes do merge do #38 e antes de a F-ESPERA começar, sem retrabalho | Manter `intervalos` com H/2 no construtor; receber H e a variância |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...

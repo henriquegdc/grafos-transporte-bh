@@ -249,7 +249,7 @@ def construir_ge(
     rede: RedeConstrutores,
     faixa: str,
     params: Parametros | None = None,
-    intervalos: Mapping[tuple[str, str], float] | None = None,
+    esperas: Mapping[tuple[str, str], float] | None = None,
 ) -> VisaoGE:
     """Constrói G_E para uma faixa horária: paradas, plataformas e as arestas de embarque,
     viagem, desembarque e caminhada.
@@ -258,9 +258,10 @@ def construir_ge(
         rede: modelo normalizado (P0-DADOS).
         faixa: nome de uma faixa de params.faixas; define a espera nas arestas de embarque.
         params: parâmetros da modelagem; None usa os valores padrão.
-        intervalos: (id do padrão, nome da faixa) -> intervalo médio H em segundos, vindo de
-            F-ESPERA; a espera do embarque é H/2. None, ou par ausente da tabela, usa
-            params.espera_padrao_s.
+        esperas: (id do padrão, nome da faixa) -> espera esperada no embarque, em segundos,
+            calculada pela F-ESPERA (RF-ESP-02: H/2 na versão essencial; E[H²]/(2 E[H])
+            para comparar o efeito de intervalos irregulares) e aplicada sem transformação. None, ou par ausente da
+            tabela, usa params.espera_padrao_s.
     Saída: VisaoGE com o grafo, os mapas de paradas e plataformas e a faixa usada. Os
         vértices de parada vêm primeiro, na ordem de rede.paradas; depois as plataformas,
         padrão a padrão.
@@ -271,7 +272,9 @@ def construir_ge(
         DESEMBARQUE plataforma -> parada (peso 0), exceto na primeira parada do padrão.
         CAMINHADA como em G_P.
     Casos de borda: padrão sem partida na faixa (nenhuma viagem cujo primeiro horário cai
-        nela) não recebe aresta de embarque (não dá para embarcar nele naquela faixa);
+        nela) não recebe aresta de embarque (não dá para embarcar nele naquela faixa),
+        mesmo que a tabela de esperas traga um valor para ele; espera negativa, infinita
+        ou NaN na tabela levanta ValueError (Grafo.adicionar_aresta);
         padrão com uma parada só é ignorado; padrão que passa duas vezes pela mesma parada
         (linha circular) usa uma plataforma só para ela; faixa inexistente levanta
         KeyError; padrão com parada inexistente levanta KeyError.
@@ -300,8 +303,8 @@ def construir_ge(
             plat.append(visao.plataforma[chave])
 
         if _partidas_na_faixa(viagens, f.inicio_s, f.fim_s):
-            h = None if intervalos is None else intervalos.get((padrao.id, faixa))
-            espera = params.espera_padrao_s if h is None else h / 2
+            e = None if esperas is None else esperas.get((padrao.id, faixa))
+            espera = params.espera_padrao_s if e is None else e
             embarques = set()  # plataforma repetida (linha circular) embarca uma vez só
             for k in range(len(seq) - 1):
                 if plat[k] not in embarques:
