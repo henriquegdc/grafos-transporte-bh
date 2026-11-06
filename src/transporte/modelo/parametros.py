@@ -1,6 +1,6 @@
 """Parâmetros da modelagem (docs/fontes/modelagem.md §3.4).
 
-estado: planejado
+estado: implementado
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ class FaixaHoraria:
 
 
 def _faixas_padrao() -> tuple[FaixaHoraria, ...]:
-    # Proposta pendente de decisão (feature-P0-MODELO.md, Pendências); horários fora
+    # Decisão D5 (docs/GUIA.md §8); horários fora
     # destas faixas não entram na estimativa de intervalos.
     return (
         FaixaHoraria("pico_manha", 6 * 3600, 9 * 3600),
@@ -49,15 +49,19 @@ class Parametros:
         raio_caminhada_m: distância máxima, em linha reta, de uma aresta de caminhada.
         velocidade_caminhada_ms: velocidade a pé usada no peso da caminhada.
         espera_padrao_s: espera usada nas arestas de embarque enquanto a tabela de
-            intervalos de F-ESPERA não existe (proposta pendente de decisão).
+            esperas da F-ESPERA não existe, e para padrão ausente dela.
+        peso_minimo_s: piso das arestas de viagem e de caminhada (decisão M2 da F-MET):
+            o GTFS arredonda horários e paradas no mesmo ponto ficam a 0 m, mas 0 s entre
+            paradas distintas é artefato, e peso 0 quebra a contagem de caminhos do Brandes.
         faixas: faixas horárias do dia.
 
-    Valores fixados em 29/10 (docs/GUIA.md §8). Espaço O(número de faixas).
+    Valores fixados em 29/10 e piso em 05/11 (docs/GUIA.md §8). Espaço O(número de faixas).
     """
 
     raio_caminhada_m: float = 300.0
     velocidade_caminhada_ms: float = 1.2
     espera_padrao_s: float = 300.0
+    peso_minimo_s: float = 1.0
     faixas: tuple[FaixaHoraria, ...] = field(default_factory=_faixas_padrao)
 
     def faixa(self, nome: str) -> FaixaHoraria:
