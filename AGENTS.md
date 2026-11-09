@@ -56,13 +56,15 @@ scipy.sparse.csgraph, osmnx). NetworkX só em `tests/`, para comparar resultados
 Estrutura: `docs/fontes/plano-de-projeto.md` §4.4. Dados brutos em `dados/brutos/` (fora do
 Git); rede de teste em `dados/rede-teste/`.
 
-Comandos (P0-REPO completa esta seção):
+Comandos (detalhes no `README.md` §5):
 
 ```text
+python -m venv .venv                   # Python 3.12; ative o .venv
 pip install -r requirements.txt
-git config core.hooksPath .githooks
-pytest
+git config core.hooksPath .githooks    # hook: verificar_imports.py + ruff
+pytest                                 # pyproject.toml já põe src/ no path; sem PYTHONPATH
 ruff check
+python scripts/verificar_imports.py
 streamlit run src/transporte/interface/app.py
 ```
 

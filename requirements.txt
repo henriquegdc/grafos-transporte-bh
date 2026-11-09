@@ -1,0 +1,17 @@
+# Versões fixadas (RNF-07). Python 3.12.
+# Instalar: pip install -r requirements.txt
+
+# Leitura do GTFS (pandas só para ler CSV)
+pandas==3.1.1
+
+# Interface
+streamlit==1.66.1
+streamlit-folium==0.27.4
+folium==0.20.0
+
+# Testes e lint
+pytest==9.2.0
+ruff==0.17.3
+
+# Só em tests/ e benchmarks/, para comparar resultados. Proibido em src/ (o hook barra).
+networkx==3.7
