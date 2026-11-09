@@ -98,6 +98,7 @@ class Rede:
             )
         }
         padroes: dict[str, Padrao] = {}
+        padrao_por_chave: dict[tuple[str, tuple[str, ...]], str] = {}
         viagens: dict[str, Viagem] = {}
         frequencias: list[Frequencia] = []
         freq_por_viagem: dict[str, list[Frequencia]] = {}
@@ -121,10 +122,13 @@ class Rede:
                 grupos.append(tuple(atual))
             grupos = [grupo for grupo in grupos if len(grupo) >= 2]
             for numero, grupo in enumerate(grupos):
-                novo_id = padrao.id if len(grupos) == 1 else f"{padrao.id}#trecho{numero}"
-                padroes[novo_id] = Padrao(
-                    novo_id, padrao.linha_id, tuple(padrao.paradas[i] for i in grupo)
-                )
+                sequencia = tuple(padrao.paradas[i] for i in grupo)
+                chave = (padrao.linha_id, sequencia)
+                if chave not in padrao_por_chave:
+                    novo_id = padrao.id if len(grupos) == 1 else f"{padrao.id}#trecho{numero}"
+                    padroes[novo_id] = Padrao(novo_id, padrao.linha_id, sequencia)
+                    padrao_por_chave[chave] = novo_id
+                novo_id = padrao_por_chave[chave]
                 for viagem in viagens_por_padrao.get(padrao.id, []):
                     viagem_id = viagem.id if len(grupos) == 1 else f"{viagem.id}#trecho{numero}"
                     viagens[viagem_id] = Viagem(
@@ -165,17 +169,20 @@ class Rede:
             freq_por_viagem.setdefault(freq.viagem_id, []).append(freq)
         for viagem in self.viagens_por_id.values():
             padrao = self.padroes[viagem.padrao_id]
-            self.viagens.setdefault(padrao.id, []).append(viagem.horarios)
             frequencias = freq_por_viagem.get(viagem.id)
             if frequencias:
                 for freq in frequencias:
                     for partida in range(freq.inicio_s, freq.fim_s, freq.intervalo_s):
-                        for parada_id, horario in zip(padrao.paradas, viagem.horarios):
+                        horarios = tuple(
+                            partida + horario - viagem.horarios[0]
+                            for horario in viagem.horarios
+                        )
+                        self.viagens.setdefault(padrao.id, []).append(horarios)
+                        for parada_id, horario in zip(padrao.paradas, horarios):
                             chave = (padrao.id, parada_id)
-                            self.partidas.setdefault(chave, []).append(
-                                partida + horario - viagem.horarios[0]
-                            )
+                            self.partidas.setdefault(chave, []).append(horario)
             else:
+                self.viagens.setdefault(padrao.id, []).append(viagem.horarios)
                 for parada_id, horario in zip(padrao.paradas, viagem.horarios):
                     self.partidas.setdefault((padrao.id, parada_id), []).append(horario)
         for horarios in self.partidas.values():

@@ -201,8 +201,6 @@ def _montar(caminho: Path, tabelas: dict[str, list[dict[str, str]]], dia: date) 
         ):
             erros.append(f"viagem {ident}: sequência ou horários fora de ordem")
             continue
-        if linha.get("service_id") not in servicos:
-            continue
         sequencia = tuple(p[2] for p in pontos)
         chave = (linha["route_id"], sequencia)
         if chave not in padrao_por_chave:

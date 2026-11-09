@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11/2026, branch `feat/P0-DADOS-gtfs`.
-- **Onde parou:** somente P0-DADOS nesta branch; contrato ajustado ao `RedeConstrutores` do PR #38 e G_P/G_E testados na rede de teste e no recorte real. PR e interface pendentes.
-- **Próximo passo:** abrir PR de P0-DADOS; Miguel revisar as decisões rascunhadas no `docs/GUIA.md` e o relatório, validar a compilação LaTeX em ambiente com TeX e combinar a integração com P0-MODELO/P0-UI.
-- **Arquivos tocados:** `src/transporte/dados/{modelo,leitor_gtfs}.py`, `scripts/baixar_gtfs.py`, `dados/rede-teste/`, `tests/dados/test_leitor_gtfs.py`, `docs/diagramas/atividade-p0-dados.{puml,png}`, `docs/GUIA.md`, `relatorio/secoes/dados.tex`, este arquivo.
+- **Última sessão:** 08/11/2026, branch `feat/P0-DADOS-gtfs` rebaseada sobre `origin/main` (`604b70b`).
+- **Onde parou:** correções da revisão do PR #42 implementadas: frequência expandida em `Rede.viagens`, recorte com padrões equivalentes reunidos e testes de trechos; integração com o código atual do PR #38 verificada na rede de teste. Atualização do PR autorizada por Miguel; revisão do revisor pendente.
+- **Próximo passo:** acompanhar a nova revisão do PR #42; Miguel revisar os rascunhos do guia, relatório e roteiro e integrar com P0-MODELO/P0-UI.
+- **Arquivos tocados:** `src/transporte/dados/{modelo,leitor_gtfs}.py`, `tests/dados/test_leitor_gtfs.py`, `docs/GUIA.md`, `relatorio/secoes/dados.tex`, `relatorio/figuras/atividade-p0-dados.png` e este arquivo.
 - **Como testar:** `PYTHONPATH=src UV_CACHE_DIR=/private/tmp/grafos-uv-cache uv run --no-project --offline --with pytest --with ruff --with networkx python -m pytest -q`, `UV_CACHE_DIR=/private/tmp/grafos-uv-cache uv run --no-project --offline --with ruff ruff check .` e `plantuml -tpng -failfast2 docs/diagramas/atividade-p0-dados.puml`.
-- **Bloqueios:** o PR #38 de P0-MODELO ainda está aberto e sua decisão D11 sobre parada repetida aguarda confirmação do grupo; página com dados reais depende de P0-UI; hook e distribuição LaTeX não estão disponíveis nesta `main`; DoD exige PR aprovado.
+- **Bloqueios:** o PR #38 de P0-MODELO ainda está aberto; página com dados reais depende de P0-UI; `latexmk` não está disponível neste ambiente; DoD exige PR aprovado.
 
 ## Objetivo
 Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
@@ -30,10 +30,10 @@ Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
 | Núcleo (algoritmo) | não aplicável | Esta feature fornece dados, não algoritmo de grafo |
 | Modelo e dados | implementado | 05/11: GTFS pasta/ZIP, calendário, frequências, validação e recorte; feed real lido |
 | Interface | não iniciado | Aguarda P0-UI |
-| Testes | implementado | 05/11: gabarito manual, casos de borda e recorte real; suíte geral verde |
+| Testes | implementado | 08/11: 442 testes e hook verdes após o rebase; frequência, trechos e união de padrões cobertos |
 | Desempenho (tempo medido) | implementado | 05/11: leitura medida no feed real com `medir` |
 | Guia (explicação e quiz) | parcial | Rascunho incorporado ao GUIA; Miguel precisa revisar as decisões e a explicação |
-| Relatório | parcial | `relatorio/secoes/dados.tex` escrito com figura e medição; falta compilar e revisar |
+| Relatório | parcial | Figura alinhada a `relatorio/figuras/`; falta compilar em ambiente com LaTeX e revisar |
 | Vídeo | parcial | Roteiro específico abaixo; falta revisão e gravação |
 
 ## Especificação
@@ -44,9 +44,9 @@ Assinaturas publicadas e implementadas: `Parada`, `Linha`, `Padrao`, `Viagem`, `
 ## Como funciona e por quê
 O leitor transforma linhas, paradas e horários do GTFS em objetos sem construir grafo. Seleciona uma quarta-feira ativa (a mais próxima da versão do feed, quando informada), aplica o calendário e suas exceções, agrupa viagens da mesma linha que percorrem a mesma sequência exata de paradas e expande as partidas de `frequencies.txt`. Guarda os horários por viagem porque uma lista de partidas por parada sozinha não revela quais duas passagens pertencem ao mesmo ônibus. Horários acima de 24h representam viagens que continuam após a meia-noite; descartá-los apagaria serviço válido.
 
-O recorte mantém somente linhas e paradas selecionadas. Se o corte separa dois trechos de um padrão, cria padrões distintos para evitar uma ligação direta inexistente. O leitor percorre as linhas do CSV em O(R + N log N) de tempo e O(R + N) de espaço, onde N inclui as partidas expandidas e a ordenação; `stop_times.txt` é processado em fluxo porque o feed real é grande. O recorte custa O(N log N + P + V) de tempo e O(N + P + V) de espaço. Linhas inválidas são relatadas e não entram na rede; a validação atual se concentra no dia escolhido, não em todos os serviços do calendário.
+O recorte mantém somente linhas e paradas selecionadas. Se o corte separa dois trechos de um padrão, cria padrões distintos para evitar uma ligação direta inexistente; se trechos da mesma linha terminam com a mesma sequência de paradas, reúne suas viagens no mesmo padrão. O leitor percorre as linhas do CSV em O(R + N log N) de tempo e O(R + N) de espaço, onde N inclui as partidas expandidas e a ordenação; `stop_times.txt` é processado em fluxo porque o feed real é grande. O recorte custa O(N log N + P + V) de tempo e O(N + P + V) de espaço. Linhas inválidas são relatadas e não entram na rede; a validação atual se concentra no dia escolhido, não em todos os serviços do calendário.
 
-Revisão do contrato: cada sequência em `Rede.viagens[padrão]` mantém a ordem posicional de `Padrao.paradas` e permite calcular a mediana do tempo entre paradas consecutivas exigida por P0-MODELO. `Rede.partidas[(padrão, parada)]` permanece disponível, mas reúne todas as visitas quando uma viagem passa mais de uma vez pelo mesmo `stop_id`. O PR #38 implementa uma plataforma por par `(parada, padrão)` para linhas circulares (D11); a decisão ainda aguarda confirmação do grupo.
+Revisão do contrato: cada sequência em `Rede.viagens[padrão]` mantém a ordem posicional de `Padrao.paradas` e permite calcular a mediana do tempo entre paradas consecutivas exigida por P0-MODELO. Para uma viagem com frequência, cada partida gera uma sequência deslocada; a viagem de referência não entra de novo. `Rede.partidas[(padrão, parada)]` permanece disponível, mas reúne todas as visitas quando uma viagem passa mais de uma vez pelo mesmo `stop_id`. O PR #38 registra a D11, aceita em 05/11: uma plataforma por par `(parada, padrão)` para linhas circulares; falta integrar o PR.
 
 ## Perguntas de verificação
 1. Por que `Rede` guarda os horários por viagem? Para relacionar passagens consecutivas do mesmo ônibus e calcular o tempo de viagem.
@@ -63,7 +63,7 @@ Revisão do contrato: cada sequência em `Rede.viagens[padrão]` mantém a ordem
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (`ruff` e pytest passaram; hook ainda não existe na `main`)
+- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (08/11: hook executado, 442 testes passaram)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com NetworkX não se aplica à leitura de GTFS
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (E não se aplica antes de construir grafo)
@@ -102,8 +102,9 @@ Integração local com o código do PR #38, sem alterar sua branch: após carreg
 
 ## Pendências
 - ~~Alinhar `Rede.viagens` ao contrato de P0-MODELO.~~ Ajustado ao protocolo `RedeConstrutores` do PR #38 e testado com os construtores desse PR em rede pequena e recorte real.
-- A execução de `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(sum(len(p.paradas)!=len(set(p.paradas)) for p in r.padroes.values()))'` encontrou 387 padrões com `stop_id` repetido no feed real. O PR #38 implementa a regra D11 para linhas circulares; falta o grupo confirmar a decisão e integrar esse PR.
-- Página da interface, hook, compilação e revisão do relatório, revisão por Miguel do guia e roteiro, e PR aprovado ainda necessários para o DoD.
+- ~~A D11 sobre paradas repetidas aguardava confirmação do grupo.~~ Aceita em 05/11 e registrada no PR #38; falta integrar o PR. A execução documentada acima encontrou 387 padrões com `stop_id` repetido no feed real.
+- ~~A revisão do PR #42 apontou frequência ausente em `Rede.viagens`, falta de teste para dois trechos e padrões equivalentes duplicados.~~ Corrigidos e cobertos por testes em 08/11; Miguel autorizou a publicação, e falta a nova revisão do PR.
+- Página da interface, compilação e revisão do relatório, revisão por Miguel do guia e roteiro, e PR aprovado ainda necessários para o DoD.
 - Decisões de 05/11 registradas como rascunho no `docs/GUIA.md` aguardam revisão de Miguel.
 
 ## Timeline
@@ -113,3 +114,4 @@ Integração local com o código do PR #38, sem alterar sua branch: após carreg
 ### Sessão 05/11/2026: escopo da branch corrigido para conter apenas P0-DADOS; rascunho de F-ESPERA guardado fora do repositório. Diagrama UML gerado, guia e seção de dados do relatório preenchidos, roteiro específico rascunhado. Revisão do dono, LaTeX, interface e PR pendentes.
 ### Revisão 05/11/2026: contrato de G_P/G_E conferido sem alterar P0-MODELO; recorte por linha corrigido para remover paradas não atendidas e preservar inconsistências. Feed real revelou padrões com parada repetida, pendência de integração para Henrique. Testes e lint refeitos antes do commit.
 ### Revisão 05/11/2026: PRs #38 a #41 examinados. `Rede.viagens` alinhada ao protocolo de P0-MODELO, com `viagens_por_id` mantendo identidade GTFS; integração local com G_P/G_E do PR #38 passou na rede de teste e no recorte real. D11 trata a parada repetida na branch de Henrique, ainda aberta. Na branch só de P0-DADOS, 211 testes e ruff verdes.
+### Revisão 08/11/2026: branch rebaseada sobre `origin/main` (`604b70b`), preservando as decisões de P0-DADOS e a atualização do relatório final em `docs/GUIA.md`. Expansão de frequências em `Rede.viagens`, recorte de dois trechos e reunião de padrões equivalentes corrigidos; 442 testes, ruff e hook verdes. Com os construtores atuais do PR #38 em cópia temporária, G_P construiu 4 vértices e 13 arestas na rede pequena; G_E mostrou embarque na L2 nas faixas 09:00–09:30 e 09:30–10:00. Feed real original: 9.659 paradas, 303 linhas, 698 padrões e 24.503 viagens; recorte: 267 paradas, 5 linhas, 10 padrões e 507 viagens, com referências válidas. `latexmk` não disponível neste ambiente. Miguel autorizou publicar as correções no PR #42.

@@ -23,14 +23,19 @@ dois sentidos usam pontos próximos. A rede guarda partidas por padrão/parada,
 `viagens[padrão]` com as sequências de horários alinhadas à sequência de paradas e
 `viagens_por_id` para conservar os identificadores GTFS. Assim o construtor calcula a
 diferença entre paradas consecutivas do mesmo ônibus; uma lista de horários por parada
-perderia essa relação.
+perderia essa relação. Uma viagem definida por `frequencies.txt` gera uma sequência
+em `viagens[padrão]` para cada partida da janela, sem contar a viagem de referência
+uma segunda vez. Isso permite que o G_E encontre partidas em todas as faixas do dia.
 
 Horários como `24:10:00` são válidos: representam 00:10 do dia seguinte dentro da
 mesma jornada de serviço. Linhas inválidas são relatadas em `Rede.inconsistencias` e
 não entram no modelo. O recorte aceita uma caixa de coordenadas e/ou ids de linhas;
 ao selecionar linhas, remove também as paradas que nenhuma delas atende.
 Quando o corte remove uma parada no meio de um padrão, os trechos restantes ficam
-separados para não inventar um percurso direto. O arquivo GTFS bruto e seu registro
+separados para não inventar um percurso direto. Trechos que resultem na mesma linha e
+sequência de paradas são reunidos em um padrão, com todas as viagens preservadas;
+assim a espera não é calculada separadamente para duas plataformas equivalentes.
+O arquivo GTFS bruto e seu registro
 de origem, data e SHA-256 ficam em `dados/brutos/`, fora do Git; a rede pequena com
 gabarito manual fica em `dados/rede-teste/`.
 
@@ -153,7 +158,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
 | 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
 | 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
-| 05/11 (rascunho para Miguel revisar) | Recorte separa trechos desconectados do mesmo padrão | Não inventa viagem direta entre paradas quando a intermediária sai do recorte | Concatenar todas as paradas restantes em um padrão |
+| 05/11 (rascunho para Miguel revisar) | Recorte separa trechos desconectados e reúne os que têm a mesma linha e sequência de paradas | Não inventa viagem direta entre paradas quando a intermediária sai do recorte nem divide as partidas de uma plataforma equivalente | Concatenar todas as paradas restantes; manter padrões duplicados após o recorte |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...

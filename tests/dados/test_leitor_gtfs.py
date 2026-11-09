@@ -9,6 +9,7 @@ from datetime import date
 from pathlib import Path
 
 from transporte.dados.leitor_gtfs import ler, validar
+from transporte.dados.modelo import Frequencia, Linha, Padrao, Parada, Rede, Viagem
 
 REDE = Path(__file__).resolve().parents[2] / "dados" / "rede-teste"
 
@@ -32,6 +33,11 @@ class TestGTFS(unittest.TestCase):
         padrao = rede.viagens_por_id["f1"].padrao_id
         self.assertEqual(rede.partidas[(padrao, "A")], list(range(32400, 36000, 600)))
         self.assertEqual(rede.partidas[(padrao, "D")], list(range(32880, 36480, 600)))
+        self.assertEqual(
+            rede.viagens[padrao],
+            [(partida, partida + 480) for partida in range(32400, 36000, 600)],
+        )
+        self.assertEqual(set(rede.viagens_por_id), {"t1", "t2", "t3", "f1"})
 
     def test_excecao_do_calendario(self) -> None:
         rede = ler(REDE, date(2026, 11, 11))
@@ -68,6 +74,64 @@ class TestGTFS(unittest.TestCase):
         self.assertEqual(set(recorte.paradas), {"A", "D"})
         self.assertEqual(recorte.partidas[(padrao, "A")], list(range(32400, 36000, 600)))
         self.assertEqual(recorte.partidas[(padrao, "D")], list(range(32880, 36480, 600)))
+
+    def test_recorte_divide_trechos_e_desloca_frequencia(self) -> None:
+        rede = self._rede_com_trechos()
+        recorte = rede.recortar((-1, -1, 1, 1))
+        self.assertEqual(
+            {p.id: p.paradas for p in recorte.padroes.values()},
+            {"p1#trecho0": ("A", "B"), "p1#trecho1": ("D", "E")},
+        )
+        self.assertEqual(recorte.viagens_por_id["v1#trecho1"].horarios, (32760, 32880))
+        self.assertEqual(
+            recorte.frequencias,
+            (
+                Frequencia("v1#trecho0", 32400, 33600, 600),
+                Frequencia("v1#trecho1", 32760, 33960, 600),
+            ),
+        )
+        self.assertEqual(recorte.viagens["p1#trecho1"], [(32760, 32880), (33360, 33480)])
+        self.assertEqual(recorte.partidas[("p1#trecho1", "D")], [32760, 33360])
+
+    def test_recorte_unifica_padroes_iguais_e_preserva_viagens(self) -> None:
+        rede = self._rede_com_trechos()
+        rede.padroes["p2"] = Padrao("p2", "L", ("A", "B", "X", "D", "E"))
+        rede.viagens_por_id["v2"] = Viagem(
+            "v2", "p2", "UTIL", (32460, 32580, 32700, 32820, 32940)
+        )
+        rede.recalcular_partidas()
+
+        recorte = rede.recortar((-1, -1, 1, 1))
+        self.assertEqual(len(recorte.padroes), 2)
+        self.assertEqual(
+            {p.paradas for p in recorte.padroes.values()}, {("A", "B"), ("D", "E")}
+        )
+        self.assertEqual(
+            {v.padrao_id for v in recorte.viagens_por_id.values()},
+            set(recorte.padroes),
+        )
+        self.assertEqual(len(recorte.viagens_por_id), 4)
+        self.assertEqual(recorte.partidas[("p1#trecho0", "A")], [32400, 32460, 33000])
+        self.assertEqual(recorte.partidas[("p1#trecho1", "D")], [32760, 32820, 33360])
+
+    @staticmethod
+    def _rede_com_trechos() -> Rede:
+        paradas = {
+            ident: Parada(ident, ident, 0, 2 if ident in {"C", "X"} else 0)
+            for ident in ("A", "B", "C", "D", "E", "X")
+        }
+        rede = Rede(
+            paradas=paradas,
+            linhas={"L": Linha("L", "Linha", 3)},
+            padroes={"p1": Padrao("p1", "L", ("A", "B", "C", "D", "E"))},
+            partidas={},
+            viagens_por_id={
+                "v1": Viagem("v1", "p1", "UTIL", (32400, 32520, 32640, 32760, 32880))
+            },
+            frequencias=(Frequencia("v1", 32400, 33600, 600),),
+        )
+        rede.recalcular_partidas()
+        return rede
 
     def test_zip(self) -> None:
         with tempfile.TemporaryDirectory() as temporario:
