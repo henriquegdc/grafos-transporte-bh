@@ -69,7 +69,7 @@ Mudar um parâmetro depois exige linha no registro de decisões do `docs/GUIA.md
 - **Paradas por sentido:** cada `stop_id` é um vértice; paradas do mesmo ponto em sentidos opostos ficam ligadas pela caminhada.
 - **Dia típico:** uma quarta-feira fixa dentro da vigência do feed, com os serviços ativos segundo `calendar.txt` e `calendar_dates.txt`.
 - **Faixas horárias:** 06h a 09h, 09h a 16h, 16h a 19h e 19h a 24h; horários entre 0h e 6h não entram na estimativa de intervalos.
-- **Espera provisória:** 300 s em todo embarque até a tabela de intervalos de F-ESPERA (06/11); padrão sem partida na faixa não recebe aresta de embarque.
+- **Espera provisória:** 300 s em todo embarque até a tabela de esperas da F-ESPERA (`esperas[(padrão, faixa)]`, em segundos, aplicada sem transformação), e para padrão ausente dela; padrão sem partida na faixa não recebe aresta de embarque.
 - **Persistência:** visões salvas com pickle em `dados/cache/`, fora do Git.
 - **Piso de peso (05/11):** arestas de viagem e de caminhada têm peso mínimo de 1 s. O GTFS arredonda horários e paradas no mesmo ponto ficam a 0 m; 0 s entre paradas distintas é artefato e quebraria a contagem de caminhos mínimos do Brandes (F-MET). O desembarque continua com peso 0.
 - **Horário inconsistente (05/11):** diferença de horário negativa entre paradas seguidas é erro de cadastro e fica fora da mediana; trecho sem nenhuma diferença válida recebe o piso.
