@@ -65,8 +65,8 @@ módulo (R1); trechos em vez de arestas cruas, porque é o que a página desenha
 de erro, porque não haver trajeto é normal numa rede com falhas (R3).
 
 Limitações: o tempo é o esperado para quem chega à parada num instante qualquer da faixa (espera
-H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica os intervalos, toda
-espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
+H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica a tabela de esperas,
+toda espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
 caminhada em linha reta, só entre paradas.
 
 ## 6. Interface (Arthur)
