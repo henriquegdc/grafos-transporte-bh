@@ -1,6 +1,25 @@
 % Seção: Plano de desenvolvimento
 % Dono: Henrique · Orçamento: 0,5 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: Método, divisão e calendário (Etapa 1)
+% Fontes: docs/fontes/plano-de-projeto.md §1, §6 e §7.
 \section{Plano de desenvolvimento}\label{sec:plano}
 
-\pendente{Método, divisão e calendário (Etapa 1). Dono: Henrique.}
+O trabalho é dividido por \emph{feature}, e cada feature responde a uma das seis
+perguntas e tem um dono de ponta a ponta: algoritmo, interface, testes, medição de
+tempo, explicação no guia do projeto, seção deste relatório e trecho do vídeo. Além da
+sua feature essencial, cada integrante cuida de uma frente da fundação: núcleo do grafo
+(Thiago), dados (Miguel), modelagem (Henrique), interface (Arthur), repositório (Caio)
+e avaliação (Rafael). As interfaces entre as partes são publicadas como contratos antes
+do código que depende delas, o que permite trabalhar em paralelo contra assinaturas
+fixas.
+
+A \texttt{main} só recebe código por \emph{pull request} aprovado por outro integrante,
+e um gancho de \emph{pre-commit} barra qualquer biblioteca de grafo, e também o
+\texttt{heapq}, em \texttt{src/}. Cada algoritmo vem com testes de corretude com gabarito
+calculado à mão; a NetworkX~\cite{hagberg2008} aparece só nos testes e nos scripts de
+medição, para comparar resultados.
+
+O calendário tem data fixa e escopo variável: fundação e Etapa 1 de 29/10 a 03/11,
+features essenciais de 04/11 a 11/11, desejáveis de 12/11 a 15/11, com o código
+congelado em 15/11, e relatório, vídeo e entrega até 22/11. O que não fecha num marco
+desce de prioridade, e as opcionais saem primeiro.
