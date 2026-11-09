@@ -1,0 +1,10 @@
+# Configuração das ferramentas. As dependências ficam em requirements.txt.
+
+[tool.pytest.ini_options]
+# Dispensa o PYTHONPATH=src: os testes importam `transporte` direto de src/.
+pythonpath = ["src", "scripts"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100

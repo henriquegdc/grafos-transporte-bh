@@ -55,10 +55,10 @@ Os 52 RFs estão em exatamente uma feature cada: 15 na fundação (P0), 16 nas s
 |---|---|---|---|---|---|---|
 | Thiago (A) | P0-GRAFO | F-MET | F-MET-2, F-MET-OPC | API do núcleo de grafo e heap | Fundamentação (com Henrique); Implementação: núcleo; Resultados: centralidades | Núcleo do grafo e centralidades |
 | Miguel (B) | P0-DADOS | F-ESPERA | F-ESPERA-2, F-ESPERA-OPC | (nenhum: tem as features mais pesadas) | Dados; Resultados: espera | Dados e tempo de espera |
-| Henrique (C) | P0-MODELO | F-ROTA | F-ROTA-2, F-ROTA-OPC | `modelagem.md` e as seções da Etapa 1 (relatório e README) | Introdução; Modelagem; Plano de desenvolvimento; Resultados: trajetos | Modelagem e trajeto mais rápido |
+| Henrique (C) | P0-MODELO | F-ROTA | F-ROTA-2, F-ROTA-OPC | `modelagem.md`, as seções da Etapa 1 (relatório e README), o relatório final e a montagem do vídeo | Introdução; Modelagem; Plano de desenvolvimento; Resultados: trajetos; Responsabilidades | Modelagem e trajeto mais rápido |
 | Arthur (D) | P0-UI | F-EFI | F-EFI-2, F-EFI-OPC | Aplicação e slides | Implementação: interface; Resultados: eficiência | Interface e eficiência |
-| Caio (E) | P0-REPO | F-RES | F-RES-2, F-RES-OPC | Repositório, hook, `docs/GUIA.md`, checklist de entrega, `.zip` e montagem do vídeo | Resultados: falhas; Limitações e conclusão | Falhas e resiliência |
-| Rafael (F) | P0-AVAL | F-BALD | F-BALD-2, F-BALD-OPC; F-AVAL (P3); F-AVAL-OPC (se houver) | Relatório e figuras | Resultados: baldeações; Avaliação de desempenho; Responsabilidades | Baldeações e desempenho |
+| Caio (E) | P0-REPO | F-RES | F-RES-2, F-RES-OPC | Repositório, hook, `docs/GUIA.md`, checklist de entrega e `.zip` | Resultados: falhas; Limitações e conclusão | Falhas e resiliência |
+| Rafael (F) | P0-AVAL | F-BALD | F-BALD-2, F-BALD-OPC; F-AVAL (P3); F-AVAL-OPC (se houver) | Avaliação de desempenho (F-AVAL) | Resultados: baldeações; Avaliação de desempenho | Baldeações e desempenho |
 
 Por que esses pares:
 
@@ -66,8 +66,8 @@ Por que esses pares:
 - **Miguel:** a espera depende dos horários do GTFS; quem leu e limpou os horários sabe onde eles falham.
 - **Henrique:** G_E nasce na modelagem; quem a desenhou implementa o roteamento sobre ela. A frente C é o caminho crítico do projeto: as visões G_P e G_E alimentam 5 das 6 features essenciais (F-ROTA, F-ESPERA, F-MET, F-EFI e F-RES), a modelagem com UML e a Etapa 1 são avaliadas diretamente, e o trajeto mais rápido é a pergunta central do tema. Henrique pediu para ficar com ela.
 - **Arthur:** eficiência e isócronas são as features mais visuais; quem faz o componente de mapa sabe o que ele já desenha.
-- **Caio:** falhas usam a desativação de vértices e arestas, e P0-REPO ficou leve sem CI, o que libera Caio para integrar o guia e montar a entrega e o vídeo.
-- **Rafael:** G_L é usada só por F-BALD (produtor e consumidor juntos), e quem integra o relatório consolida a avaliação de desempenho.
+- **Caio:** falhas usam a desativação de vértices e arestas, e P0-REPO ficou leve sem CI, o que libera Caio para integrar o guia e montar a entrega.
+- **Rafael:** G_L é usada só por F-BALD (produtor e consumidor juntos), e ele consolida a avaliação de desempenho (F-AVAL).
 
 ### 6.3 O que cruza entre pessoas
 

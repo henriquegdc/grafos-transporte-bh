@@ -1,0 +1,39 @@
+#!/bin/sh
+# Hook de pre-commit (plano-de-projeto §10). Ative uma vez por clone:
+#   git config core.hooksPath .githooks
+# Roda: 1) scripts/verificar_imports.py (nenhuma biblioteca de grafo nem heapq em src/)
+#       2) ruff check
+# Usa o Python do .venv quando existe; senão, o python do PATH.
+
+raiz=$(git rev-parse --show-toplevel) || exit 1
+cd "$raiz" || exit 1
+
+# Acentos legíveis no terminal do Git Bash no Windows.
+export PYTHONIOENCODING=utf-8
+
+if [ -x .venv/Scripts/python.exe ]; then
+    PY=.venv/Scripts/python.exe
+elif [ -x .venv/bin/python ]; then
+    PY=.venv/bin/python
+elif command -v python >/dev/null 2>&1; then
+    PY=python
+elif command -v python3 >/dev/null 2>&1; then
+    PY=python3
+else
+    echo "pre-commit: Python não encontrado. Instale e rode 'pip install -r requirements.txt'." >&2
+    exit 1
+fi
+
+echo "pre-commit: verificando imports proibidos em src/..."
+if ! "$PY" scripts/verificar_imports.py; then
+    echo "pre-commit: commit bloqueado. Remova o import proibido de src/." >&2
+    exit 1
+fi
+
+echo "pre-commit: ruff check..."
+if ! "$PY" -m ruff check; then
+    echo "pre-commit: commit bloqueado. Corrija o lint (ruff check --fix resolve parte)." >&2
+    exit 1
+fi
+
+echo "pre-commit: ok."
