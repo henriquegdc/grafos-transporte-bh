@@ -260,6 +260,18 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    paradas distintas é artefato do arredondamento e quebra a contagem de caminhos do Brandes;
    desembarcar não leva tempo e só liga a plataforma à própria parada.
 
+### 5.1 Trajeto mais rápido (F-ROTA)
+1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque
+   em G_E trocar de linha passa por uma aresta de embarque, que pesa a espera da nova linha.
+2. **Por que o caminho é reconstruído por arestas e não por vértices?** O tipo do passo
+   (caminhada, embarque, viagem, desembarque) está na aresta; dele saem os trechos e as baldeações.
+3. **Por que dá para parar o Dijkstra quando o destino sai do heap?** Com pesos não negativos, a
+   distância de um vértice fechado é definitiva.
+4. **O tempo total é o horário de chegada de quem sai agora?** Não: é o tempo esperado para quem
+   chega à parada num instante qualquer da faixa (espera H/2 em cada embarque).
+5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem
+   trajeto"; é normal com paradas ou linhas desativadas (F-RES).
+
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
    `time.time()` segue o relógio do sistema, que pode ser ajustado no meio da medição.
@@ -272,15 +284,3 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    média 2 e desvio 1).
 5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
    `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.
-
-### 5.1 Trajeto mais rápido (F-ROTA)
-1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque
-   em G_E trocar de linha passa por uma aresta de embarque, que pesa a espera da nova linha.
-2. **Por que o caminho é reconstruído por arestas e não por vértices?** O tipo do passo
-   (caminhada, embarque, viagem, desembarque) está na aresta; dele saem os trechos e as baldeações.
-3. **Por que dá para parar o Dijkstra quando o destino sai do heap?** Com pesos não negativos, a
-   distância de um vértice fechado é definitiva.
-4. **O tempo total é o horário de chegada de quem sai agora?** Não: é o tempo esperado para quem
-   chega à parada num instante qualquer da faixa (espera H/2 em cada embarque).
-5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem
-   trajeto"; é normal com paradas ou linhas desativadas (F-RES).
