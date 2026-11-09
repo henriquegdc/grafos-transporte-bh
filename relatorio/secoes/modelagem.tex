@@ -1,6 +1,124 @@
 % Seção: Modelagem
 % Dono: Henrique · Orçamento: 2,5 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: Modelo de dados, visões G_P, G_E, G_L e G_T, diagramas UML
+% Fontes: docs/fontes/modelagem.md §3.4, docs/GUIA.md §8 (decisões D1 a D11 e piso de 1 s),
+% src/transporte/modelo/. Figuras geradas de docs/diagramas/{classes-modelo,ge-exemplo}.puml.
 \section{Modelagem}\label{sec:modelagem}
 
-\pendente{Modelo de dados, visões $G_P$, $G_E$, $G_L$ e $G_T$, diagramas UML. Dono: Henrique.}
+A ferramenta não transforma o GTFS~\cite{gtfs-reference} diretamente em um grafo.
+Primeiro os arquivos viram um \emph{modelo normalizado} e, dele, saem várias
+\emph{visões} de grafo, cada uma escolhida pela pergunta que responde. Usar mais de uma
+visão é o argumento central desta seção: não existe um grafo da rede de ônibus que sirva
+igualmente bem para calcular o trajeto mais rápido, contar baldeações e medir a
+importância de uma parada.
+
+\subsection{Modelo normalizado}
+
+O modelo tem três entidades. A \emph{parada} é um ponto de embarque, com identificador e
+coordenadas. O \emph{padrão} é uma linha com uma sequência exata de paradas: variantes de
+itinerário da mesma linha (trajeto encurtado, desvio) viram padrões distintos, porque as
+visões encadeiam as paradas numa ordem fixa. A \emph{viagem} é uma passagem de um ônibus
+pelo padrão, guardada como a lista de horários em cada parada, na ordem do padrão.
+Guardar a viagem inteira, e não só os horários de cada parada isolada, é o que permite
+calcular o tempo entre duas paradas seguidas. Só entram as viagens de um \emph{dia
+típico}: uma quarta-feira fixa dentro da vigência do feed, com os serviços ativos
+segundo \texttt{calendar.txt} e \texttt{calendar\_dates.txt}. Cada \texttt{stop\_id} é um
+vértice próprio, mesmo quando o mesmo ponto físico tem uma parada por sentido; as duas
+ficam ligadas por caminhada, o que preserva a travessia da rua.
+
+\subsection{Visões do grafo}
+
+Todas as visões são grafos dirigidos e ponderados sobre a mesma estrutura própria, com
+listas de adjacência e pesos em segundos (Tabela~\ref{tab:visoes}). Vértices e arestas
+podem ser desativados sem reconstruir o grafo, o que a simulação de falhas usa.
+
+\begin{table}[htbp]
+\centering
+\caption{Visões de grafo construídas a partir do modelo normalizado.}
+\label{tab:visoes}
+\small
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}p{2.7cm}%
+  >{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+Visão & Vértices & Arestas e pesos & Responde \\
+\midrule
+$G_P$ & Paradas & Viagem até a parada seguinte (tempo mediano); caminhada até
+  $R$ metros (distância / velocidade) & Centralidades, eficiência, falhas \\
+$G_E$ & Paradas e plataformas (parada, padrão) & Embarque (espera), viagem, desembarque
+  (0) e caminhada & Trajeto mais rápido, espera \\
+$G_L$ & Padrões & Dois padrões que compartilham parada ou têm paradas a distância de
+  caminhada; sem peso & Mínimo de baldeações \\
+$G_T$ & Paradas & Cada aresta guarda a lista de partidas; o custo depende do instante de
+  chegada & Quadro de horários \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+$G_P$ é a visão estrutural: descreve quem está ligado a quem e serve aos algoritmos que
+percorrem a rede inteira, como a intermediação de Brandes~\cite{brandes2001}. $G_L$
+reduz a pergunta das baldeações a uma busca em largura entre padrões. $G_T$ é a extensão
+dependente do horário: como a rede é FIFO (sair mais tarde de uma parada nunca faz chegar
+mais cedo pela mesma aresta), o Dijkstra~\cite{dijkstra1959} de chegada mais cedo
+continua correto sobre ela.
+
+\subsection{Por que $G_E$ existe}
+
+Em $G_P$, continuar no mesmo ônibus e trocar de ônibus numa parada custam o mesmo, porque
+a aresta não sabe em que linha o passageiro está. $G_E$ resolve isso separando as linhas
+em vértices de \emph{plataforma}, um por par (parada, padrão)
+(Figura~\ref{fig:ge-exemplo}). Para trocar de linha, o passageiro precisa desembarcar
+(peso 0), voltar ao vértice da parada e pagar uma nova aresta de embarque, que carrega a
+espera pela próxima linha. Assim um único Dijkstra soma caminhada, espera, viagem e
+baldeações, sem penalidade arbitrária: a baldeação já custa a espera da nova linha. O
+número de baldeações de um trajeto é o número de embarques menos um.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{ge-exemplo}
+\caption{Exemplo de $G_E$: de A a C pela linha L1 e depois pela L2, com baldeação em B
+(dois embarques, uma baldeação); C e D estão a distância de caminhada. Retângulos
+brancos são paradas; azuis, plataformas.}
+\label{fig:ge-exemplo}
+\end{figure}
+
+O peso do embarque é a espera esperada. Com passageiros chegando ao acaso e intervalo
+regular $H$ entre ônibus, a espera média é $H/2$; com intervalos irregulares ela passa a
+ser $\mathbb{E}[H^2]/(2\,\mathbb{E}[H])$, maior que $H/2$ (paradoxo da inspeção). Como o
+intervalo muda ao longo do dia, $G_E$ é construído para uma faixa horária de cada vez:
+pico da manhã (6h a 9h), entrepico (9h a 16h), pico da tarde (16h a 19h) e noite (19h a
+24h). A madrugada fica de fora, porque seus intervalos longos distorceriam as médias. Um
+padrão sem nenhuma partida na faixa não recebe aresta de embarque nela.
+
+\subsection{Regras de construção}
+
+O tempo de viagem entre duas paradas seguidas é a mediana das diferenças de horário entre
+as viagens do dia típico, por ser robusta a horários com erro de cadastro; diferenças
+negativas, que só podem ser erro, ficam fora da mediana. Em $G_P$, quando dois padrões
+passam pelo mesmo trecho, a aresta é única e a mediana junta as viagens dos dois. A
+caminhada liga paradas a até $R = 300$\,m em linha reta (fórmula de haversine), com peso
+igual à distância dividida por 1,2\,m/s. Arestas de viagem e de caminhada têm piso de
+1\,s: o GTFS arredonda horários e paradas do mesmo ponto ficam a 0\,m, mas 0\,s entre
+paradas distintas é artefato e quebraria a contagem de caminhos mínimos de Brandes.
+
+A busca ingênua de pares para a caminhada custa $O(V^2)$. A construção usa uma grade
+espacial com células do tamanho do raio, de modo que cada parada só é comparada com as
+das nove células vizinhas; o custo esperado cai para $O(V + K)$, com $K$ o número de
+pares dentro do raio. Somando a ordenação dos horários para as medianas, construir $G_P$
+custa $O(V + K + N \log N)$ e $G_E$, $O(V + K + L + N \log N)$, com $N$ o número de
+horários e $L$ o de plataformas. Para não reprocessar o GTFS a cada execução, as
+visões prontas são gravadas em disco e recarregadas nas execuções seguintes.
+
+\subsection{Diagramas UML}
+
+A Figura~\ref{fig:classes} mostra as classes do modelo. O módulo \texttt{construtores}
+lê a \texttt{Rede} e os \texttt{Parametros} e cria as visões; toda visão herda de
+\texttt{Visao} e guarda um \texttt{Grafo} do núcleo, mais os mapas entre os
+identificadores do GTFS e os vértices. Os diagramas completos de classes, componentes e
+casos de uso estão em \texttt{docs/diagramas/}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{classes-modelo}
+\caption{Diagrama de classes do modelo normalizado, dos parâmetros e das visões.}
+\label{fig:classes}
+\end{figure}

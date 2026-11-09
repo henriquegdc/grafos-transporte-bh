@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-construtores` (PR #33 já integrado na `main`).
+- **Última sessão:** 05/11, Henrique, branch `feat/P0-MODELO-relatorio` (sobre a do PR #38): seção Modelagem do relatório, v1.
 - **Onde parou:** etapa 2 concluída: `construir_gp`, `construir_ge`, `salvar`, `carregar` e `VisaoGE.baldeacoes` implementados com 33 testes (gabaritos à mão, bordas, grade espacial contra a busca ingênua, ida e volta do pickle); os três módulos com `estado: implementado`. Os construtores leem a Rede pelo protocolo `RedeConstrutores` (paradas, padrões e `viagens[padrão]`), porque o contrato da `Rede` (P0-DADOS) ainda não existe. Piso de 1 s (M2 da F-MET) aceito e registrado.
-- **Próximo passo:** conseguir 1 aprovação no PR #38 (Refs #4); mandar ao Miguel o protocolo `RedeConstrutores` como proposta de contrato da `Rede`; responder ao Thiago no #37 que o piso entrou. Quando a `Rede` existir: etapa 3 (rede de teste e feed real, adaptador se os campos diferirem) e etapa 5 (tempo com `medir`). Depois, F-ROTA.
-- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/classes.{puml,png}`, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
+- **Próximo passo:** conseguir 1 aprovação no PR #40 (seção Modelagem, empilhado sobre o #38); conseguir 1 aprovação no PR #38 (Refs #4); mandar ao Miguel o protocolo `RedeConstrutores`. Depois: Introdução, Plano e README da Etapa 1; quando a `Rede` existir, etapa 3 e etapa 5. F-ROTA segue no PR #39.
+- **Arquivos tocados:** `src/transporte/modelo/{parametros,visoes,construtores}.py`, `tests/modelo/{test_construtores,test_visoes}.py`, `docs/diagramas/{classes,classes-modelo,ge-exemplo}.{puml,png}`, `relatorio/secoes/modelagem.tex`, `relatorio/figuras/{classes-modelo,ge-exemplo}.png`, `docs/GUIA.md` §8, `docs/fontes/modelagem.md` §3.4 (piso), este arquivo.
 - **Como testar:** `PYTHONPATH=src python -m pytest tests` (243 em 05/11, 33 de `tests/modelo`); `ruff check src tests`; diagramas: `java -jar plantuml-1.2026.9.jar -charset UTF-8 -tpng -failfast2 docs/diagramas/*.puml`.
 - **Bloqueios:** P0-DADOS não iniciada (sem `Rede`, sem rede de teste, sem feed real); a etapa 3 depende dela.
 
@@ -32,7 +32,7 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 | Testes | em andamento | 05/11: 33 verdes (gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle); teste de mutação à mão: filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. Falta a rede de teste do Miguel |
 | Desempenho (tempo medido) | não iniciado | |
 | Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
+| Relatório | em andamento | 05/11: seção 4 (Modelagem) v1 em `relatorio/secoes/modelagem.tex`, com a tabela das visões, o exemplo de G_E e o diagrama de classes recortado; compilada em 05/11 com MiKTeX 25.12 (pdflatex + bibtex), sem erro nem referência indefinida, cerca de 2,5 páginas |
 | Vídeo | não iniciado | |
 
 ## Especificação
@@ -127,5 +127,7 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Decisão 05/11/2026: piso de 1 s nas arestas de viagem e de caminhada (M2 da F-MET), aceito pelo Henrique; registrado no GUIA §8 e no modelagem.md §3.4.
 ### Sessão 05/11/2026: etapa 2 na branch `feat/P0-MODELO-construtores`: construtores de G_P e G_E, salvar, carregar e `baldeacoes` contra o protocolo `RedeConstrutores`; 33 testes, 243 na suíte; diagrama de classes com `Resultado` atualizado; decisões D8 a D11 propostas.
 ### PR 05/11/2026: #38 aberto (construtores, piso de 1 s e decisões D8 a D11 propostas).
+### Sessão 05/11/2026: seção Modelagem do relatório (v1) na branch `feat/P0-MODELO-relatorio`; figuras `ge-exemplo` e `classes-modelo` em PlantUML.
+### PR 05/11/2026: #40 aberto (seção Modelagem do relatório), empilhado sobre o #38.
 ### Decisão 05/11/2026: D8 a D11 aceitas pela recomendação.
 ### Contrato 05/11/2026: `construir_ge` passa a receber `esperas[(padrão, faixa)]` (a espera já calculada pela F-ESPERA) em vez de `intervalos` (H, dividido por 2 no construtor), para a F-ESPERA aplicar a fórmula de intervalo irregular (RF-ESP-02); decisão do Henrique, registrada no GUIA §8; falta avisar o Miguel (F-ESPERA).
