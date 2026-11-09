@@ -14,9 +14,10 @@ do código que depende delas, o que permite trabalhar em paralelo contra assinat
 fixas.
 
 A \texttt{main} só recebe código por \emph{pull request} aprovado por outro integrante,
-e um gancho de \emph{pre-commit} barra qualquer biblioteca de grafo em \texttt{src/}.
-Cada algoritmo vem com testes de corretude com gabarito calculado à mão; a
-NetworkX~\cite{hagberg2008} aparece só nos testes, para comparar resultados.
+e um gancho de \emph{pre-commit} barra qualquer biblioteca de grafo, e também o
+\texttt{heapq}, em \texttt{src/}. Cada algoritmo vem com testes de corretude com gabarito
+calculado à mão; a NetworkX~\cite{hagberg2008} aparece só nos testes e nos scripts de
+medição, para comparar resultados.
 
 O calendário tem data fixa e escopo variável: fundação e Etapa 1 de 29/10 a 03/11,
 features essenciais de 04/11 a 11/11, desejáveis de 12/11 a 15/11, com o código
