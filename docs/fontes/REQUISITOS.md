@@ -137,7 +137,7 @@ Prioridade: **E** essencial, **D** desejável, **O** opcional.
 | RNF-02 | A `main` só recebe PR revisado e aprovado por outro integrante, com hook e pytest verdes | Proteção de branch no GitHub e template de PR | P0-REPO |
 | RNF-03 | Todo algoritmo tem testes de corretude com gabarito à mão, inclusive casos de borda | Revisão do PR e DoD | Todas as features |
 | RNF-04 | Toda função pública tem docstring com o que faz, entradas, saída, casos de borda e complexidade de tempo e de espaço | Revisão do PR | Todas as features |
-| RNF-05 | A consulta de trajeto responde em até X segundos na rede escolhida; X fixado em 03/11, depois da primeira medição | Tempo medido | F-ROTA |
+| RNF-05 | A consulta de trajeto responde em até 1 segundo na rede escolhida (X fixado em 05/11, depois da primeira medição; decisão R4 da F-ROTA) | Tempo medido | F-ROTA |
 | RNF-06 | Métricas de todos os pares aceitam amostragem com tamanho configurável e informam o erro | Teste e tempo medido | F-MET, F-EFI |
 | RNF-07 | Reprodutibilidade: versões fixadas, dataset com data e origem registradas, script de download, sementes fixas | README | P0-REPO, P0-DADOS |
 | RNF-08 | A interface sobe com um único comando, descrito no README | Teste manual no fechamento | P0-UI |
