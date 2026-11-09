@@ -51,7 +51,48 @@ Seis integrantes, cada um dono de uma frente de ponta a ponta. Divisão e tabela
 
 ## 5. Como usar
 
-_Instalação, ativação do hook, execução da interface e dos testes: seção a completar (P0-REPO)._
+Requer **Python 3.12** e Git. Comandos a partir da raiz do repositório.
+
+**1. Instalar** (uma vez por clone):
+
+```bash
+git clone https://github.com/henriquegdc/grafos-transporte-bh.git
+cd grafos-transporte-bh
+python -m venv .venv
+# Windows (PowerShell):  .venv\Scripts\Activate.ps1
+# Windows (Git Bash):    source .venv/Scripts/activate
+# Linux/macOS:           source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+**2. Ativar o hook de pre-commit** (uma vez por clone, obrigatório):
+
+```bash
+git config core.hooksPath .githooks
+```
+
+A cada `git commit`, o hook roda `scripts/verificar_imports.py`, que barra biblioteca de grafo
+(networkx, igraph, graph_tool, rustworkx, scipy.sparse.csgraph, osmnx) e `heapq` em `src/`, e
+o `ruff check`. Se algum falhar, o commit não acontece. O hook usa o Python do `.venv` quando
+ele existe. Também dá para rodar o hook direto: `sh .githooks/pre-commit`.
+
+**3. Rodar a interface:**
+
+```bash
+streamlit run src/transporte/interface/app.py
+```
+
+**4. Rodar os testes e o lint:**
+
+```bash
+pytest                              # todos os testes (o pyproject.toml já põe src/ no path)
+pytest tests/grafo                  # só uma pasta
+ruff check                          # lint
+python scripts/verificar_imports.py # só a verificação de imports
+```
+
+Antes de abrir um PR: hook e `pytest` verdes, e o resumo da saída do pytest na descrição.
+NetworkX só pode aparecer em `tests/`, para comparar resultados, e em `benchmarks/`.
 
 ## 6. Documentação
 

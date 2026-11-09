@@ -30,7 +30,7 @@ package "dados" {
 package "modelo" {
   class construtores <<module>> {
     +construir_gp(rede, params): VisaoGP
-    +construir_ge(rede, faixa, params, intervalos): VisaoGE
+    +construir_ge(rede, faixa, params, esperas): VisaoGE
     +salvar(visao, caminho)
     +carregar(caminho): Visao
   }

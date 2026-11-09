@@ -125,13 +125,21 @@ def dijkstra(g: Grafo, origem: int, destino: int | None = None) -> Resultado:
     return r
 
 
+def _checar_destino(r: Resultado, destino: int) -> None:
+    # Sem esta checagem, um destino negativo indexaria as listas de trás para frente e
+    # devolveria o caminho de outro vértice sem erro (mesmo cuidado de Grafo._checar_vertice).
+    if not 0 <= destino < len(r.dist):
+        raise IndexError(f"vértice inexistente: {destino}")
+
+
 def caminho(r: Resultado, destino: int) -> list[int]:
     """Vértices do melhor caminho r.origem -> destino, na ordem, incluindo as pontas.
 
     Casos de borda: destino não alcançado devolve []; destino == origem alcançada devolve
-        [origem].
+        [origem]; destino inexistente (inclusive negativo) levanta IndexError.
     Complexidade: tempo e espaço O(k), k = número de vértices do caminho.
     """
+    _checar_destino(r, destino)
     if r.dist[destino] == INF:
         return []
     vertices = [destino]
@@ -145,9 +153,10 @@ def caminho_arestas(r: Resultado, destino: int) -> list[int]:
     """Ids das arestas do melhor caminho r.origem -> destino, na ordem.
 
     É a entrada de VisaoGE.baldeacoes. Casos de borda: destino não alcançado ou igual à
-        origem devolve [].
+        origem devolve []; destino inexistente (inclusive negativo) levanta IndexError.
     Complexidade: tempo e espaço O(k), k = número de arestas do caminho.
     """
+    _checar_destino(r, destino)
     if r.dist[destino] == INF:
         return []
     arestas = []

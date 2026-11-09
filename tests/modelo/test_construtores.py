@@ -318,6 +318,13 @@ def test_ge_parada_inexistente_levanta_key_error():
         construir_ge(r, "pico_manha")
 
 
+def test_ge_padrao_de_uma_parada_inexistente_levanta_key_error():
+    # Mesma checagem do G_P: vale antes de ignorar o padrão de uma parada só.
+    r = rede([("A", 0)], [("P", "X", [[H7]])])
+    with pytest.raises(KeyError):
+        construir_ge(r, "pico_manha")
+
+
 # --- Caminhada: grade espacial contra a busca ingênua ---------------------------------
 
 
