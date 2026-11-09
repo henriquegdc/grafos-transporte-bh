@@ -290,10 +290,10 @@ def construir_ge(
         visao.vertice_da_parada[p.id] = g.adicionar_vertice(p.id)
 
     for padrao in rede.padroes.values():
+        _paradas_conhecidas(rede, padrao)
         seq = padrao.paradas
         if len(seq) < 2:
             continue
-        _paradas_conhecidas(rede, padrao)
         viagens = rede.viagens.get(padrao.id, ())
         plat = []
         for pid in seq:
