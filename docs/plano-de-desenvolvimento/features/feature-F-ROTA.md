@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 09/11, Henrique, branch `feat/F-ROTA-trajeto` (PR #39): ajustes da revisão do Rafael; branch atualizada por merge com a `main`, que já tem o #38; PR #39 integrado na `main` em 09/11, sem aprovação formal no GitHub (revisão do Rafael em comentário; merge decidido pelo Henrique).
-- **Onde parou:** etapas 1, 2 e 5 concluídas; etapa 6 com tudo menos a seção do relatório. `trajeto_mais_rapido` rodou em 200 consultas no G_E real (V = 46.100, E = 208.956): 75,8 ms por consulta em média, máximo 162,2 ms, 0 divergências com o NetworkX (ver Resultados). RNF-05 fixado em 1 s (R4) e atendido com folga.
-- **Próximo passo:** revisar de novo o PR #42 (P0-DADOS), que o Miguel pediu em 08/11 depois das correções; quando o #42 entrar, teste de integração com a rede de teste (etapa 3) e rodar `benchmarks/medir_modelo_rota.py` a partir da `main`. Avisar o Miguel (F-ESPERA, RF-ESP-03) de `Trajeto.tempo_por_tipo()`. Revisar o rascunho da etapa 6 (Henrique); seção do relatório quando houver a tabela de esperas da F-ESPERA (tempo total e baldeações dependem dela). Etapa 4 (página com mapa, RF-ROT-02) quando o P0-UI publicar o contrato de página e o mapa.
-- **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajeto.{puml,png}`, `docs/GUIA.md` §5.1 e §10, este arquivo.
-- **Como testar:** `python -m pytest tests/algoritmos/test_trajeto.py` (26 testes; 502 na suíte em 09/11); `ruff check`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip` (precisa do PR #42 e do feed baixado por `scripts/baixar_gtfs.py`).
-- **Bloqueios:** RF-ROT-02 depende do P0-UI (Arthur); teste de integração e o script de medição rodando da `main` dependem do PR #42 (P0-DADOS: correções publicadas em 08/11, `d7f0c3e`, aguardando nova revisão).
+- **Última sessão:** 10/11, Henrique, branch `feat/F-ROTA-pagina` (criada da `main` com o PR #45 do Arthur juntado por merge, porque a página usa o contrato dele): revisão do #45 redigida (pede mudança: ligar o `ler()` do #42 ao ponto de entrada; mapa da Início com 9.659 marcadores leva 26 s no feed real), ainda não publicada; etapa 3 (teste de integração com a rede de teste) e etapa 4 (página Trajetos) feitas e medidas no feed real; 537 testes na suíte. Sessão encerrada com commit na branch, sem PR.
+- **Onde parou:** etapas 1, 2, 3 e 5 concluídas; etapa 4 implementada, à espera do #45 entrar na `main`; etapa 6 com tudo menos a seção do relatório. A página `src/transporte/interface/paginas/trajetos.py` segue o contrato `render(rede)` do #45: faixa, origem e destino por `selectbox`; G_E montado uma vez por faixa e por rede carregada (`ge_da_faixa`, no `st.session_state`); métricas (tempo total, baldeações, a pé, espera, ônibus), tabela de trechos e mapa com um traço por trecho (a pé tracejado, ônibus numa cor por padrão, espera como círculo) sobre o `criar_mapa` da P0-UI sem a camada de paradas. Espera provisória de 300 s declarada na página. No notebook da sessão (i5-1334U, não é a máquina de referência): G_E do pico da manhã em 0,64 s; 50 consultas sorteadas com mediana de 178 ms e máximo de 603 ms; tabela + mapa do trajeto em até 76 ms e 26 kB de HTML.
+- **Próximo passo:** publicar a revisão do #45 (texto pronto; ver Pendências). Quando o #45 entrar, abrir o PR da página com base `main` (a branch já contém o merge do #45; se o Arthur mudar o contrato, ajustar antes). Abrir a página no navegador com o feed real, o que exige o item 1 da revisão (`main(carregador=ler)` no `__main__` do app), e refazer a conferência do RNF-05 na máquina de referência. Avisar o Miguel (F-ESPERA, RF-ESP-03) de `Trajeto.tempo_por_tipo()`. Seção do relatório quando houver a tabela de esperas; revisar o rascunho da etapa 6 (Henrique).
+- **Arquivos tocados:** `src/transporte/algoritmos/trajeto.py`, `tests/algoritmos/test_trajeto.py`, `tests/algoritmos/test_integracao_trajeto_rede_teste.py`, `src/transporte/interface/paginas/trajetos.py`, `tests/interface/test_pagina_trajetos.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajeto.{puml,png}`, `docs/GUIA.md` §5.1 e §10, este arquivo.
+- **Como testar:** `python -m pytest tests/algoritmos/test_trajeto.py tests/algoritmos/test_integracao_trajeto_rede_teste.py tests/interface/test_pagina_trajetos.py` (26 + 6 + 5 testes; o último usa o `AppTest` do Streamlit; 537 na suíte em 10/11, com o #45 junto); `ruff check`; `python scripts/verificar_imports.py`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip` (roda da `main` desde o merge do #42; o feed vem de `scripts/baixar_gtfs.py`, que em 09/11 estourou o `--max-time 120`; baixado com `curl --max-time 1500`). Página: `streamlit run src/transporte/interface/app.py`, depois do item 1 da revisão do #45.
+- **Bloqueios:** a página depende do PR #45 (P0-UI), aberto e com mudanças pedidas em 10/11; sem o item 1 da revisão o `streamlit run` não carrega rede nenhuma. A seção do relatório espera a tabela de esperas da F-ESPERA.
 
 ## Objetivo
 Trajeto mais rápido. Fecha:
@@ -26,10 +26,10 @@ Trajeto mais rápido. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 05/11: `trajeto_mais_rapido` (Dijkstra do núcleo em G_E) e reconstrução em trechos |
-| Modelo e dados | em andamento | 05/11: roda sobre o G_E do `construir_ge` (PR #38) montado da `Rede` real do PR #42; falta o teste de integração depois do merge do #42 |
-| Interface | não iniciado | depende do contrato de página e do mapa (P0-UI) |
+| Modelo e dados | concluído | 10/11: teste de integração `test_integracao_trajeto_rede_teste.py` lendo `dados/rede-teste/` com o `ler()` do #42 (na `main`): 6 testes com gabarito à mão (ônibus direto, linha sem partida na faixa, frequência expandida, andar vence o ônibus, caminhadas seguidas num trecho só, bordas) |
+| Interface | implementado, à espera do #45 | 10/11: `interface/paginas/trajetos.py` contra o contrato `render(rede)` do PR #45; 5 testes (cache do G_E, tabela, mapa, `AppTest`); medido no feed real (ver Onde parou); não aberta no navegador nesta sessão |
 | Testes | concluído | 05/11: 26 verdes. Gabarito à mão (linha direta, baldeação, troca que vence a direta, espera longa que inverte a escolha, só a pé, caminhadas encadeadas, a pé nas pontas), bordas (origem = destino, inalcançável, parada inexistente, falha e reativação) e NetworkX em 15 redes aleatórias (300 consultas: 255 com trajeto, 116 com baldeação, 195 com caminhada). Mutação à mão: agrupar a pé, agrupar ônibus e o tempo total derrubam testes |
-| Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã; ver Resultados. RNF-05 (X = 1 s, R4) atendido |
+| Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã, na máquina de referência; ver Resultados. RNF-05 (X = 1 s, R4) atendido. 10/11, notebook i5-1334U com outras tarefas: máximo 603 ms em 50 consultas pela página; refazer na máquina de referência |
 | Guia (explicação e quiz) | em andamento | 05/11: rascunho de Como funciona e 5 perguntas, copiado para o `docs/GUIA.md` §5.1 e §10; Henrique revisa |
 | Relatório | não iniciado | espera a tabela de esperas da F-ESPERA para ter resultado de tempo total e baldeações |
 | Vídeo | em andamento | 05/11: rascunho do roteiro; a parte de interface espera o P0-UI |
@@ -113,8 +113,8 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 05/11 (publicada já implementada) |
 | 2 | Algoritmo com testes de corretude | concluída em 05/11 |
-| 3 | Integração com a visão do grafo e com os dados reais | em andamento: roda no feed real com a `Rede` do PR #42; falta o teste de integração na rede de teste, depois do merge do #42 |
-| 4 | Página na interface | bloqueada: contrato de página e mapa (P0-UI) |
+| 3 | Integração com a visão do grafo e com os dados reais | concluída em 10/11 (teste de integração na rede de teste, com o #42 na `main`) |
+| 4 | Página na interface | implementada em 10/11 contra o contrato do PR #45; PR da página depende do merge do #45 |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 05/11 (tempo em Resultados; complexidade em Como funciona) |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | em andamento: rascunho de 05/11 (Como funciona, perguntas, `sequencia-trajeto`, GUIA §5.1 e §10, roteiro); falta a seção do relatório e a revisão do Henrique |
 
@@ -152,8 +152,10 @@ Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
 - **F-ESPERA (Miguel):** o RF-ESP-03 decompõe o tempo em caminhada, espera e viagem; `Trajeto.tempo_por_tipo()` já faz isso para o horário médio da faixa.
 - ~~**RNF-05:** fixar o X~~ **feito em 05/11:** X = 1 s (R4), registrado no `docs/GUIA.md` §8 e no `docs/fontes/REQUISITOS.md`. Medido: pior caso 162,2 ms em 200 consultas; refazer a conferência quando a página existir.
 - ~~**PR empilhado:** o #39 tem base `feat/P0-MODELO-construtores`; integrar o #38 primeiro.~~ **feito em 09/11:** #38 integrado antes; o #39 passou a ter base `main`.
-- **Script de medição:** `benchmarks/medir_modelo_rota.py` importa `transporte.dados`, que chega com o PR #42; até lá só roda com o código do #42 junto. O import fica dentro de `main()` para o módulo continuar importável.
-- **Espera real:** refazer a medição de tempo total e baldeações quando a F-ESPERA publicar a tabela de esperas (ver limitação em Resultados).
+- ~~**Script de medição:** `benchmarks/medir_modelo_rota.py` importa `transporte.dados`, que chega com o PR #42.~~ **feito em 10/11:** o #42 está na `main`; o import continua dentro de `main()`.
+- **Espera real:** refazer a medição de tempo total e baldeações quando a F-ESPERA publicar a tabela de esperas (ver limitação em Resultados); a página então passa a tabela a `construir_ge`.
+- **PR #45 (Arthur, P0-UI):** revisão redigida em 10/11, não publicada (o agente não tem permissão para publicar revisão; texto guardado fora do repositório, na memória do agente). Pede mudança: (1) `main(carregador=ler)` no `__main__` do app, já que o #42 entrou; (2) mapa da Início com todas as paradas e linhas leva 25,6 s e 11,5 MB de HTML no feed real. Menores: hook já existe, arquivo da feature e GUIA §6 desatualizados, PNG do diagrama faltando.
+- **Conferência visual da página:** só pelo `AppTest`; abrir no navegador com o feed real depois do item 1 da revisão do #45.
 
 ### ~~Decisão a tomar~~ Decidida em 05/11/2026: R4 aceita pela recomendação; registrada no `docs/GUIA.md` §8 e no `docs/fontes/REQUISITOS.md` (RNF-05)
 
@@ -177,3 +179,4 @@ Rascunho de 05/11 (Henrique revisa; a parte de interface espera o P0-UI):
 ### Revisão 09/11/2026: Rafael revisa o #39 em comentário: código pronto; pede atualizar a branch com a `main`, a Retomada e a descrição do PR; confirma que o contrato atende a F-BALD-2.
 ### Sessão 09/11/2026: branch atualizada por merge com a `main` (que já tem o #38), conflito do GUIA §8 resolvido com as linhas dos dois lados; "intervalos" da F-ESPERA trocado por "tabela de esperas" aqui e no GUIA §5.1; 502 testes na suíte, hook verde.
 ### Merge 09/11/2026: PR #39 integrado na `main`, sem aprovação formal no GitHub (decisão do Henrique).
+### Sessão 10/11/2026: branch `feat/F-ROTA-pagina` (sobre a `main` + PR #45 por merge): revisão do #45 redigida com duas mudanças pedidas; etapa 3 com 6 testes de integração na rede de teste; etapa 4 com a página Trajetos e 5 testes; medição no notebook da sessão (G_E 0,64 s, consulta máxima 603 ms em 50, mapa até 76 ms); 537 testes na suíte, hook verde; commit na branch, sem PR.
