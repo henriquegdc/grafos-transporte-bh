@@ -1,0 +1,31 @@
+@startuml sequencia-p0-ui
+' Sequencia da aplicacao e dos pontos de integracao de P0-UI.
+!pragma layout smetana
+title Sequencia · P0-UI
+
+actor Usuario
+participant "Streamlit\napp.py" as App
+participant "P0-DADOS\ncarregador injetado" as Dados
+participant "Cache de recursos" as Cache
+participant "Componente Folium\nmapa.py" as Mapa
+participant "Pagina render(rede)" as Pagina
+
+Usuario -> App: escolhe fonte GTFS e solicita carga
+alt carregador P0-DADOS ainda nao integrado
+  App --> Usuario: informa bloqueio explicitamente
+else carregador disponivel
+  App -> Cache: consulta origem e identidade da fonte
+  alt cache ausente
+    Cache -> Dados: carregar_rede(caminho)
+    Dados --> Cache: Rede
+  else cache presente
+    Cache --> App: Rede armazenada
+  end
+  Cache --> App: Rede
+  App -> Mapa: render_mapa(rede, camadas)
+  Mapa --> Usuario: mapa com paradas, linhas, caminhos ou calor
+  Usuario -> App: seleciona pagina
+  App -> Pagina: render(rede)
+  Pagina --> Usuario: conteudo da pagina
+end
+@enduml
