@@ -8,7 +8,43 @@ O problema, as seis perguntas, o caminho do dado: GTFS -> modelo normalizado -> 
 -> algoritmos -> interface. Um diagrama de componentes.
 
 ## 2. Dados e GTFS (Miguel)
-O que é cada arquivo do GTFS, como viram o modelo normalizado, armadilhas, recorte.
+
+O GTFS é um conjunto de CSVs. `stops.txt` identifica paradas e coordenadas;
+`routes.txt`, as linhas; `trips.txt`, as viagens; `stop_times.txt`, a sequência de
+paradas e horários de cada viagem. `calendar.txt` e `calendar_dates.txt` dizem quais
+serviços circulam na data escolhida; `frequencies.txt`, quando existe, fornece partidas
+por intervalo. O leitor aceita pasta ou ZIP e escolhe uma quarta-feira ativa dentro da
+vigência do feed quando o usuário não passa uma data.
+
+O fluxo é: validar os arquivos necessários, selecionar os serviços ativos, percorrer
+`stop_times.txt` em fluxo, agrupar viagens da mesma linha com a mesma sequência exata
+de paradas e construir a `Rede`. Cada parada mantém o seu `stop_id`, inclusive quando
+dois sentidos usam pontos próximos. A rede guarda partidas por padrão/parada,
+`viagens[padrão]` com as sequências de horários alinhadas à sequência de paradas e
+`viagens_por_id` para conservar os identificadores GTFS. Assim o construtor calcula a
+diferença entre paradas consecutivas do mesmo ônibus; uma lista de horários por parada
+perderia essa relação. Uma viagem definida por `frequencies.txt` gera uma sequência
+em `viagens[padrão]` para cada partida da janela, sem contar a viagem de referência
+uma segunda vez. Isso permite que o G_E encontre partidas em todas as faixas do dia.
+
+Horários como `24:10:00` são válidos: representam 00:10 do dia seguinte dentro da
+mesma jornada de serviço. Linhas inválidas são relatadas em `Rede.inconsistencias` e
+não entram no modelo. O recorte aceita uma caixa de coordenadas e/ou ids de linhas;
+ao selecionar linhas, remove também as paradas que nenhuma delas atende.
+Quando o corte remove uma parada no meio de um padrão, os trechos restantes ficam
+separados para não inventar um percurso direto. Trechos que resultem na mesma linha e
+sequência de paradas são reunidos em um padrão, com todas as viagens preservadas;
+assim a espera não é calculada separadamente para duas plataformas equivalentes.
+O arquivo GTFS bruto e seu registro
+de origem, data e SHA-256 ficam em `dados/brutos/`, fora do Git; a rede pequena com
+gabarito manual fica em `dados/rede-teste/`.
+
+Escolhemos processar `stop_times.txt` em fluxo porque o feed real descompactado é
+grande. O modelo normalizado preserva a informação necessária às visões G_P e G_E,
+sem acoplar a leitura aos algoritmos de grafo. A validação atual cobre os serviços
+do dia selecionado; uma auditoria de todos os dias do calendário exigiria outra
+passagem pelos dados. A explicação do fluxo aparece no diagrama
+`docs/diagramas/atividade-p0-dados.png`.
 
 ## 3. Modelagem e visões do grafo (Henrique)
 G_P, G_E, G_L e G_T: o que é vértice, o que é aresta, que pergunta cada uma responde e por quê.
@@ -238,12 +274,23 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | RNF-05: a consulta de trajeto responde em até 1 s na rede completa (R4 da F-ROTA) | Na primeira medição (feed real, G_E com 46.100 vértices), a média foi 75,8 ms e o pior caso de 200 consultas 162,2 ms: margem de cerca de 6 vezes para máquina mais lenta e para a página. A construção do G_E fica fora, porque é feita uma vez por faixa | X = 0,5 s, com margem de 3 vezes |
 | 05/11 | `construir_ge` recebe `esperas[(padrão, faixa)]`, a espera de embarque já calculada pela F-ESPERA, e a aplica sem transformação; substitui `intervalos`, de que o construtor tirava H/2 (P0-MODELO) | Calcular a espera é do RF-ESP-02. A versão essencial usa H/2, e a comparação com E[H²]/(2 E[H]), a espera com intervalos irregulares, é resultado a discutir (`modelagem.md`, espera esperada); dividindo H por 2 no construtor, essa comparação exigiria passar E[H²]/E[H] num campo chamado "intervalo". Mudado antes do merge do #38 e antes de a F-ESPERA começar, sem retrabalho | Manter `intervalos` com H/2 no construtor; receber H e a variância |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
+| 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
+| 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
+| 05/11 (rascunho para Miguel revisar) | Recorte separa trechos desconectados e reúne os que têm a mesma linha e sequência de paradas | Não inventa viagem direta entre paradas quando a intermediária sai do recorte nem divide as partidas de uma plataforma equivalente | Concatenar todas as paradas restantes; manter padrões duplicados após o recorte |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
 
 ## 10. Perguntas de verificação
 Todas as perguntas das features, com resposta, agrupadas por seção.
+
+### 2. Dados e GTFS (P0-DADOS)
+1. **Por que guardar os horários por viagem?** Para ligar passagens consecutivas do
+   mesmo ônibus e calcular seu tempo entre paradas.
+2. **O que significa `24:10:00`?** Dez minutos após a meia-noite seguinte, ainda na
+   mesma jornada GTFS.
+3. **Por que dividir um padrão durante o recorte?** Para não criar uma ligação direta
+   entre paradas cujo trecho intermediário foi removido.
 
 ### 3. Construtores de G_P e G_E (P0-MODELO)
 1. **Por que G_E tem vértices de plataforma?** Para que trocar de linha custe alguma coisa:
