@@ -4,7 +4,7 @@ Cada visão guarda o Grafo do núcleo e os mapas entre os identificadores do GTF
 vértices. As visões G_L (F-BALD) e G_T (F-ESPERA-2) também herdam de Visao, mas são
 definidas pelos donos dessas features.
 
-estado: planejado
+estado: implementado
 """
 
 from __future__ import annotations
@@ -83,8 +83,12 @@ class VisaoGE(Visao):
     def baldeacoes(self, arestas: list[int]) -> int:
         """Número de baldeações de um caminho: embarques - 1 (0 se não embarca).
 
-        Entrada: ids das arestas do caminho, na ordem.
+        Entrada: ids das arestas do caminho, na ordem, como devolve
+            buscas.caminho_arestas.
         Saída: inteiro >= 0.
+        Casos de borda: caminho vazio devolve 0; id de aresta inexistente levanta
+            IndexError.
         Complexidade: tempo O(k), k = número de arestas do caminho; espaço O(1).
         """
-        raise NotImplementedError("estado: planejado")
+        embarques = sum(1 for a in arestas if self.grafo.aresta(a)[3] == EMBARQUE)
+        return max(0, embarques - 1)

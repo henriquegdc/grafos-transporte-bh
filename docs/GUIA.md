@@ -50,6 +50,71 @@ passagem pelos dados. A explicação do fluxo aparece no diagrama
 G_P, G_E, G_L e G_T: o que é vértice, o que é aresta, que pergunta cada uma responde e por quê.
 Espera esperada e paradoxo da inspeção. Parâmetros e seus motivos.
 
+### Construtores de G_P e G_E (P0-MODELO)
+
+Os construtores, em `src/transporte/modelo/construtores.py`, transformam a `Rede` normalizada
+da P0-DADOS nas duas visões usadas por F-ROTA, F-ESPERA, F-MET, F-EFI e F-RES. Eles leem só
+três campos da `Rede` (protocolo `RedeConstrutores`): `paradas`, `padroes` e `viagens[padrão]`,
+que dá os horários de cada viagem na ordem das paradas. A identidade da viagem importa: o tempo
+de A a B sai da subtração de horários **do mesmo ônibus**.
+
+```python
+from transporte.modelo.construtores import construir_gp, construir_ge
+
+gp = construir_gp(rede)                 # VisaoGP: um vértice por parada
+ge = construir_ge(rede, "pico_manha")   # VisaoGE: paradas + plataformas, para uma faixa
+ge.vertice_da_parada["A"]; ge.plataforma[("A", padrao_id)]
+```
+
+**G_P.** Um vértice por parada. Uma aresta VIAGEM a → b para cada par de paradas
+consecutivas em algum padrão, com peso igual à mediana das diferenças de horário de todas as
+viagens que passam por ali (D2). Arestas CAMINHADA nos dois sentidos entre paradas a até 300 m,
+com peso distância / 1,2 m/s. Exemplo: viagens de 300, 360 e 300 s de A a B dão 300 s; se uma
+tivesse −500 s (erro de cadastro), ela ficaria fora e a mediana de 60 e 80 seria 70 (D8).
+
+**G_E.** Em G_P, continuar no ônibus e trocar de ônibus custam o mesmo. G_E cria uma
+**plataforma** por (parada, padrão): para trocar de linha é preciso desembarcar (0 s), voltar à
+parada e embarcar de novo, pagando a espera da nova linha (figura `docs/diagramas/ge-exemplo.png`;
+passo a passo em `docs/diagramas/atividade-construir-ge.png`).
+
+1. EMBARQUE parada → plataforma, com peso igual à espera da tabela `esperas` da F-ESPERA para
+   (padrão, faixa), aplicada como veio (H/2 na versão essencial; 300 s enquanto a tabela não
+   existe), só se alguma viagem do padrão parte na faixa (D10) e nunca na última parada (D9).
+2. VIAGEM plataforma → plataforma seguinte, com a mediana daquele padrão.
+3. DESEMBARQUE plataforma → parada, peso 0, nunca na primeira parada (D9).
+4. CAMINHADA como em G_P.
+
+Assim um único Dijkstra soma caminhada, espera, viagem e baldeações, e as baldeações de um
+caminho são os embarques menos um (`VisaoGE.baldeacoes`). Uma linha circular usa uma plataforma
+só por parada (D11).
+
+**Caminhada sem O(V²).** Comparar as 9.659 paradas de BH duas a duas daria cerca de 93 milhões
+de distâncias. A grade espacial põe cada parada numa célula do tamanho do raio e só compara
+paradas de células vizinhas (9 por parada). A projeção usa o cosseno da maior latitude e a
+célula tem 0,1% de folga, para nenhum par dentro do raio escapar; um teste confere a grade
+contra a busca ingênua em 10 redes aleatórias.
+
+**Complexidade.** Com V paradas, L plataformas, N horários e K pares a até o raio: G_P em
+O(V + K + N log N) esperado (cada horário entra em uma diferença; as medianas ordenam), G_E em
+O(V + K + L + N log N); O(V²) no pior caso da grade, com tudo numa célula. No feed real
+(05/11, `feature-P0-MODELO.md`), G_P com 9.659 vértices e 122.732 arestas sai em 312,8 ms, e
+G_E com 46.100 vértices e cerca de 208 mil arestas em 342 a 365 ms por faixa.
+
+Por quê:
+
+- **Mediana:** um horário errado desloca a média, quase não move a mediana.
+- **Piso de 1 s em viagem e caminhada:** o GTFS arredonda horários (43 arestas de viagem do G_P
+  terminam no piso); peso 0 entre paradas distintas quebra a contagem de caminhos do Brandes.
+  O desembarque fica com 0, porque não leva tempo e só liga a plataforma à própria parada.
+- **Um G_E por faixa:** a espera muda ao longo do dia; um G_E só, com a espera média do dia,
+  esconderia a diferença entre pico e entrepico.
+- **pickle em `salvar` e `carregar` (D7):** o arquivo é cache local da ferramenta, nunca vem
+  de fora.
+
+Limitações: um tempo de viagem por trecho para o dia todo; ônibus que sai às 08h55 não dá
+embarque às 09h20 no entrepico (D10); numa linha circular dá para "dar a volta" (D11); cada
+variante de itinerário tem espera própria (D1); caminhada em linha reta, sem ruas.
+
 ## 4. Núcleo do grafo e heap (Thiago)
 Lista de adjacência, desativação de vértices e arestas, heap binário, BFS e Dijkstra,
 inserção preguiçosa, complexidades.
@@ -58,6 +123,52 @@ inserção preguiçosa, complexidades.
 Uma subseção por feature, copiada e ajustada de "Como funciona e por quê" do arquivo da feature:
 5.1 Trajeto mais rápido · 5.2 Espera · 5.3 Baldeações · 5.4 Centralidades · 5.5 Eficiência ·
 5.6 Falhas · 5.7 Desejáveis e opcionais que foram feitas.
+
+### 5.1 Trajeto mais rápido (F-ROTA)
+
+Dadas duas paradas, `trajeto_mais_rapido` acha o trajeto que chega mais cedo em média, somando
+caminhada, espera e viagem, e diz o que fazer em cada parte.
+
+```python
+from transporte.algoritmos.trajeto import trajeto_mais_rapido
+
+ge = construir_ge(rede, "pico_manha")
+t = trajeto_mais_rapido(ge, "A", "C")   # None se não houver trajeto
+t.tempo_total_s, t.baldeacoes, t.trechos, t.tempo_por_tipo()
+```
+
+Em G_E, trocar de linha obriga a desembarcar, voltar à parada e pagar um novo embarque, que
+carrega a espera da nova linha (seção 3). Por isso basta um Dijkstra, sem penalidade arbitrária
+por baldeação. Passo a passo (`docs/diagramas/sequencia-trajeto.png`):
+
+1. Traduz as paradas em vértices de G_E; parada inexistente dá KeyError.
+2. Roda o `dijkstra` do núcleo a partir da origem, parando quando o destino sai do heap. Com
+   pesos não negativos, a distância de um vértice fechado é definitiva. Destino inalcançável
+   devolve None.
+3. Reconstrói o caminho por **arestas** (`caminho_arestas`), porque o tipo de cada passo está
+   na aresta.
+4. Baldeações = embarques − 1.
+5. Agrupa em trechos: caminhadas seguidas viram um trecho a pé; embarque vira espera; viagens
+   seguidas do mesmo padrão viram um trecho de ônibus, fechado pelo desembarque.
+
+Exemplo, com pesos inventados: de A a C, L1 de A a B e L2 de B a C, espera de 300 s nas duas e
+viagens de 240 e 180 s. Total 300 + 240 + 0 + 300 + 180 = 1.020 s, em quatro trechos (espera
+L1, ônibus L1, espera L2, ônibus L2) e uma baldeação. Se andar de A a C levasse menos, o
+trajeto seria um trecho a pé só.
+
+**Complexidade.** O((V + E) log V) do Dijkstra com heap binário e inserção preguiçosa (O(V + E)
+entradas no heap, cada uma O(log V)), mais O(V + k) da reconstrução; espaço O(V + E). No feed
+real (05/11, `feature-F-ROTA.md`), no G_E com V = 46.100 e E = 208.956: 75,8 ms por consulta em
+média e 162,2 ms no pior caso de 200 consultas, com 0 divergências contra o NetworkX.
+
+Por quê: função em `algoritmos/` e não método da visão, para o A\* e o Yen entrarem no mesmo
+módulo (R1); trechos em vez de arestas cruas, porque é o que a página desenha (R2); None em vez
+de erro, porque não haver trajeto é normal numa rede com falhas (R3).
+
+Limitações: o tempo é o esperado para quem chega à parada num instante qualquer da faixa (espera
+H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica a tabela de esperas,
+toda espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
+caminhada em linha reta, só entre paradas.
 
 ## 6. Interface (Arthur)
 Como as páginas se organizam, o componente de mapa, o cache da rede.
@@ -155,6 +266,13 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 03/11 | `Medicao.formatar()` acrescentado ao contrato de medição, escolhendo µs, ms ou s pela média (P0-AVAL) | Mesmo formato de tempo em todas as features, na interface e na tabela do relatório | Cada feature formata o seu |
 | 03/11 | Relatório com uma seção por arquivo, seções de feature incluídas sozinhas por `\InputIfFileExists` e `\pendente` para o que falta (P0-AVAL) | Cada dono edita só o seu arquivo, sem conflito de merge e sem mexer no `main.tex`; o que falta fica visível no PDF | Um `main.tex` único editado por todos |
 | 03/11 | Relatório compilado com `latexmk` para `relatorio/build/`, fora do Git; PDF versionado só na entrega (P0-AVAL) | Arquivos gerados não poluem o histórico nem causam conflito | Versionar o PDF a cada mudança |
+| 05/11 | Piso de 1 s nas arestas de viagem e de caminhada de G_P e G_E (`Parametros.peso_minimo_s`); desembarque continua com 0 (P0-MODELO, a pedido da F-MET, decisão M2) | O GTFS arredonda horários e paradas no mesmo ponto ficam a 0 m; com peso 0 o Brandes deixa de contar certo os caminhos mínimos, e 0 s entre paradas distintas não é tempo real | Desempatar pelo número de arestas no Brandes; somar ε só dentro do Brandes |
+| 05/11 | Diferença de horário negativa fica fora da mediana; trecho sem diferença válida recebe o piso (D8) | É erro de cadastro isolado; o trecho existe na sequência do padrão | Levantar erro; descartar a viagem inteira |
+| 05/11 | Sem embarque na última parada do padrão e sem desembarque na primeira (D9) | Essas arestas nunca estão num caminho útil e só aumentam o G_E | Criar as quatro arestas em toda plataforma |
+| 05/11 | Padrão com partida na faixa = alguma viagem com o primeiro horário na faixa (D10) | É a definição de partida e casa com a tabela de intervalos de F-ESPERA, por (padrão, faixa); ônibus que sai às 08h55 não dá embarque às 09h20 no entrepico (limitação) | Alguma viagem passar pela parada dentro da faixa |
+| 05/11 | Linha circular usa uma plataforma por (parada, padrão) (D11) | É o que a chave do contrato `plataforma[(parada, padrão)]` implica; o passageiro pode dar a volta e seguir no início do padrão (limitação) | Uma plataforma por ocorrência da parada no padrão |
+| 05/11 | RNF-05: a consulta de trajeto responde em até 1 s na rede completa (R4 da F-ROTA) | Na primeira medição (feed real, G_E com 46.100 vértices), a média foi 75,8 ms e o pior caso de 200 consultas 162,2 ms: margem de cerca de 6 vezes para máquina mais lenta e para a página. A construção do G_E fica fora, porque é feita uma vez por faixa | X = 0,5 s, com margem de 3 vezes |
+| 05/11 | `construir_ge` recebe `esperas[(padrão, faixa)]`, a espera de embarque já calculada pela F-ESPERA, e a aplica sem transformação; substitui `intervalos`, de que o construtor tirava H/2 (P0-MODELO) | Calcular a espera é do RF-ESP-02. A versão essencial usa H/2, e a comparação com E[H²]/(2 E[H]), a espera com intervalos irregulares, é resultado a discutir (`modelagem.md`, espera esperada); dividindo H por 2 no construtor, essa comparação exigiria passar E[H²]/E[H] num campo chamado "intervalo". Mudado antes do merge do #38 e antes de a F-ESPERA começar, sem retrabalho | Manter `intervalos` com H/2 no construtor; receber H e a variância |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
 | 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
 | 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
@@ -173,6 +291,33 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    mesma jornada GTFS.
 3. **Por que dividir um padrão durante o recorte?** Para não criar uma ligação direta
    entre paradas cujo trecho intermediário foi removido.
+
+### 3. Construtores de G_P e G_E (P0-MODELO)
+1. **Por que G_E tem vértices de plataforma?** Para que trocar de linha custe alguma coisa:
+   trocar obriga a desembarcar, voltar à parada e pagar um novo embarque, com a espera da nova
+   linha. Em G_P a aresta não sabe em que linha o passageiro está.
+2. **Como se conta o número de baldeações de um trajeto em G_E?** Embarques no caminho menos
+   um; um trajeto só a pé tem 0.
+3. **Por que o tempo entre paradas é a mediana, e o que acontece com uma diferença negativa?**
+   A mediana resiste a horários errados. A diferença negativa fica fora; se não sobrar nenhuma,
+   o trecho recebe o piso de 1 s, porque existe na sequência do padrão (D8).
+4. **Por que montar a caminhada não custa O(V²)?** A grade espacial só compara cada parada com
+   as 9 células vizinhas: O(V + K) esperado.
+5. **Por que viagem e caminhada têm piso de 1 s, mas o desembarque fica com 0?** Peso 0 entre
+   paradas distintas é artefato do arredondamento e quebra a contagem de caminhos do Brandes;
+   desembarcar não leva tempo e só liga a plataforma à própria parada.
+
+### 5.1 Trajeto mais rápido (F-ROTA)
+1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque
+   em G_E trocar de linha passa por uma aresta de embarque, que pesa a espera da nova linha.
+2. **Por que o caminho é reconstruído por arestas e não por vértices?** O tipo do passo
+   (caminhada, embarque, viagem, desembarque) está na aresta; dele saem os trechos e as baldeações.
+3. **Por que dá para parar o Dijkstra quando o destino sai do heap?** Com pesos não negativos, a
+   distância de um vértice fechado é definitiva.
+4. **O tempo total é o horário de chegada de quem sai agora?** Não: é o tempo esperado para quem
+   chega à parada num instante qualquer da faixa (espera H/2 em cada embarque).
+5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem
+   trajeto"; é normal com paradas ou linhas desativadas (F-RES).
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;

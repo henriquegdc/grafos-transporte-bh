@@ -3,6 +3,7 @@
 ' Estado: planejado. Requisitos em docs/fontes/REQUISITOS.md §5.1.
 ' Essenciais como casos de uso; desejáveis como <<extend>>; opcionais fora do diagrama.
 !pragma layout smetana
+skinparam dpi 200
 left to right direction
 skinparam packageStyle rectangle
 title Casos de uso · análise da rede de transporte público

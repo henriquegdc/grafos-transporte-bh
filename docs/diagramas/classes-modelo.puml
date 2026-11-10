@@ -1,0 +1,81 @@
+@startuml classes-modelo
+' Recorte do diagrama de classes (classes.puml) para a seção Modelagem do relatório:
+' modelo normalizado, parâmetros e visões. O núcleo do grafo aparece só como Grafo.
+' Mantido em sincronia com classes.puml e com src/transporte/modelo/.
+!pragma layout smetana
+skinparam dpi 200
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam defaultFontSize 14
+skinparam shadowing false
+hide empty members
+
+package "dados" {
+  class Rede {
+    +paradas: dict[str, Parada]
+    +padroes: dict[str, Padrao]
+    +viagens: dict[str, list[list[int]]]
+  }
+  class Parada <<frozen>> {
+    +id: str
+    +lat, lon: float
+  }
+  class Padrao <<frozen>> {
+    +id: str
+    +linha_id: str
+    +paradas: tuple[str, ...]
+  }
+}
+
+package "modelo" {
+  class construtores <<module>> {
+    +construir_gp(rede, params): VisaoGP
+    +construir_ge(rede, faixa, params, esperas): VisaoGE
+    +salvar(visao, caminho)
+    +carregar(caminho): Visao
+  }
+  class Parametros <<frozen>> {
+    +raio_caminhada_m = 300
+    +velocidade_caminhada_ms = 1,2
+    +espera_padrao_s = 300
+    +peso_minimo_s = 1
+    +faixas: tuple[FaixaHoraria, ...]
+  }
+  abstract class Visao {
+    +grafo: Grafo
+    +nome: str
+  }
+  class VisaoGP {
+    +vertice_da_parada
+    +parada_do_vertice
+  }
+  class VisaoGE {
+    +vertice_da_parada
+    +{field} plataforma: (parada, padrão) -> vértice
+    +faixa: str
+    +baldeacoes(arestas): int
+  }
+  class VisaoGL
+  class VisaoGT
+}
+
+package "grafo" {
+  class Grafo {
+    +adicionar_vertice / adicionar_aresta
+    +vizinhos(u)
+    +desativar_vertice / desativar_aresta
+  }
+}
+
+Rede "1" *-- "*" Parada
+Rede "1" *-- "*" Padrao
+Padrao "*" --> "2..*" Parada : sequência
+construtores ..> Rede : lê
+construtores ..> Parametros : usa
+construtores ..> Visao : cria
+Visao <|-- VisaoGP
+Visao <|-- VisaoGE
+Visao <|-- VisaoGL
+Visao <|-- VisaoGT
+Visao "1" *-- "1" Grafo
+@enduml

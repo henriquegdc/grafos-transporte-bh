@@ -1,0 +1,40 @@
+@startuml atividade-construir-ge
+' Diagrama de atividade de construir_ge (P0-MODELO, RF-GRF-05).
+' Estado: implementado. Código: src/transporte/modelo/construtores.py.
+!pragma layout smetana
+skinparam dpi 150
+title Atividade · construir_ge(rede, faixa, params, esperas)
+
+start
+:f = params.faixa(faixa);
+note right: faixa inexistente: KeyError
+:um vértice por parada;
+while (há padrão não visitado?) is (sim)
+  if (alguma parada do padrão é desconhecida?) then (sim)
+    :KeyError;
+    stop
+  endif
+  if (padrão tem menos de 2 paradas?) then (sim)
+  else (não)
+    :uma plataforma por (parada, padrão),
+    reaproveitada se a parada se repete (D11);
+    if (alguma viagem parte dentro da faixa? (D10)) then (sim)
+      :espera = esperas[(padrão, faixa)], sem transformação,
+      ou espera_padrao_s se o par não estiver na tabela;
+      :EMBARQUE parada -> plataforma,
+      menos na última parada (D9);
+    else (não)
+      :sem embarque nesta faixa;
+    endif
+    :VIAGEM plataforma -> seguinte:
+    max(piso, mediana das diferenças >= 0) (D2, D8);
+    :DESEMBARQUE plataforma -> parada, peso 0,
+    menos na primeira parada (D9);
+  endif
+endwhile (não)
+:pares de paradas a até o raio pela grade espacial;
+:CAMINHADA nos dois sentidos:
+max(piso, distância / velocidade);
+:devolve VisaoGE(grafo, vertice_da_parada, plataforma, faixa);
+stop
+@enduml
