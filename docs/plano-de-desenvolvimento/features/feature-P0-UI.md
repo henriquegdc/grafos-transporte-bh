@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** publicar o contrato de página (`render(rede)`) e o esqueleto de `src/transporte/interface/app.py`.
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de contrato de P0-DADOS; até lá, trabalhar contra as assinaturas publicadas e a rede de teste.
+- **Última sessão:** 09/11/2026.
+- **Onde parou:** aplicação Streamlit, navegação, descoberta de fontes, cache, contratos estruturais e mapa Folium implementados; P0-DADOS ainda não oferece carregador nem há GTFS no repositório.
+- **Próximo passo:** alinhar com Miguel a função de carregamento que devolve a `Rede` publicada e conectá-la à chamada `main(carregador=...)`/ponto de entrada Streamlit; testar com a rede de teste e o feed real quando disponíveis.
+- **Arquivos tocados:** `src/transporte/interface/app.py`, `mapa.py`, `protocolos.py`, `tests/interface/`, este arquivo, `docs/GUIA.md`, `docs/diagramas/sequencia-p0-ui.puml`.
+- **Como testar:** `python -m pytest tests/interface -q`; suíte completa: `python -m pytest -q`; `ruff check`; `python scripts/verificar_imports.py`. Smoke test: `python -m streamlit run src/transporte/interface/app.py --server.headless true --server.port 8501`, depois consultar `http://localhost:8501/_stcore/health` e a página raiz.
+- **Bloqueios:** integração real de carga e resumo com dataset depende de P0-DADOS; a implementação não duplica o parser GTFS nem presume uma API de carregamento que ainda não foi publicada. A cópia por sessão protege mutações, mas tem custo de memória proporcional ao tamanho da rede.
 
 ## Objetivo
 Aplicação Streamlit e componente de mapa. Fecha:
@@ -26,40 +26,66 @@ Aplicação Streamlit e componente de mapa. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
+| Núcleo (algoritmo) | não aplicável | P0-UI não implementa algoritmo de grafo. |
+| Modelo e dados | bloqueado | P0-DADOS ainda não implementa o carregador; `dados/rede-teste/` não contém GTFS. |
+| Interface | parcial | Aplicação, navegação, mapa e registro de páginas implementados; carregamento integrado e mapa na rede real aguardam P0-DADOS. |
+| Testes | implementado localmente | 12 testes de interface e 514 testes totais passaram em Python 3.14.4; o projeto especifica Python 3.12. Validação sem depender de um feed. |
+| Desempenho (tempo medido) | pendente | Sem feed para medir carregamento; mapa não executa algoritmo de grafo. |
+| Guia (explicação e quiz) | implementado | Seção 6 e perguntas da P0-UI incluídas em `docs/GUIA.md`. |
+| Relatório | pendente | Resultado de uso real depende da integração de dados. |
+| Vídeo | pendente | Gravação após integração e validação com dataset. |
 
 ## Especificação
 Contrato inicial em `docs/fontes/plano-de-projeto.md` §9. Publicar as assinaturas com o comentário `estado: planejado` antes de implementar; trocar para `implementado` quando os testes passarem.
 
 ## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
+
+A aplicação não interpreta GTFS: ela descobre fontes locais e delega o carregamento a um
+`CarregadorRede` injetado, que deve devolver o modelo `Rede` de P0-DADOS. O cache de recurso do
+Streamlit guarda o resultado de uma leitura para reutilizar o trabalho, mas `carregar_rede`
+devolve uma cópia profunda independente a cada sessão. Isso evita que uma feature que altere
+grafos ou dados durante uma simulação compartilhe mutações com outra sessão.
+
+O mapa usa camadas Folium independentes para paradas, padrões, caminhos e intensidades; assim,
+cada página reaproveita o mesmo componente e escolhe o que exibir. A construção percorre as
+paradas, os padrões/caminhos solicitados e as intensidades uma vez: tempo e espaço
+O(P + S + C + H), em que P são paradas, S é o total de paradas dos padrões exibidos, C é o total
+de pontos dos caminhos e H é o número de intensidades.
+
+As páginas entram por um registro de módulos e seguem `render(rede)`. Se o módulo ainda não
+existe, a navegação mostra que a página está indisponível. O carregador de P0-DADOS ainda não foi
+publicado; por isso a execução atual informa a pendência em vez de apresentar um falso resumo ou
+de criar um segundo modelo de dados.
 
 ## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
+
+1. **Por que a UI não lê os CSV GTFS?** Para manter a leitura e normalização sob responsabilidade
+   de P0-DADOS e consumir o contrato único `Rede`.
+2. **Quais visualizações o mapa reutilizável suporta?** Paradas, linhas/padrões, caminhos e mapas
+   de calor, em camadas Folium separadas.
+3. **Como uma página de feature se integra?** Publicando `render(rede)` no módulo registrado na
+   navegação.
+4. **Como o cache evita compartilhar mutações entre sessões?** O recurso carregado é armazenado
+   em cache, mas cada carga de sessão recebe uma cópia profunda.
+5. **O que falta para carregar um dataset de ponta a ponta?** P0-DADOS publicar e integrar uma
+   função que receba a origem e devolva a `Rede` definida no contrato.
 
 ## Critérios de aceite
-- [ ] RF-UI-01: Aplicação gráfica com mapa da rede e navegação por páginas
+- [ ] RF-UI-01: Aplicação gráfica com mapa da rede e navegação por páginas (shell iniciou; smoke test retornou HTTP 200 e health `ok`; falta validação com rede carregada)
 - [ ] RF-UI-02: Carregar o conjunto de dados e mostrar o resumo da rede
-- [ ] RF-UI-03: Componente de mapa reutilizável para paradas, caminhos e mapas de calor
+- [x] RF-UI-03: Componente de mapa reutilizável para paradas, caminhos e mapas de calor (testes de camadas Folium aprovados)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
+- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (verificações executadas localmente nesta branch)
+- [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (casos de UI testados; comparação de grafos não se aplica)
+- [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/sequencia-p0-ui.puml`
+- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
 - [ ] Roteiro do vídeo escrito no arquivo da feature
@@ -68,12 +94,12 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| 1 | Contrato (assinaturas com estado "planejado") | Implementado na UI com protocolos estruturais que consomem os campos publicados de `Rede`; assinatura do loader segue pendente de P0-DADOS. |
+| 2 | Algoritmo com testes de corretude | Não aplicável: P0-UI não implementa algoritmo de grafo; mapa e integração têm testes próprios. |
+| 3 | Integração com a visão do grafo e com os dados reais | Bloqueada: sem loader P0-DADOS e sem dataset GTFS versionado/disponível. |
+| 4 | Página na interface | Parcial: shell Streamlit, navegação, descoberta, cache, mapa e despacho `render(rede)` implementados; faltam carga e resumo de rede real. |
+| 5 | Tempo medido na rede real e complexidade justificada | Complexidade do mapa documentada; medição na rede real pendente por falta de feed. |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Explicação, perguntas e fonte UML adicionadas; relatório e vídeo aguardam integração/execução real. |
 
 ## Resultados para o relatório
 _Vazio até haver execução real. Todo número vem com o comando que o gerou._
@@ -83,8 +109,22 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- Nenhuma.
+- Integrar o carregador de P0-DADOS quando sua assinatura for publicada, sem duplicar o parser.
+- Alinhar a identidade do cache com P0-DADOS; a invalidação atual considera caminho, tamanho e
+  data de modificação, não o conteúdo de cada arquivo.
+- O ponto de entrada `streamlit run ...` chama `main()` sem loader; ligar o loader de P0-DADOS ao
+  ponto de entrada ao integrar essa feature.
+- Confirmar com P0-DADOS os layouts de GTFS aceitos (a descoberta atual cobre ZIPs e diretórios
+  extraídos na raiz ou um nível abaixo das pastas configuradas).
+- Alinhar com P0-MODELO/P0-DADOS o resumo das arestas por visão indicado em `modelagem.md` §3.6;
+  o resumo atual só conta paradas, linhas e padrões.
+- Alinhar com F-ROTA a apresentação no mapa de cada trecho por modo/linha/tempo; o componente
+  atual recebe sequências de paradas e desenha uma linha genérica.
+- Validar carregamento, resumo e mapa com a rede de teste e o GTFS real.
+- Completar RF-UI-01/02, medir a interação com os dados reais e concluir relatório e vídeo após validação.
+- Fazer revisão por outro integrante e integrar via PR; não executado nesta sessão.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Arthur.
+### Implementação 09/11/2026: shell Streamlit, navegação, contrato estrutural, cache, mapa Folium, testes e documentação local; carga real bloqueada por P0-DADOS.
