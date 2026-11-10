@@ -1,13 +1,13 @@
 @startuml ge-exemplo
 ' Exemplo pequeno de G_E: duas linhas, uma baldeação em B e uma caminhada C <-> D.
 ' Usado na seção Modelagem do relatório (relatorio/secoes/modelagem.tex).
+' Duas fileiras: paradas em cima, plataformas embaixo.
 !pragma layout smetana
 skinparam dpi 200
 skinparam defaultFontSize 13
 skinparam shadowing false
 skinparam rectangleRoundCorner 12
 skinparam ArrowFontSize 12
-left to right direction
 hide stereotype
 
 skinparam rectangle<<parada>> {
@@ -28,12 +28,12 @@ rectangle "B·L1" as B1 <<plataforma>>
 rectangle "B·L2" as B2 <<plataforma>>
 rectangle "C·L2" as C2 <<plataforma>>
 
-A --> A1 : embarque\nH₁/2
-A1 --> B1 : viagem L1\nt(A,B)
-B1 --> B : desembarque\n0
-B --> B2 : embarque\nH₂/2
-B2 --> C2 : viagem L2\nt(B,C)
-C2 --> C : desembarque\n0
-C --> D : caminhada\nd/v
-D --> C : caminhada\nd/v
+A -down-> A1 : embarque\nH₁/2
+A1 -right-> B1 : viagem L1\nt(A,B)
+B1 -up-> B : desembarque\n0
+B -down-> B2 : embarque\nH₂/2
+B2 -right-> C2 : viagem L2\nt(B,C)
+C2 -up-> C : desembarque\n0
+C -right-> D : caminhada\nd/v
+D -left-> C : caminhada\nd/v
 @enduml

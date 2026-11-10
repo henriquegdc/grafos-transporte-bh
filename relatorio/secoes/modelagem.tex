@@ -74,10 +74,10 @@ número de baldeações de um trajeto é o número de embarques menos um.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{ge-exemplo}
+\includegraphics[width=0.7\textwidth]{ge-exemplo}
 \caption{Exemplo de $G_E$: de A a C pela linha L1 e depois pela L2, com baldeação em B
-(dois embarques, uma baldeação); C e D estão a distância de caminhada. Retângulos
-brancos são paradas; azuis, plataformas.}
+(dois embarques, uma baldeação); C e D estão a distância de caminhada. Em cima, as
+paradas; embaixo, em azul, as plataformas.}
 \label{fig:ge-exemplo}
 \end{figure}
 
@@ -93,7 +93,8 @@ padrão sem nenhuma partida na faixa não recebe aresta de embarque nela.
 
 O tempo de viagem entre duas paradas seguidas é a mediana das diferenças de horário entre
 as viagens do dia típico, por ser robusta a horários com erro de cadastro; diferenças
-negativas, que só podem ser erro, ficam fora da mediana. Em $G_P$, quando dois padrões
+negativas, que só podem ser erro, ficam fora da mediana. Antes disso, o leitor do GTFS já
+descarta a viagem inteira cujos horários decrescem; no feed usado não houve nenhuma. Em $G_P$, quando dois padrões
 passam pelo mesmo trecho, a aresta é única e a mediana junta as viagens dos dois. A
 caminhada liga paradas a até $R = 300$\,m em linha reta (fórmula de haversine), com peso
 igual à distância dividida por 1,2\,m/s. Arestas de viagem e de caminhada têm piso de
@@ -108,6 +109,16 @@ custa $O(V + K + N \log N)$ e $G_E$, $O(V + K + L + N \log N)$, com $N$ o númer
 horários e $L$ o de plataformas. Para não reprocessar o GTFS a cada execução, as
 visões prontas são gravadas em disco e recarregadas nas execuções seguintes.
 
+No feed da PBH, com o dia típico de 04/11/2026 (9.659 paradas, 698 padrões e 24.503
+viagens), $G_P$ tem 9.659 vértices e 122.732 arestas, das quais 110.178 de caminhada;
+$G_E$ do pico da manhã tem 46.100 vértices e 208.956 arestas. Cada visão é construída em
+menos de 0,4\,s (Intel Core i5-13600KF, média de cinco execuções). O piso de 1\,s atinge
+39 das 12.554 arestas de viagem de $G_P$ e nenhuma de caminhada. O modelo tem três
+limitações: o tempo de um trecho é um só para o dia todo, sem o trânsito do pico; a
+caminhada é em linha reta, sem as ruas; e 387 dos 698 padrões repetem alguma parada, caso
+em que a plataforma única por (parada, padrão) deixa o passageiro seguir do fim para o
+início do padrão.
+
 \subsection{Diagramas UML}
 
 A Figura~\ref{fig:classes} mostra as classes do modelo. O módulo \texttt{construtores}
@@ -118,7 +129,7 @@ casos de uso estão em \texttt{docs/diagramas/}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\textwidth]{classes-modelo}
+\includegraphics[width=0.9\textwidth]{classes-modelo}
 \caption{Diagrama de classes do modelo normalizado, dos parâmetros e das visões.}
 \label{fig:classes}
 \end{figure}
