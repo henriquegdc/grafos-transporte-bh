@@ -133,6 +133,18 @@ def test_mapa_tem_um_traco_por_trecho_e_um_marcador_por_troca(rede: Rede) -> Non
     assert "Troca 1: desce em Troca (B)" in html
 
 
+def test_controle_de_camadas_vem_depois_das_camadas(rede: Rede) -> None:
+    # Se o controle vier antes, ele cita camadas ainda não criadas e o Leaflet para com
+    # "Cannot read properties of undefined (reading 'setZIndex')": o trajeto não aparece.
+    gl = baldeacoes.gl_da_faixa(rede, baldeacoes.DIA_INTEIRO, {})
+    mapa = baldeacoes.mapa_trajeto(rede, menos_baldeacoes(gl, "A", "C"))
+    html = mapa.get_root().render()
+    controle = html.index("L.control.layers(")
+    camadas = [e.get_name() for e in _descendentes(mapa) if isinstance(e, folium.FeatureGroup)]
+    assert camadas
+    assert all(html.index(f"var {nome} = ") < controle for nome in camadas)
+
+
 def _script_da_pagina() -> None:
     # Roda dentro do AppTest: monta a rede e chama render, como o app.py faz.
     from dataclasses import dataclass
