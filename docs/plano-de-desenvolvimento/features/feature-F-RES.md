@@ -12,7 +12,7 @@
 - **Última sessão:** 10/11/2026.
 - **Onde parou:** etapas 1, 2, 3 e 5 feitas na branch `feat/F-RES-falhas`. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
 - **Próximo passo:** commitar, abrir o PR com `Closes #12` e pedir revisão. Combinar com o Arthur a troca da `eficiencia_global` provisória pela da F-EFI. Quando a P0-UI entrar, fazer a página Falhas (etapa 4). Depois, a etapa 6: revisar o rascunho de "Como funciona", diagrama UML, seção do relatório e roteiro do vídeo.
-- **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `tests/simulacao/test_falhas.py`, `benchmarks/medir_falhas.py`, este arquivo.
+- **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `tests/simulacao/test_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, este arquivo.
 - **Como testar:** `pytest tests/simulacao` (89 testes); `pytest` completo (603 em 10/11); `python benchmarks/medir_falhas.py` com o feed em `dados/brutos/bhtrans.zip` (baixar com `python scripts/baixar_gtfs.py`).
 - **Bloqueios:** a página depende da P0-UI (Arthur, branch `feature/P0-UI` ainda sem PR na `main`); a eficiência oficial depende da F-EFI (Arthur, não iniciada).
 
@@ -30,10 +30,10 @@ Falhas e resiliência. Fecha:
 | Modelo e dados | concluído | 10/11: roda sobre `construir_gp` e `ler`; `indexar_linhas` liga trechos a linhas; integração testada na rede de teste e medida no feed real |
 | Interface | não iniciado | Depende da P0-UI (`app.py` e contrato de página) |
 | Testes | concluído | 10/11: 89 testes (gabarito à mão, 40 grafos aleatórios contra o NetworkX no Tarjan, 15 na eficiência, rede de teste ponta a ponta) |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
+| Desempenho (tempo medido) | concluído | 10/11: `benchmarks/medir_falhas.py` no feed real (ver Resultados) |
+| Guia (explicação e quiz) | em andamento | Rascunho de "Como funciona" e perguntas neste arquivo; falta revisão do Caio e cópia para o GUIA §5.6 |
+| Relatório | em andamento | `relatorio/secoes/F-RES.tex` com resultado, complexidade e limitação; falta a figura da tela (depende da página) |
+| Vídeo | em andamento | Roteiro (rascunho) abaixo |
 
 ## Especificação
 Assinaturas públicas em `src/transporte/simulacao/falhas.py` (`estado: implementado`):
@@ -109,11 +109,28 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
 
 ## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+_Todo número vem com o comando que o gerou._
+
+**Falhas no G_P real, 10/11/2026.** Comando: `python scripts/baixar_gtfs.py` e depois `python benchmarks/medir_falhas.py` (`AMOSTRA = 100`, `SEMENTE = 2026`, `REPETICOES = 3`). Feed: GTFS convencional da PBH baixado em 11/11/2026 00:02 UTC, SHA-256 `459f3a5892e57d10b11f9a74c543ac16c22661867c7d2296352ec17338935707` (diferente do de 05/11 da P0-DADOS: a PBH atualizou o arquivo). Serviço de 04/11/2026: 9.659 paradas, 303 linhas, 698 padrões. Máquina: notebook Intel Core i5-1235U, 15,7 GB, Windows 11, Python 3.14.4. Tempos com `medir`, n = 3; a leitura do GTFS e a construção do G_P não entram.
+
+| Medida | Resultado | Tempo |
+|---|---|---|
+| G_P | V = 9.659, E = 122.732 | |
+| Componentes fortemente conexas | 4: a maior com 9.656 paradas e 3 unitárias; iguais ao NetworkX | Tarjan: 148,6 ms ± 51,1 ms |
+| Profundidade máxima da DFS | 4.657 níveis (limite de recursão do Python: 1.000) | |
+| Eficiência global (100 origens) | 6,139 × 10⁻⁴ s⁻¹ | 10,5 s ± 3,1 s |
+| Falha da parada `14784108` (mais saídas de viagem: 20) | componentes 4 -> 4; 0 isoladas; 0 desconectadas; perda de 0,0357 % | `simular_falha`: 25,5 s ± 7,3 s |
+| Falha da linha `562003` (mais trechos exclusivos: 92) | componentes 4 -> 4; 0 isoladas; 0 desconectadas; perda de 0,0709 % | `simular_falha`: 18,4 s ± 1,0 s |
+
+**Leitura.** A rede é muito redundante no G_P: tirar a parada com mais saídas ou a linha com mais trechos exclusivos não desconecta ninguém e custa menos de 0,1 % de eficiência. A causa provável são as arestas de caminhada de até 300 m, que contornam quase toda falha isolada. Isso ainda não foi medido; para medir, repetir sem caminhada. O tempo é dominado pelos Dijkstras da eficiência (2 × 100 por simulação). O Tarjan custa menos de 1 % disso. A variação chega a ± 30 % com n = 3; a hipótese é variação de frequência do processador do notebook, mas isso não foi verificado.
 
 ## Roteiro do vídeo (2 a 2,5 min)
-1. O problema que a feature resolve. 2. A feature funcionando na interface.
-3. Algoritmo e complexidade. 4. Resultado e limitação.
+_Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só depois de conferidos em Resultados._
+
+1. **O problema (20 s).** "Se a parada mais movimentada de BH fecha, ou uma linha para, quem fica sem ônibus? E quanto a rede inteira fica mais lenta?" Mostrar o mapa com a rede.
+2. **Funcionando (50 s).** Na página Falhas, escolher a parada com mais saídas e simular. Mostrar o número de componentes antes e depois, as paradas isoladas no mapa e a perda de eficiência. Repetir com uma linha e comentar que só os trechos exclusivos dela saem, porque os trechos compartilhados continuam com as outras linhas. Se a página não existir na gravação, rodar `python benchmarks/medir_falhas.py` no terminal.
+3. **Algoritmo e complexidade (50 s).** A falha não reconstrói o grafo: só desliga vértices e arestas e religa no fim. Componentes fortemente conexas com o Tarjan, O(V + E). Mostrar `indice` e `low` no exemplo de 4 vértices do "Como funciona". É iterativo porque, no G_P real, a DFS chega a 4.657 níveis e o Python para em 1.000. Eficiência: média de 1/d, um Dijkstra por origem, O(s (V + E) log V), por isso a amostra com semente fixa.
+4. **Resultado e limitação (20 s).** Citar a perda medida para a parada e para a linha (Resultados). Limitação: o G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. E a eficiência é provisória até a F-EFI.
 
 ## Pendências
 - **Checkpoint de 07/11 perdido.** Nada da F-RES existia em 07/11. Pelo gatilho do plano-de-projeto §7.3, a feature foi reduzida ao mínimo dos RFs: núcleo, testes e medição em 10/11. A página e a etapa 6 ficam como pendência.

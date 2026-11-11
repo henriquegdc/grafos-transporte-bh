@@ -1,0 +1,41 @@
+@startuml sequencia-falhas
+' Diagrama de sequência de simular_falha (F-RES, RF-RES-01 a 03).
+' Estado: implementado. Código: src/transporte/simulacao/falhas.py.
+!pragma teoz true
+skinparam dpi 150
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+title Sequência · simular_falha(gp, falha, linhas_do_trecho, amostra, semente)
+hide footbox
+
+participant "Página Falhas\n(P0-UI)" as UI
+participant "simular_falha" as S
+participant "componentes_fortes\n(Tarjan iterativo)" as T
+participant "eficiencia_global\n(provisória, F-EFI)" as E
+participant "aplicar_falha /\ndesfazer_falha" as F
+participant "Grafo de G_P\n(núcleo)" as G
+
+UI -> S : falha (paradas, trechos, linhas)
+note right of UI : linhas_do_trecho = indexar_linhas(rede),\ncalculado uma vez por rede
+S -> G : vértices ativos (n)
+S -> S : origens = todos, ou amostra sorteada com a semente
+S -> T : componentes antes
+T --> S : listas de vértices
+S -> E : eficiência antes (origens, n)
+E -> G : um Dijkstra por origem
+E --> S : soma(1/d) / (s · (n - 1))
+S -> F : aplicar_falha
+F -> F : valida tudo antes\n(KeyError: nada desligado)
+F -> G : desativar_vertice (paradas)\ndesativar_aresta (trechos e trechos só da linha)
+F --> S : vértices e arestas desligados agora
+group try / finally
+  S -> T : componentes depois
+  T --> S : listas de vértices
+  S -> E : eficiência depois (mesmas origens, mesmo n)
+  E --> S : valor <= antes
+  S -> F : desfazer_falha
+  F -> G : reativa só o que desligou
+end
+S -> S : isoladas (ficaram sozinhas)\ndesconectadas (saíram da maior)\nperda = (antes - depois) / antes
+S --> UI : ResultadoFalha
+@enduml

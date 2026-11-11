@@ -1,0 +1,37 @@
+% Seção: F-RES · Falhas e resiliência (RF-RES-01 a RF-RES-03)
+% Dono: Caio · Números: docs/plano-de-desenvolvimento/features/feature-F-RES.md, Resultados
+% (comando: python benchmarks/medir_falhas.py; execução de 10/11/2026).
+\subsection{Falhas e resiliência}\label{sec:F-RES}
+
+A ferramenta simula a saída de operação de uma parada, de um trecho ou de uma linha sobre
+$G_P$ e compara a rede antes e depois. A falha não reconstrói o grafo: o núcleo desativa os
+vértices e as arestas atingidos e os reativa ao fim da simulação. Uma parada sai com todas
+as arestas que a tocam; um trecho $a \to b$ sai só nesse sentido; uma linha remove apenas os
+trechos que nenhuma outra linha percorre, já que $G_P$ funde numa única aresta o trecho
+compartilhado.
+
+Para cada simulação calculam-se as componentes fortemente conexas antes e depois, pelo
+algoritmo de Tarjan em versão iterativa, em $O(V + E)$. A versão recursiva não serve: no
+$G_P$ real a busca em profundidade chega a 4.657 níveis, acima do limite de recursão do
+Python (1.000). As paradas \emph{isoladas} são as que passam a formar uma componente
+sozinhas; as \emph{desconectadas} são as que saem da maior componente. A perda de eficiência
+é $(E_{\text{antes}} - E_{\text{depois}})/E_{\text{antes}}$, em que $E$ é a média de $1/d$
+sobre os pares ordenados. O denominador de antes da falha é mantido, para que remover uma
+parada nunca aumente a eficiência. Com $s$ origens sorteadas com semente fixa, o custo é
+$O(s\,(V + E)\log V)$.
+
+\pendente{Figura: tela da página Falhas com as paradas isoladas no mapa (depende da P0-UI).}
+
+No feed da BHTrans ($V = 9{.}659$, $E = 122{.}732$), $G_P$ tem 4 componentes fortemente
+conexas: uma com 9.656 paradas e 3 unitárias. O resultado coincide com o do NetworkX. O
+Tarjan levou 148,6~ms. Com 100 origens, retirar a parada com mais saídas de viagem não
+isolou nenhuma parada e reduziu a eficiência em 0,036\%; retirar a linha com mais trechos
+exclusivos (92) reduziu-a em 0,071\%, também sem isolar paradas. Cada simulação levou
+de 18 a 26~s, quase todo o tempo nos 200 Dijkstras da eficiência. Medições em um Intel
+Core i5-1235U, com Python 3.14.
+
+\textbf{Limitação.} $G_P$ usa o tempo mediano entre paradas, sem espera nem horário; a
+perda mede a rede estrutural, não o tempo porta a porta. As arestas de caminhada de até
+300~m devem tornar a rede redundante a falhas isoladas, o que explicaria as perdas
+pequenas; isso ainda não foi medido sem a caminhada. A eficiência usada ainda é uma versão
+provisória, que será substituída pela da F-EFI (eficiência da rede).

@@ -2,7 +2,7 @@
 
 Uso: python benchmarks/medir_falhas.py [dados/brutos/bhtrans.zip]
 
-Precisa do feed baixado por scripts/baixar_gtfs.py. Mede com `medir` (5 repetições):
+Precisa do feed baixado por scripts/baixar_gtfs.py. Mede com `medir` (3 repetições; cada Dijkstra no G_P real leva cerca de 0,14 s):
 Tarjan em G_P, eficiência global amostrada e simulações de falha de uma parada (a de maior
 grau de saída em viagem) e de uma linha (a que tem mais trechos exclusivos). Confere as
 componentes com o NetworkX no mesmo grafo (permitido em benchmarks/).
@@ -28,8 +28,8 @@ from transporte.simulacao.falhas import (
 )
 from transporte.util.medicao import medir
 
-REPETICOES = 5
-AMOSTRA = 200
+REPETICOES = 3
+AMOSTRA = 100
 SEMENTE = 2026
 
 
