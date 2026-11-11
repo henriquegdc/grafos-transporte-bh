@@ -44,22 +44,36 @@ def _proximas(
     }
 
 
-def _nao_dominadas(candidatas: list[tuple[int, int, float, str, str]]) -> tuple[Transferencia, ...]:
-    """Fronteira de Pareto das trocas (i, j, distância, x, y) de uma aresta P -> Q.
+def _trocas_nao_dominadas(
+    seq: tuple[str, ...],
+    proximas: dict[str, tuple[tuple[str, float], ...]],
+    embarques: dict[str, tuple[tuple[int, int], ...]],
+) -> dict[int, list[Transferencia]]:
+    """Para um padrão P (paradas `seq`): Q -> trocas não dominadas de P para Q.
 
-    Ordena por desembarque decrescente (i), depois embarque crescente (j) e caminhada
-    crescente, e guarda uma troca só se ela embarca mais cedo que todas as que descem mais
-    tarde. Na saída, i decresce e j decresce junto: quem embarcou em P na posição b usa a
-    última troca com i > b, que é a de menor j. Tempo O(c log c) para c candidatas.
+    Percorre as posições de descida i de P da última para a segunda. Em cada i, acha para
+    cada Q o embarque mais cedo j (no empate, a menor caminhada, porque `proximas` vem em
+    ordem de distância) e guarda a troca só se j é menor que o de todas as trocas já
+    guardadas, que descem mais tarde. Assim a fronteira de Pareto sai pronta, com i e j
+    decrescentes, sem juntar e ordenar as candidatas: quem embarcou em P na posição b usa a
+    última troca com i > b, que é a de menor j.
+    Complexidade: tempo O(c) para as c candidatas de P; espaço O(número de Q + guardadas).
     """
-    candidatas.sort(key=lambda t: (-t[0], t[1], t[2]))
-    fronteira: list[Transferencia] = []
-    menor_j = None
-    for i, j, _d, x, y in candidatas:
-        if menor_j is None or j < menor_j:
-            fronteira.append((i, x, j, y))
-            menor_j = j
-    return tuple(fronteira)
+    fronteira: dict[int, list[Transferencia]] = {}
+    menor_j: dict[int, int] = {}
+    for i in range(len(seq) - 1, 0, -1):
+        x = seq[i]
+        nesta: dict[int, tuple[int, str]] = {}  # Q -> (j, y) do melhor embarque desta descida
+        for y, _d in proximas[x]:
+            for q, j in embarques.get(y, ()):
+                atual = nesta.get(q)
+                if atual is None or j < atual[0]:
+                    nesta[q] = (j, y)
+        for q, (j, y) in nesta.items():
+            if q not in menor_j or j < menor_j[q]:
+                menor_j[q] = j
+                fronteira.setdefault(q, []).append((i, x, j, y))
+    return fronteira
 
 
 def construir_gl(
@@ -86,10 +100,9 @@ def construir_gl(
         entrada por ocorrência da parada;
         padrão com parada inexistente levanta KeyError; faixa inexistente levanta
         KeyError; rede vazia devolve grafo vazio.
-    Complexidade: tempo O(V + K log K + L + C log C) esperado (grade espacial; O(V²) no pior
+    Complexidade: tempo O(V + K log K + L + C) esperado (grade espacial; O(V²) no pior
         caso da grade); espaço O(V + K + L + E + T), com T <= C trocas guardadas. As
-        candidatas de um padrão são descartadas antes do próximo, então o pico extra é o
-        das candidatas de um padrão só.
+        candidatas não são guardadas: cada uma é comparada e descartada na hora.
     """
     params = params or Parametros()
     f = params.faixa(faixa) if faixa is not None else None
@@ -117,16 +130,10 @@ def construir_gl(
     visao.proximas = _proximas(rede, params.raio_caminhada_m)
 
     for p, seq in enumerate(visao.paradas_do_padrao):
-        # Q -> trocas candidatas (i, j, distância, x, y) de P para Q.
-        candidatas: dict[int, list[tuple[int, int, float, str, str]]] = {}
-        for i in range(1, len(seq)):
-            x = seq[i]
-            for y, d in visao.proximas[x]:
-                for q, j in visao.embarques.get(y, ()):
-                    # q == p fica: descer, andar (ou esperar o próximo ônibus, num padrão
-                    # circular) e pegar o mesmo padrão mais atrás é uma baldeação real.
-                    candidatas.setdefault(q, []).append((i, j, d, x, y))
-        for q in sorted(candidatas):
+        # Q == P fica: descer, andar (ou esperar o próximo ônibus, num padrão circular) e
+        # pegar o mesmo padrão mais atrás é uma baldeação real.
+        fronteira = _trocas_nao_dominadas(seq, visao.proximas, visao.embarques)
+        for q in sorted(fronteira):
             g.adicionar_aresta(p, q, 1.0, BALDEACAO)
-            visao.transferencias.append(_nao_dominadas(candidatas[q]))
+            visao.transferencias.append(tuple(fronteira[q]))
     return visao
