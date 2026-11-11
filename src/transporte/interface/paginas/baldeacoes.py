@@ -154,7 +154,22 @@ def mapa_trajeto(rede: RedeUI, trajeto: TrajetoBaldeacoes) -> folium.Map:
     latitudes = [lat for lat, _ in coordenada.values()]
     longitudes = [lon for _, lon in coordenada.values()]
     mapa.fit_bounds([[min(latitudes), min(longitudes)], [max(latitudes), max(longitudes)]])
+    _controle_de_camadas_por_ultimo(mapa)
     return mapa
+
+
+def _controle_de_camadas_por_ultimo(mapa: folium.Map) -> None:
+    """Move o LayerControl do mapa base para depois das camadas desta página.
+
+    O folium escreve o JavaScript na ordem dos filhos do mapa. O criar_mapa da P0-UI já
+    adiciona o LayerControl; as camadas acrescentadas depois dele seriam citadas pelo
+    controle antes de existirem, e o Leaflet para com "Cannot read properties of undefined
+    (reading 'setZIndex')", sem desenhar o trajeto. O(filhos do mapa).
+    """
+    for nome, filho in list(mapa._children.items()):
+        if isinstance(filho, folium.LayerControl):
+            del mapa._children[nome]
+            mapa._children[nome] = filho
 
 
 def _rotulo_faixa(params: Parametros, nome: str) -> str:
