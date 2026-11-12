@@ -9,9 +9,9 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 05/11/2026.
-- **Onde parou:** hook, `scripts/verificar_imports.py` (com testes), `requirements.txt` com versões fixadas, `pyproject.toml` (pytest sem `PYTHONPATH`, ruff), `.gitattributes` (hook com LF) e README §5 prontos na branch `feat/P0-REPO-hook`. Falta o que só se faz no site do GitHub: proteção da `main` e Kanban.
-- **Próximo passo:** abrir o PR com `Closes #1`; no GitHub, Settings > Branches: regra para `main` exigindo PR com 1 aprovação; criar o Kanban (Projects) com as issues. Avisar o grupo para rodar `pip install -r requirements.txt` e `git config core.hooksPath .githooks`.
+- **Última sessão:** 10/11/2026.
+- **Onde parou:** hook, `scripts/verificar_imports.py` (com testes), `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 integrados na `main` pelo PR #43 (`c3da48a`). `verificar_imports.py` rodado na `main` em 10/11: nenhum import proibido. Falta o que só se faz no site do GitHub: proteção da `main` e Kanban.
+- **Próximo passo:** pedir ao Henrique (dono do repositório) a regra da `main` em Settings > Branches, exigindo PR com 1 aprovação. Criar o Kanban (GitHub Projects) com as issues e usá-lo no fechamento de 11/11 (plano-de-projeto §13). Confirmar no grupo que todos rodaram `pip install -r requirements.txt` e `git config core.hooksPath .githooks`.
 - **Arquivos tocados:** `.githooks/pre-commit`, `.gitattributes`, `scripts/verificar_imports.py`, `tests/scripts/test_verificar_imports.py`, `requirements.txt`, `pyproject.toml`, `README.md`, `AGENTS.md` (§4).
 - **Como testar:** `pytest` (231 testes em 05/11, 30 deles do script); `sh .githooks/pre-commit`; para ver o bloqueio, criar um `.py` em `src/` com `import networkx` e tentar commitar.
 - **Bloqueios:** nenhum.
@@ -116,3 +116,5 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Caio.
 ### Hook 05/11/2026: `verificar_imports.py` com 30 testes, hook de pre-commit, `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 na branch `feat/P0-REPO-hook`. Suíte com 231 testes verdes. Proteção da `main` e Kanban pendentes (site do GitHub).
+### Merge 06/11/2026: PR #43 integrado na `main` (`c3da48a`).
+### Fechamento 10/11/2026: `verificar_imports.py` rodado na `main` (`fbb330d`), sem import proibido. Proteção da `main` e Kanban seguem pendentes.
