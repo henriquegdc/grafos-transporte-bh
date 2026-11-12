@@ -170,6 +170,58 @@ H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica a 
 toda espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
 caminhada em linha reta, só entre paradas.
 
+### 5.3 Menos baldeações (F-BALD)
+
+Dadas duas paradas, `menos_baldeacoes` acha o trajeto com o menor número de ônibus
+(baldeações = ônibus − 1) e diz em que linhas ir e onde trocar. Não é o mais rápido; quanto
+tempo custa a mais é a F-BALD-2.
+
+```python
+from transporte.modelo.linhas import construir_gl
+from transporte.algoritmos.baldeacoes import menos_baldeacoes
+
+gl = construir_gl(rede, faixa="pico_manha")   # ou faixa=None: todas as linhas do dia
+t = menos_baldeacoes(gl, "A", "D")            # None se não houver trajeto
+t.baldeacoes, t.padroes(), t.trocas(), t.trechos
+```
+
+**A visão G_L.** Um vértice por padrão de linha e uma aresta P → Q quando dá para descer de P
+e embarcar em Q na mesma parada ou a até 300 m. Cada camada de uma busca em largura é um ônibus
+a mais. A aresta é dirigida (não se desce na primeira parada nem se embarca na última) e guarda
+**onde** a troca acontece: a posição de descida em P e a de embarque em Q, só das trocas não
+dominadas (ninguém desce mais tarde e embarca mais cedo ao mesmo tempo). Também há laço P → P:
+descer, andar e pegar o mesmo padrão mais atrás é uma baldeação.
+
+**Por que não um BFS comum.** Os padrões têm sentido. Com P1 = S → B → A → E, P2 = B → D e
+P3 = E → B, existe a aresta P1 → P2 (troca em B), e um BFS comum diria 1 baldeação de A a D.
+Mas quem embarca em P1 em A já passou de B: o certo é P1 até E, P3 de volta a B e P2 até D,
+2 baldeações. No feed real, o BFS comum erraria para menos em 14 de 200 pares.
+
+Passo a passo (`docs/diagramas/atividade-menos-baldeacoes.png`):
+
+1. Destino a até 300 m da origem: a pé, 0 baldeações.
+2. Camada 1: cada padrão que embarca a até 300 m da origem recebe como rótulo a posição de
+   embarque mais cedo.
+3. Se um padrão que melhorou nesta camada desce a até 300 m do destino depois do embarque, pronto:
+   baldeações = camada − 1.
+4. Próxima camada: das arestas dos padrões que melhoraram, a troca que desce depois do embarque e
+   embarca mais cedo no vizinho. Um padrão pode voltar numa camada posterior, embarcado mais cedo,
+   o que abre trocas que antes não serviam.
+5. Nenhum padrão melhorou: não há trajeto (None).
+
+**Complexidade.** O(r (V + E + T)) por consulta, com V e E da G_L, T trocas guardadas e
+r camadas (baldeações + 1), porque cada camada só percorre os padrões que melhoraram na anterior.
+No feed real (11/11, `feature-F-BALD.md`), a G_L do pico da manhã tem V = 501 e E = 85.606, é
+montada em 3,1 s, e a consulta leva 36,7 ms em média (máximo 172,9 ms em 200 pares), com
+0 divergências contra o NetworkX num grafo de estados independente.
+
+Por quê: G_L dirigida com as trocas na aresta, e não BFS comum (limite inferior) nem BFS 0-1 no
+G_E (não constrói a G_L e roda num grafo de 46.100 vértices) (B1); laço P → P (B2); caminhada de
+até 300 m, uma por vez (B3); G_L do dia ou de uma faixa, com a regra D10 (B4).
+
+Limitações: conta trocas, não tempo; a G_L não vê horários, a não ser no filtro por faixa;
+caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige reconstruir a G_L.
+
 ## 6. Interface (Arthur)
 Como as páginas se organizam, o componente de mapa, o cache da rede.
 
@@ -277,6 +329,10 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
 | 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
 | 05/11 (rascunho para Miguel revisar) | Recorte separa trechos desconectados e reúne os que têm a mesma linha e sequência de paradas | Não inventa viagem direta entre paradas quando a intermediária sai do recorte nem divide as partidas de uma plataforma equivalente | Concatenar todas as paradas restantes; manter padrões duplicados após o recorte |
+| 11/11 (rascunho para Rafael revisar) | G_L dirigida, com as trocas não dominadas (posição de descida, posição de embarque) em cada aresta; mínimo de baldeações por BFS por camadas com a posição de embarque no rótulo (B1, F-BALD) | Os padrões têm sentido: o BFS comum usa trocas que ficaram para trás e dá só um limite inferior (menos baldeações que o possível em 14 de 200 pares no feed real) | BFS comum na G_L; BFS 0-1 no G_E (exato, mas não constrói a G_L e roda num grafo de 46.100 vértices, com caminhadas encadeadas) |
+| 11/11 (rascunho para Rafael revisar) | Laço P → P na G_L (B2, F-BALD) | Descer, andar e pegar o mesmo padrão mais atrás é outro embarque; sem o laço, o NetworkX achou trajetos com um ônibus a menos | Proibir troca para o mesmo padrão |
+| 11/11 (rascunho para Rafael revisar) | Caminhada de até 300 m, uma por vez, entre paradas, na F-BALD; destino a até 300 m da origem vai a pé (B3) | É a ligação que a modelagem define para a G_L; encadear caminhadas tornaria a distância a pé ilimitada | Caminhadas encadeadas, como no G_E |
+| 11/11 (rascunho para Rafael revisar) | G_L do dia por padrão ou de uma faixa, só com os padrões com partida nela, pela regra D10 (B4, F-BALD) | A F-BALD-2 compara com o G_E da mesma faixa sem usar linha que não circula nela | Só a G_L do dia; só por faixa |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
@@ -318,6 +374,19 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    chega à parada num instante qualquer da faixa (espera H/2 em cada embarque).
 5. **O que acontece se não houver trajeto?** A função devolve None, e a página mostra "sem
    trajeto"; é normal com paradas ou linhas desativadas (F-RES).
+
+### 5.3 Menos baldeações (F-BALD)
+1. **Por que a G_L tem um vértice por padrão, e não por parada?** Porque baldeação é troca de
+   linha: cada camada da busca em largura é um ônibus a mais, e as paradas percorridas não importam.
+2. **Por que um BFS comum sobre a G_L não basta?** Os padrões têm sentido: quem embarca numa
+   posição só desce depois dela. O BFS comum usaria trocas que ficaram para trás e dá só um limite
+   inferior (errou para menos em 14 de 200 pares no feed real).
+3. **O que é uma troca não dominada?** Numa aresta P → Q, uma troca que nenhuma outra supera
+   descendo mais tarde em P e embarcando mais cedo em Q ao mesmo tempo. Só essas ficam na aresta.
+4. **Por que um padrão pode voltar numa camada posterior?** Porque pode ser alcançado depois numa
+   posição mais cedo, e embarcar antes abre trocas que antes não serviam.
+5. **O trajeto devolvido é o mais rápido entre os de menos baldeações?** Não. O critério é só o
+   número de baldeações; o tempo a mais em relação ao mais rápido é a F-BALD-2.
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
