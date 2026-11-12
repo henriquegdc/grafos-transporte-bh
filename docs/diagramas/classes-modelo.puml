@@ -14,7 +14,7 @@ package "dados" {
   class Rede {
     +paradas: dict[str, Parada]
     +padroes: dict[str, Padrao]
-    +viagens: dict[str, list[list[int]]]
+    +viagens: dict[str, list[tuple[int, ...]]]
   }
   class Parada <<frozen>> {
     +id: str
@@ -60,22 +60,17 @@ package "modelo" {
 }
 
 package "grafo" {
-  class Grafo {
-    +adicionar_vertice / adicionar_aresta
-    +vizinhos(u)
-    +desativar_vertice / desativar_aresta
-  }
+  class Grafo
 }
 
-Rede "1" *-- "*" Parada
-Rede "1" *-- "*" Padrao
-Padrao "*" --> "2..*" Parada : sequência
-construtores ..> Rede : lê
+Rede "1" *-right- "*" Padrao
+Padrao "*" -right-> "2..*" Parada : sequência
+construtores .up.> Rede : lê
 construtores ..> Parametros : usa
 construtores ..> Visao : cria
 Visao <|-- VisaoGP
 Visao <|-- VisaoGE
 Visao <|-- VisaoGL
 Visao <|-- VisaoGT
-Visao "1" *-- "1" Grafo
+Visao "1" *-right- "1" Grafo
 @enduml

@@ -29,12 +29,12 @@ package "transporte.dados  (Miguel)" {
     +linhas: dict[str, Linha]
     +padroes: dict[str, Padrao]
     +{field} partidas: dict[(padrão, parada), list[int]]
-    +{field} viagens: dict[padrão, list[list[int]]]  (proposta P0-MODELO)
+    +{field} viagens: dict[padrão, list[tuple[int, ...]]]
     +recortar(caixa, linhas): Rede
   }
   class leitor_gtfs <<module>> {
-    +ler(caminho_zip, dia): Rede
-    +validar(rede): list[str]
+    +ler(caminho, dia): Rede
+    +validar(caminho): list[str]
   }
 }
 

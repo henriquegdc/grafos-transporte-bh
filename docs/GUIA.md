@@ -103,8 +103,8 @@ G_E com 46.100 vértices e cerca de 208 mil arestas em 342 a 365 ms por faixa.
 Por quê:
 
 - **Mediana:** um horário errado desloca a média, quase não move a mediana.
-- **Piso de 1 s em viagem e caminhada:** o GTFS arredonda horários (43 arestas de viagem do G_P
-  terminam no piso); peso 0 entre paradas distintas quebra a contagem de caminhos do Brandes.
+- **Piso de 1 s em viagem e caminhada:** o GTFS arredonda horários (39 arestas de viagem do G_P
+  terminam no piso, no feed de 09/11); peso 0 entre paradas distintas quebra a contagem de caminhos do Brandes.
   O desembarque fica com 0, porque não leva tempo e só liga a plataforma à própria parada.
 - **Um G_E por faixa:** a espera muda ao longo do dia; um G_E só, com a espera média do dia,
   esconderia a diferença entre pico e entrepico.
