@@ -1,0 +1,53 @@
+@startuml atividade-menos-baldeacoes
+' Diagrama de atividade de menos_baldeacoes (F-BALD, RF-BAL-01 e RF-BAL-02).
+' Estado: implementado. Código: src/transporte/algoritmos/baldeacoes.py; G_L em
+' src/transporte/modelo/linhas.py.
+!pragma layout smetana
+skinparam dpi 150
+title Atividade · menos_baldeacoes(gl, origem, destino)
+
+start
+if (origem ou destino fora da G_L?) then (sim)
+  :KeyError;
+  stop
+endif
+if (origem == destino?) then (sim)
+  :devolve 0 baldeações, sem trechos;
+  stop
+elseif (destino a até 300 m da origem?) then (sim)
+  :devolve trajeto a pé, 0 baldeações;
+  stop
+else (não)
+endif
+:camada 1: para cada padrão ativo que embarca
+numa parada a até 300 m da origem, o rótulo é
+a posição de embarque mais cedo;
+repeat
+  :guarda os rótulos que melhoraram nesta camada;
+  if (algum padrão que melhorou desce a até 300 m
+do destino depois da posição de embarque?) then (sim)
+    :escolhe a chegada com menos caminhada
+    e a última perna mais curta;
+    :volta pelos rótulos: padrão anterior e
+    onde desceu dele;
+    :primeiro embarque no ponto mais perto da origem
+    que ainda serve à primeira troca;
+    :devolve TrajetoBaldeacoes:
+    baldeações = camada - 1, trechos de ônibus
+    e a pé, paradas de troca;
+    stop
+  endif
+  :para cada aresta ativa P -> Q dos padrões que
+  melhoraram: troca não dominada que desce de P
+  depois da posição de embarque em P;
+  note right
+    trocas da aresta em ordem decrescente de descida:
+    a última com descida > embarque embarca mais cedo em Q
+  end note
+  :Q melhora se essa troca embarca nele mais cedo
+  do que em qualquer camada anterior;
+repeat while (algum padrão melhorou?) is (sim)
+->não;
+:devolve None (sem trajeto);
+stop
+@enduml
