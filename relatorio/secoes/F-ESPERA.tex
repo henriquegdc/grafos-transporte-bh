@@ -1,0 +1,38 @@
+\subsection{Espera e simulação por faixa horária}\label{sec:F-ESPERA}
+
+A estimativa usa as partidas distintas de cada padrão, identificadas pelo
+primeiro horário de cada viagem, dentro de uma faixa $[a,b)$. Após ordenar os
+horários $t_1,\ldots,t_n$, calcula-se o intervalo médio
+$H=(t_n-t_1)/(n-1)$ e a espera $H/2$. As frequências já foram expandidas pelo
+leitor. Padrões com apenas uma partida usam a espera provisória de 300~s,
+identificada na interface; padrões sem partidas na faixa não permitem embarque.
+
+A simulação seleciona a faixa pela saída, aplica as esperas às arestas de
+embarque de $G_E$ e reutiliza o Dijkstra e a reconstrução da F-ROTA. O resultado
+separa caminhada, espera e viagem. A Figura~\ref{fig:atividade-espera}
+resume o fluxo. Para $N$ viagens, $P$ padrões e $F$ faixas, a estimativa custa
+$O(PF+FN+N\log N)$ de tempo e $O(N+PF)$ de espaço; a consulta acrescenta a
+construção de $G_E$ e o Dijkstra, $O((V+E)\log V)$.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.72\linewidth]{atividade-espera.png}
+  \caption{Estimativa de espera e simulação com uma faixa fixa.}
+  \label{fig:atividade-espera}
+\end{figure}
+
+No instantâneo de 05/11/2026 (SHA-256 iniciado em \texttt{623bdf422fb0}),
+serviço de 04/11, o pico da manhã teve 481 padrões com estimativa e 20 com espera
+provisória. O grafo teve $V=46.100$ e $E=208.956$. Em macOS arm64 com
+Python~3.12.13, cinco repetições de \texttt{medir} produziram média de
+5.309~ms para estimar intervalos e 12.441~ms para consultar o grafo pronto.
+A consulta 14788851 $\rightarrow$ 14792190 às 08h resultou em 40,24~min,
+sendo 9,72 de caminhada, 15,34 de espera e 15,18 de viagem. Não é um pior caso.
+Comando, desvios e resultados completos constam na feature e no JSON gerado por
+\texttt{benchmarks/medir\_espera.py}.
+
+A espera $H/2$ supõe chegadas ao acaso e intervalos regulares. Com intervalos
+irregulares, $E[H^2]/(2E[H])$ pode ser maior; essa correção não é aplicada nesta
+versão. A faixa da saída permanece fixa durante todo o percurso, mesmo quando
+ele atravessa outro período. A simulação com partidas exatas pertence à extensão
+$G_T$, adiada para priorizar a entrega essencial.
