@@ -9,11 +9,11 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 09/11/2026.
-- **Onde parou:** aplicação Streamlit, navegação, descoberta de fontes, cache, contratos estruturais e mapa Folium implementados; P0-DADOS ainda não oferece carregador nem há GTFS no repositório.
+- **Última sessão:** 12/11/2026.
+- **Onde parou:** aplicação Streamlit, navegação, descoberta de fontes, cache isolado por sessão, contratos estruturais e mapa Folium implementados. Corrigido o bootstrap do `src/` para executar o comando documentado sem `PYTHONPATH`, com cobertura em subprocesso; P0-DADOS ainda não oferece carregador nem há GTFS no repositório.
 - **Próximo passo:** alinhar com Miguel a função de carregamento que devolve a `Rede` publicada e conectá-la à chamada `main(carregador=...)`/ponto de entrada Streamlit; testar com a rede de teste e o feed real quando disponíveis.
-- **Arquivos tocados:** `src/transporte/interface/app.py`, `mapa.py`, `protocolos.py`, `tests/interface/`, este arquivo, `docs/GUIA.md`, `docs/diagramas/sequencia-p0-ui.puml`.
-- **Como testar:** `python -m pytest tests/interface -q`; suíte completa: `python -m pytest -q`; `ruff check`; `python scripts/verificar_imports.py`. Smoke test: `python -m streamlit run src/transporte/interface/app.py --server.headless true --server.port 8501`, depois consultar `http://localhost:8501/_stcore/health` e a página raiz.
+- **Arquivos tocados:** `src/transporte/interface/app.py`, `tests/interface/test_app.py`, este arquivo.
+- **Como testar:** `python -m pytest tests/interface/test_app.py::test_entrada_real_inicia_sem_pythonpath -q`; `python -m pytest tests/interface -q`; `python -m pytest -q`; `ruff check`; `ruff format --check src/transporte/interface tests/interface`; `python scripts/verificar_imports.py`; `git diff --check`.
 - **Bloqueios:** integração real de carga e resumo com dataset depende de P0-DADOS; a implementação não duplica o parser GTFS nem presume uma API de carregamento que ainda não foi publicada. A cópia por sessão protege mutações, mas tem custo de memória proporcional ao tamanho da rede.
 
 ## Objetivo
@@ -29,7 +29,7 @@ Aplicação Streamlit e componente de mapa. Fecha:
 | Núcleo (algoritmo) | não aplicável | P0-UI não implementa algoritmo de grafo. |
 | Modelo e dados | bloqueado | P0-DADOS ainda não implementa o carregador; `dados/rede-teste/` não contém GTFS. |
 | Interface | parcial | Aplicação, navegação, mapa e registro de páginas implementados; carregamento integrado e mapa na rede real aguardam P0-DADOS. |
-| Testes | implementado localmente | 12 testes de interface e 514 testes totais passaram em Python 3.14.4; o projeto especifica Python 3.12. Validação sem depender de um feed. |
+| Testes | implementado localmente | 13 testes de interface e 515 testes totais passaram em Python 3.14.4; o projeto especifica Python 3.12. O teste de inicialização executa o arquivo real em subprocesso sem `PYTHONPATH`; os demais não dependem de feed. |
 | Desempenho (tempo medido) | pendente | Sem feed para medir carregamento; mapa não executa algoritmo de grafo. |
 | Guia (explicação e quiz) | implementado | Seção 6 e perguntas da P0-UI incluídas em `docs/GUIA.md`. |
 | Relatório | pendente | Resultado de uso real depende da integração de dados. |
@@ -53,7 +53,10 @@ O(P + S + C + H), em que P são paradas, S é o total de paradas dos padrões ex
 de pontos dos caminhos e H é o número de intensidades.
 
 As páginas entram por um registro de módulos e seguem `render(rede)`. Se o módulo ainda não
-existe, a navegação mostra que a página está indisponível. O carregador de P0-DADOS ainda não foi
+existe, a navegação mostra que a página está indisponível. Como o comando documentado executa
+`app.py` diretamente e o projeto usa layout `src/` sem instalação, o arquivo inclui `src/` no
+caminho de importação antes de importar `transporte`. O teste de inicialização roda a entrada
+real por subprocesso desde a raiz, sem herdar `PYTHONPATH`. O carregador de P0-DADOS ainda não foi
 publicado; por isso a execução atual informa a pendência em vez de apresentar um falso resumo ou
 de criar um segundo modelo de dados.
 
@@ -128,3 +131,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Arthur.
 ### Implementação 09/11/2026: shell Streamlit, navegação, contrato estrutural, cache, mapa Folium, testes e documentação local; carga real bloqueada por P0-DADOS.
+### Correção 12/11/2026: bootstrap do layout `src/` para o comando direto e teste real de inicialização em subprocesso sem `PYTHONPATH`; 13 testes de interface e 515 totais aprovados com Python 3.14.4.

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import os
+import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
 from transporte.grafo.grafo import Grafo
 from transporte.interface import app
+
+_RAIZ = Path(__file__).resolve().parents[2]
 
 
 @dataclass
@@ -34,6 +39,30 @@ def test_listar_fontes_aceita_diretorio_gtfs_como_raiz(tmp_path: Path) -> None:
     (tmp_path / "stops.txt").write_text("stop_id,stop_name\n", encoding="utf-8")
 
     assert app.listar_fontes((tmp_path,)) == (tmp_path.resolve(),)
+
+
+def test_entrada_real_inicia_sem_pythonpath() -> None:
+    ambiente = os.environ.copy()
+    ambiente.pop("PYTHONPATH", None)
+    resultado = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from streamlit.testing.v1 import AppTest; "
+                "app=AppTest.from_file('src/transporte/interface/app.py').run(); "
+                "assert not app.exception, [e.message for e in app.exception]"
+            ),
+        ],
+        cwd=_RAIZ,
+        env=ambiente,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert resultado.returncode == 0, resultado.stdout + resultado.stderr
 
 
 def test_resumo_rede_conta_campos_do_contrato() -> None:
