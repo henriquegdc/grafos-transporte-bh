@@ -1,0 +1,80 @@
+{
+  "feed": "dados/brutos/bhtrans.zip",
+  "sha256": "623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2",
+  "maquina": {
+    "plataforma": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.12.13",
+    "processador": "arm"
+  },
+  "rede": {
+    "dia": "2026-11-04",
+    "paradas": 9659,
+    "linhas": 303,
+    "padroes": 698,
+    "viagens": 24503,
+    "inconsistencias": 0
+  },
+  "faixa": "pico_manha",
+  "V": 46100,
+  "E": 208956,
+  "cobertura": {
+    "pico_manha": {
+      "padroes_com_servico": 501,
+      "estimados": 481,
+      "fallback": 20
+    },
+    "entrepico": {
+      "padroes_com_servico": 458,
+      "estimados": 447,
+      "fallback": 11
+    },
+    "pico_tarde": {
+      "padroes_com_servico": 494,
+      "estimados": 477,
+      "fallback": 17
+    },
+    "noite": {
+      "padroes_com_servico": 462,
+      "estimados": 437,
+      "fallback": 25
+    }
+  },
+  "consulta": {
+    "origem": "14788851",
+    "destino": "14792190",
+    "saida_s": 28800,
+    "total_s": 2414.5925414789353,
+    "parcelas_s": {
+      "caminhada": 583.3544462408406,
+      "espera": 920.2380952380952,
+      "viagem": 911.0
+    }
+  },
+  "tempos": {
+    "estimar_intervalos": {
+      "media_s": 0.005308950203470886,
+      "desvio_s": 0.0007510783987758525,
+      "repeticoes": 5
+    },
+    "calcular_esperas": {
+      "media_s": 9.62749938480556e-05,
+      "desvio_s": 5.322537740121284e-06,
+      "repeticoes": 5
+    },
+    "construir_ge": {
+      "media_s": 0.22646279179025441,
+      "desvio_s": 0.01111261586654556,
+      "repeticoes": 5
+    },
+    "consultar_ge_pronto": {
+      "media_s": 0.012441341602243482,
+      "desvio_s": 0.000424256907003369,
+      "repeticoes": 5
+    },
+    "simular_trajeto_completo": {
+      "media_s": 0.2487236498040147,
+      "desvio_s": 0.00863984889597838,
+      "repeticoes": 5
+    }
+  }
+}

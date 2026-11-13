@@ -1,0 +1,26 @@
+@startuml
+title F-ESPERA: estimativa e simulação por faixa
+start
+:Receber Rede e horário de saída;
+:Selecionar faixa [início, fim);
+if (Há faixa para a saída?) then (sim)
+  :Para cada padrão, ordenar partidas distintas\npelo primeiro horário de cada viagem;
+  :Por faixa com ao menos duas partidas,\nH = (última - primeira) / (n - 1);
+  :Calcular espera H/2;
+  :Construir G_E aplicando as esperas\nsem dividir novamente;
+  note right
+    Com uma partida: espera provisória.
+    Sem partida: não há embarque.
+    Frequências já vêm expandidas.
+  end note
+  :Consultar trajeto_mais_rapido (Dijkstra próprio);
+  if (Destino alcançável?) then (sim)
+    :Mostrar caminhada, espera, viagem,\nbaldeações e mapa;
+  else (não)
+    :Informar ausência de trajeto;
+  endif
+else (não)
+  :Informar horário fora das faixas;
+endif
+stop
+@enduml
