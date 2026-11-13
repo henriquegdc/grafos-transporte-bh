@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Sequence
 from copy import deepcopy
 from hashlib import sha256
 from importlib import import_module, util
 from pathlib import Path
+
+# The documented command runs this file without installing the src-layout package.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import streamlit as st
 
