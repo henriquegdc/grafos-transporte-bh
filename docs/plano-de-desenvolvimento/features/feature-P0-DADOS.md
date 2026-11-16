@@ -10,12 +10,12 @@
 
 ## Retomada
 
-- **Última sessão:** 15/11/2026, revisão do feedback do PR #50 na branch `feat/P0-DADOS-integracao` (`a8bec84`), sincronizada com sua origem.
-- **Onde parou:** PR #50 aberto; documentação corrigida e referência da figura de sequência alinhada. Correções prontas; Miguel autorizou commit e push desta branch separadamente do #51, sem merge.
-- **Próximo passo:** integrar primeiro o #45 preservando a autoria de Arthur; depois reorganizar o #50 sobre a main, mantendo apenas a integração e documentação de P0-DADOS. Miguel revisa guia, relatório e roteiro; Henrique precisa registrar aprovação do leitor no #42 ou explicitamente no #50.
-- **Arquivos tocados:** este arquivo e `relatorio/secoes/dados.tex`.
-- **Como testar:** `.venv/bin/python -m pytest -q`; `sh .githooks/pre-commit`; `git diff --check`.
-- **Bloqueios:** #45 ainda aberto; o commit do #50 ainda inclui arquivos de Arthur. Rebase de autoria depende dessa integração e não foi realizado nesta sessão sem autorização para commits/merge. #42 continua com CHANGES_REQUESTED e #50 sem aprovação formal. DoD permanece aberto.
+- **Última sessão:** 16/11/2026, atendimento ao último comentário de Rafael no PR #50.
+- **Onde parou:** branch rebaseada sobre origin/main (6b44827), após o merge do #45. Interface e testes preservados integralmente da main; o #50 contém apenas documentação, relatório e diagrama de sequência de P0-DADOS.
+- **Próximo passo:** revisão e aprovação da documentação. Miguel revisa guia, relatório e roteiro; Henrique precisa registrar aprovação do leitor no #42 ou explicitamente no #50.
+- **Arquivos tocados:** este arquivo; conflitos da interface resolvidos com a versão da main.
+- **Como testar:** .venv/bin/python -m pytest -q; sh .githooks/pre-commit; git diff --check.
+- **Bloqueios:** aprovação formal do leitor e itens humanos do DoD continuam pendentes. Dependência do #45 e sobreposição de autoria resolvidas pelo rebase.
 
 ## Objetivo
 Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
@@ -68,7 +68,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com NetworkX não se aplica à leitura de GTFS
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (E não se aplica antes de construir grafo)
-- [x] Página ou bloco na interface funcionando com o dataset real (11/11: carregamento e mapa pela entrada normal em AppTest; implementação no commit `a8bec84` do PR #50)
+- [x] Página ou bloco na interface funcionando com o dataset real (11/11: carregamento e mapa pela entrada normal em AppTest; implementação integrada na main pelo PR #45)
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (rascunho incorporado; Miguel revisa)
 - [ ] O revisor do PR consegue explicar o que o código faz
@@ -82,7 +82,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 1 | Contrato (assinaturas com estado "planejado") | feito; atualizado para implementado após testes |
 | 2 | Algoritmo com testes de corretude | feito para leitura e recorte |
 | 3 | Integração com a visão do grafo e com os dados reais | feed e construtores integrados; F-ESPERA permanece na branch própria do PR #51 |
-| 4 | Página na interface | entrada normal funcional localmente, com shell/mapa reaproveitados do #45 |
+| 4 | Página na interface | entrada normal integrada na main pelo #45 |
 | 5 | Tempo medido na rede real e complexidade justificada | feito |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | rascunhos preparados e relatório compilado; revisão por Miguel pendente |
 
@@ -104,11 +104,11 @@ Integração local com o código do PR #38, sem alterar sua branch: após carreg
 ## Pendências
 
 - ~~Aguardar merge do #42 e #38.~~ Integrados na main (`fbb330d` e `d4a696b`); retomada antiga corrigida nesta sessão.
-- ~~Conectar o leitor à interface.~~ Feito localmente com shell/mapa/protocolos do #45, idênticos no #49; AppTest de pasta/ZIP e do feed completo passou. Publicado no PR #50; revisão e integração pendentes.
+- ~~Conectar o leitor à interface.~~ Integrado na main pelo #45, incluindo ler padrão, entrada sem PYTHONPATH, preservação da rede em erro, inconsistências e dia de serviço. O #50 registra apenas a documentação.
 - ~~Compilar o relatório e conferir a figura de dados.~~ Compilado com Tectonic 0.17.0; figura de sequência resumida substitui a atividade muito estreita no relatório. Atividade completa continua nos diagramas. Revisão visual final registrada no fechamento.
 - Aprovação formal do #42 não localizada: API retornou CHANGES_REQUESTED de Henrique e comentário posterior de Miguel com as correções. Não inferir aprovação a partir do merge.
 - Miguel revisar guia, decisões de 05/11, seção Dados e roteiro e gravar o vídeo. Rascunhos não são revisão humana.
-- PR #50 aberto. A revisão apontou código de Arthur no commit de Miguel: aguardar integração do #45 e reorganizar a branch antes do merge. Commit e push desta branch autorizados por Miguel; merge e comentários remotos não autorizados.
+- ~~Reorganizar o #50 após o #45 para preservar a autoria de Arthur.~~ Resolvido em 16/11: interface e testes idênticos à main após o rebase. PR #50 aberto apenas para documentação; sem merge nesta sessão.
 - Sugestões opcionais de recorte e seleção do dia na Início não implementadas: ampliam o escopo da integração. Bit executável do hook pertence a P0-REPO e deve ser corrigido em PR separado; nenhuma mensagem enviada ao responsável.
 
 ## Timeline
@@ -135,9 +135,14 @@ Descrição e comentário geral de Rafael lidos integralmente; API sem comentár
 
 Decisão: preservar comportamento e escopo; nenhuma alteração no leitor, shell ou mapa é exigida pelos itens objetivos de código do feedback. A autoria não se corrige apagando arquivos da interface: o #45 precisa entrar primeiro. Aprovação formal, revisão humana do guia/quiz/relatório/roteiro, gravação e conclusão após merge permanecem pendentes; não foram marcadas como atendidas por inferência.
 
-Validação final desta branch em 15/11/2026: `.venv/bin/python -m pytest -q` → **530 passed in 2.30s**, Python 3.12.13; `sh .githooks/pre-commit` → imports permitidos e Ruff sem erros; `git diff --check` → sem erros. Referência e label da figura conferidos em conjunto; não houve recompilação LaTeX nesta sessão (`tectonic` indisponível no PATH). Nenhuma alteração de código executável, commit, push ou operação remota de escrita.
+Validação histórica anterior ao rebase, em 15/11/2026: `.venv/bin/python -m pytest -q` → **530 passed in 2.30s**, Python 3.12.13; `sh .githooks/pre-commit` → imports permitidos e Ruff sem erros; `git diff --check` → sem erros. Referência e label da figura conferidos em conjunto; não houve recompilação LaTeX nesta sessão (`tectonic` indisponível no PATH). Nenhuma alteração de código executável, commit, push ou operação remota de escrita.
 
 ### Publicação das correções · 15/11/2026
 Miguel autorizou commit e push separados dos PRs #50 e #51. Preservado o escopo de documentação; bloqueios de autoria e aprovação continuam abertos. A restrição anterior a commits/push foi substituída por essa autorização; nenhum merge será realizado.
 
 Verificação antes da publicação: projeto LaTeX compilado com sucesso pelo compilador integrado do editor, a partir da seção alterada.
+
+### Rebase após o #45 · 16/11/2026
+Confirmado o merge do #45 em 6b44827. Rebase do #50 preservou a main nos seis conflitos add/add de interface e testes, incluindo a correção do mapa e o nome Baldeações. Decisão: retirar todas as cópias de UI do diff; a conexão com ler já entrou pelo #45. Escopo atual: documentação de P0-DADOS, seção Dados e diagrama de sequência. Backups locais preservam o histórico anterior. Aprovação e revisão humana permanecem abertas.
+
+Validação final após o rebase: .venv/bin/python -m pytest -q → 633 passed in 18.82s; sh .githooks/pre-commit → imports e Ruff verdes. Nenhum código executável alterado em relação à main.
