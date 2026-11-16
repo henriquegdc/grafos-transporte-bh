@@ -210,13 +210,17 @@ def atualizar_controle_camadas(mapa: folium.Map) -> folium.LayerControl:
     """Garante o controle de camadas depois que uma página estende o mapa.
 
     Entrada: mapa existente, possivelmente estendido com `FeatureGroup` ou outras camadas.
-    Saída: o controle existente ou um controle novo. O Folium coleta as camadas no momento
-        de renderizar o mapa, então camadas adicionadas depois também aparecem nele.
-    Casos de borda: chamadas repetidas não criam controles duplicados.
+    Saída: o controle existente, movido para o último filho do mapa, ou um controle novo.
+        O Folium escreve o JavaScript na ordem dos filhos: se o controle ficar antes de uma
+        camada, ele a referencia antes de ela ser declarada, o Leaflet recebe `undefined`
+        e o script do mapa falha. Por isso o controle é sempre reposicionado no fim.
+    Casos de borda: chamadas repetidas não criam controles duplicados. Camadas adicionadas
+        depois desta chamada exigem chamá-la de novo antes da renderização.
     Complexidade: O(C), C = elementos filhos diretos do mapa.
     """
-    for elemento in mapa._children.values():
+    for chave, elemento in list(mapa._children.items()):
         if isinstance(elemento, folium.LayerControl):
+            mapa._children[chave] = mapa._children.pop(chave)
             return elemento
     return folium.LayerControl(collapsed=False).add_to(mapa)
 

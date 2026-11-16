@@ -118,10 +118,30 @@ def test_controle_camadas_inclui_camada_adicionada_depois_da_criacao(rede: Rede)
     camada = folium.FeatureGroup(name="Camada da página").add_to(mapa)
 
     controle = atualizar_controle_camadas(mapa)
-    mapa.get_root().render()
+    html = mapa.get_root().render()
 
     assert camada.layer_name in controle.overlays
     assert sum(isinstance(item, folium.LayerControl) for item in mapa._children.values()) == 1
+    # O JS precisa declarar a camada antes que o controle a referencie; senão o Leaflet
+    # recebe undefined e o script do mapa falha no navegador.
+    declaracao = html.index(f"var {camada.get_name()} =")
+    assert declaracao < html.index("L.control.layers")
+    assert declaracao < html.index(f"{camada.get_name()},")
+
+
+def test_controle_camadas_repetido_continua_depois_de_todas_as_camadas(rede: Rede) -> None:
+    mapa = criar_mapa(rede, mostrar_paradas=False)
+    primeira = folium.FeatureGroup(name="Primeira").add_to(mapa)
+    atualizar_controle_camadas(mapa)
+    segunda = folium.FeatureGroup(name="Segunda").add_to(mapa)
+
+    controle = atualizar_controle_camadas(mapa)
+    html = mapa.get_root().render()
+
+    assert list(mapa._children.values())[-1] is controle
+    assert sum(isinstance(item, folium.LayerControl) for item in mapa._children.values()) == 1
+    for camada in (primeira, segunda):
+        assert html.index(f"var {camada.get_name()} =") < html.index("L.control.layers")
 
 
 def test_criar_mapa_mostra_trechos_e_marcadores_do_trajeto(rede: Rede) -> None:
