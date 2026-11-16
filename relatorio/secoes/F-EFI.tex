@@ -1,0 +1,29 @@
+% Seção: F-EFI · Eficiência da rede (RF-EFI-01 e RF-EFI-02)
+% Resultados experimentais na rede real pendentes; ver feature-F-EFI.md.
+\subsection{Eficiência da rede}\label{sec:F-EFI}
+
+A eficiência estrutural é calculada em $G_P$, cuja unidade é a parada. Para cada origem,
+uma busca Dijkstra calcula as distâncias aos destinos; a eficiência global é a média de
+$1/d(i,j)$ sobre os pares ordenados distintos. Pares sem caminho contribuem zero:
+\[
+  E(G_P) = \frac{1}{n(n-1)}
+    \sum_{i \ne j,\ d(i,j) < \infty} \frac{1}{d(i,j)}.
+\]
+Como os pesos representam segundos, a unidade do resultado é $\mathrm{s}^{-1}$.
+Quando a métrica é amostrada, sorteiam-se origens uniformemente sem reposição; o erro
+padrão usa a variância amostral das contribuições e correção de população finita.
+
+O tempo médio de viagem usa $G_E$, que soma caminhada, espera esperada e viagem de ônibus,
+como no contrato de F-ROTA. A amostra contém pares ordenados distintos de paradas, não
+plataformas; portanto, as arestas de desembarque de peso zero não entram na média de
+$1/d$. Uma busca por origem fornece os tempos aos destinos da amostra. Pares sem trajeto
+são informados separadamente e não são tratados como viagens de duração zero.
+
+\pendente{Figura da página Eficiência.}
+
+\pendente{Medição com o GTFS real: média e desvio de cinco execuções, tamanho da amostra,
+$V$, $E$, máquina e comando. O feed real não estava disponível durante esta implementação.}
+
+\textbf{Limitações.} $G_P$ usa tempos medianos de viagem e caminhada, sem espera. Em $G_E$,
+a espera continua no valor provisório de 300~s até a integração da tabela da F-ESPERA. O
+tempo médio estimado é condicional aos pares alcançáveis na amostra.
