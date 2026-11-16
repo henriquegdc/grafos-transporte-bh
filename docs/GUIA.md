@@ -171,7 +171,27 @@ toda espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 
 caminhada em linha reta, só entre paradas.
 
 ## 6. Interface (Arthur)
-Como as páginas se organizam, o componente de mapa, o cache da rede.
+
+A aplicação Streamlit fica em `src/transporte/interface/app.py`. A navegação tem uma página
+inicial e entradas para cada feature; quando o módulo de uma página existe, a aplicação chama
+seu contrato `render(rede)`. Enquanto uma página ainda não foi criada, ela aparece como
+indisponível sem impedir a navegação.
+
+O mapa reutilizável de `src/transporte/interface/mapa.py` recebe a `Rede` normalizada: mostra
+paradas agrupadas, padrões como linhas, caminhos como polilinhas e intensidades como mapa de
+calor. Cada visualização fica em uma camada Folium que pode ser ligada ou desligada. As páginas
+podem chamar `render_mapa` com apenas as camadas de que precisam. Para um resultado de F-ROTA,
+`trajeto` permite desenhar cada trecho a pé, de espera ou de ônibus com rótulo e cor; marcadores
+identificam origem, destino e baldeações a partir dos trechos de ônibus no resultado.
+
+A página inicial procura arquivos GTFS `.zip` e diretórios com `stops.txt` em
+`dados/rede-teste/` e `dados/brutos/`. O botão de carga chama `transporte.dados.leitor_gtfs.ler`,
+que aceita uma pasta ou ZIP e devolve a `Rede` normalizada de P0-DADOS. A interface apresenta o
+dia de serviço, quantidades de paradas/linhas/padrões, totais V/E de G_P e G_E (na faixa
+`pico_manha`) e inconsistências do leitor. O objeto carregado fica em `st.cache_resource`,
+indexado pela origem e pelos metadados dos arquivos; cada sessão recebe uma cópia profunda para
+que simulações mutáveis não alterem a rede de outras sessões. Um erro de carga é mostrado sem
+substituir a rede anterior.
 
 ## 7. Como testamos e medimos (Rafael)
 Gabarito à mão, comparação de resultado com NetworkX, medição de tempo.
@@ -331,3 +351,17 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    média 2 e desvio 1).
 5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
    `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.
+
+### 6. Interface (P0-UI)
+1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
+   normalização pertencem a P0-DADOS; a UI consome a `Rede` publicada nesse contrato.
+2. **Como uma nova página entra na navegação?** O módulo da feature publica `render(rede)`;
+   a aplicação importa esse módulo e passa a mesma rede carregada.
+3. **Quais camadas o componente de mapa pode exibir?** Paradas, padrões/linhas, caminhos e
+   intensidades de calor, cada uma como camada separada.
+4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
+   interação do Streamlit; a chave considera a origem e a versão observável da fonte.
+5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
+   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
+   inconsistências e V/E de G_P e G_E. A medição em um feed real ainda depende de um feed
+   disponível no ambiente.
