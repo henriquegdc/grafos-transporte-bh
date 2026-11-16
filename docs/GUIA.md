@@ -234,6 +234,29 @@ até 300 m, uma por vez (B3); G_L do dia ou de uma faixa, com a regra D10 (B4).
 Limitações: conta trocas, não tempo; a G_L não vê horários, a não ser no filtro por faixa;
 caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige reconstruir a G_L.
 
+### 5.6 Falhas e resiliência (F-RES)
+
+A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
+
+```python
+from transporte.simulacao.falhas import Falha, indexar_linhas, simular_falha
+
+gp = construir_gp(rede)
+indice = indexar_linhas(rede)  # uma vez por rede
+r = simular_falha(gp, Falha(linhas=("562003",)), indice, amostra=100, semente=2026)
+r.paradas_isoladas, r.perda_eficiencia
+```
+
+**A falha não reconstrói o grafo.** O núcleo desativa vértices e arestas sem apagar nada. Parada: desativa o vértice, e com ele saem todas as arestas que o tocam. Trecho (a, b): desativa a aresta de viagem a -> b, só nesse sentido; a caminhada continua. Linha: G_P junta numa aresta só o trecho que várias linhas usam, então só saem os trechos que nenhuma outra linha usa. `indexar_linhas` monta o mapa trecho -> linhas a partir dos padrões. A simulação valida tudo antes de desligar qualquer coisa e, no fim, religa só o que ela desligou, inclusive se der erro; o mesmo G_P serve para a próxima consulta.
+
+**Componentes fortemente conexas (Tarjan).** Duas paradas estão na mesma componente se dá para ir de uma à outra e voltar. A DFS guarda, para cada vértice, a ordem de descoberta (`indice`) e o menor índice que a subárvore alcança voltando por uma aresta (`low`). Quando `low[v] == indice[v]`, v é a raiz de uma componente, e tudo acima dele na pilha é a componente. Exemplo: 0 -> 1 -> 2 -> 0 e 2 -> 3. A DFS desce 0, 1, 2, 3; o 3 não tem saída e {3} sai sozinho; em 2, a aresta 2 -> 0 dá `low[2] = 0`, que sobe até o 0 e fecha {0, 1, 2}. A versão é iterativa porque, no G_P real, a DFS chega a 4.657 níveis e o Python para em 1.000 de recursão. O(V + E).
+
+**Isoladas, desconectadas e perda.** Isolada é a parada que ficou sozinha na componente depois da falha e não estava antes. Desconectada é a que saiu da maior componente (empate: a primeira na ordem do Tarjan). Eficiência global = média de 1/d sobre os pares ordenados, com par sem caminho somando 0; perda = (antes - depois) / antes. O denominador é o n de antes da falha: com o n de depois, remover uma parada mal conectada poderia aumentar a eficiência. Com amostra, as mesmas s origens sorteadas valem antes e depois. O(s (V + E) log V), um Dijkstra por origem.
+
+**No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência; cada simulação com 100 origens leva de 18 a 26 s.
+
+Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A `eficiencia_global` daqui é provisória até a da F-EFI entrar, que tem a mesma assinatura.
+
 ## 6. Interface (Arthur)
 
 A aplicação Streamlit fica em `src/transporte/interface/app.py`. A navegação tem uma página
@@ -426,6 +449,13 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    posição mais cedo, e embarcar antes abre trocas que antes não serviam.
 5. **O trajeto devolvido é o mais rápido entre os de menos baldeações?** Não. O critério é só o
    número de baldeações; o tempo a mais em relação ao mais rápido é a F-BALD-2.
+
+### 5.6 Falhas e resiliência (F-RES)
+1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).
+2. **Remover uma linha remove as paradas dela?** Não. Saem só os trechos de viagem que nenhuma outra linha usa; as paradas continuam, porque outras linhas e a caminhada as atendem.
+3. **Qual a diferença entre parada isolada e desconectada?** Isolada ficou sozinha na componente (não vai e volta de nenhuma outra). Desconectada saiu da maior componente, mas pode estar num grupo pequeno com outras.
+4. **Por que a eficiência depois da falha usa o n de antes?** Para que remover parada nunca aumente a eficiência: os pares da parada removida contam 0 em vez de sumir da média.
+5. **Por que a simulação não estraga o G_P para a próxima consulta?** Ela só desativa, e no fim religa exatamente o que desligou, inclusive se der erro.
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;

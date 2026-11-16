@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 10/11/2026.
-- **Onde parou:** etapas 1, 2, 3 e 5 feitas na branch `feat/F-RES-falhas`. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
-- **Próximo passo:** commitar, abrir o PR com `Closes #12` e pedir revisão. Combinar com o Arthur a troca da `eficiencia_global` provisória pela da F-EFI. Quando a P0-UI entrar, fazer a página Falhas (etapa 4). Depois, a etapa 6: revisar o rascunho de "Como funciona", diagrama UML, seção do relatório e roteiro do vídeo.
+- **Última sessão:** 16/11/2026.
+- **Onde parou:** PR #47 integrado na `main` em 12/11 (`eb3c123`), com o núcleo, os testes, a medição, o diagrama (`.puml`), a seção do relatório e o roteiro. Em 16/11: "Como funciona" e perguntas copiados para o `docs/GUIA.md` (§5.6 e §10). Etapas 1, 2, 3 e 5 feitas. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
+- **Próximo passo:** (1) página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`), se o grupo aprovar a exceção ao congelamento proposta em 16/11 para páginas e integração; a P0-UI entrou em 16/11 (#45) e o `app.py` já procura o módulo. (2) Quando a F-EFI (`feat/F-EFI-eficiencia`) entrar, trocar a `eficiencia_global` provisória pelo import de `transporte.algoritmos.eficiencia` (mesma assinatura) e apagar a daqui. (3) Caio revisar o rascunho de "Como funciona", as perguntas e o roteiro, e confirmar as 3 decisões. (4) Gerar `docs/diagramas/sequencia-falhas.png` com o PlantUML. (5) Gravar o trecho do vídeo em 20/11.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `tests/simulacao/test_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, este arquivo.
 - **Como testar:** `pytest tests/simulacao` (89 testes); `pytest` completo (603 em 10/11); `python benchmarks/medir_falhas.py` com o feed em `dados/brutos/bhtrans.zip` (baixar com `python scripts/baixar_gtfs.py`).
-- **Bloqueios:** a página depende da P0-UI (Arthur, branch `feature/P0-UI` ainda sem PR na `main`); a eficiência oficial depende da F-EFI (Arthur, não iniciada).
+- **Bloqueios:** a página depende da decisão do grupo sobre o congelamento de 15/11; a eficiência oficial depende do merge da F-EFI (Arthur).
 
 ## Objetivo
 Falhas e resiliência. Fecha:
@@ -28,10 +28,10 @@ Falhas e resiliência. Fecha:
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 10/11: Tarjan iterativo, falhas de parada, trecho e linha, `simular_falha`; eficiência provisória até a F-EFI |
 | Modelo e dados | concluído | 10/11: roda sobre `construir_gp` e `ler`; `indexar_linhas` liga trechos a linhas; integração testada na rede de teste e medida no feed real |
-| Interface | não iniciado | Depende da P0-UI (`app.py` e contrato de página) |
+| Interface | não iniciado | P0-UI na `main` desde 16/11 (#45); falta a página, que depende da exceção ao congelamento |
 | Testes | concluído | 10/11: 89 testes (gabarito à mão, 40 grafos aleatórios contra o NetworkX no Tarjan, 15 na eficiência, rede de teste ponta a ponta) |
 | Desempenho (tempo medido) | concluído | 10/11: `benchmarks/medir_falhas.py` no feed real (ver Resultados) |
-| Guia (explicação e quiz) | em andamento | Rascunho de "Como funciona" e perguntas neste arquivo; falta revisão do Caio e cópia para o GUIA §5.6 |
+| Guia (explicação e quiz) | em andamento | 16/11: copiado para o GUIA §5.6 e §10; falta revisão do Caio e as decisões no §8 |
 | Relatório | em andamento | `relatorio/secoes/F-RES.tex` com resultado, complexidade e limitação; falta a figura da tela (depende da página) |
 | Vídeo | em andamento | Roteiro (rascunho) abaixo |
 
@@ -143,3 +143,5 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Caio.
 ### Núcleo 10/11/2026: checkpoint de 07/11 perdido, feature reduzida ao mínimo dos RFs. Tarjan iterativo, falhas de parada, trecho e linha e perda de eficiência (provisória) em `src/transporte/simulacao/falhas.py`, com 89 testes e medição no feed real. pytest com 603 verdes e hook verde. Branch `feat/F-RES-falhas`.
+### Merge 12/11/2026: PR #47 integrado na `main` (`eb3c123`).
+### Guia 16/11/2026: "Como funciona" e perguntas no `docs/GUIA.md` (§5.6 e §10). Página Falhas desbloqueada pela P0-UI (#45), mas sujeita à exceção ao congelamento.
