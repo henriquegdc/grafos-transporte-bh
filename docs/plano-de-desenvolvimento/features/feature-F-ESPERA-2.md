@@ -9,9 +9,9 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
+- **Última sessão:** planejamento e corte de escopo em 11/11/2026; sem implementação.
 - **Onde parou:** não iniciado.
-- **Próximo passo:** aguardar F-ESPERA. Não iniciar antes disso; quando liberar, publicar as assinaturas (etapa 1 do plano de implementação).
+- **Próximo passo:** Adiada neste ciclo para fechar F-ESPERA e P0-DADOS até o congelamento. Não iniciar implementação nesta entrega.
 - **Arquivos tocados:** nenhum.
 - **Como testar:** ainda não há testes.
 - **Bloqueios:** depende de F-ESPERA.
@@ -90,3 +90,5 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Miguel.
+
+### Planejamento 11/11/2026: Adiada neste ciclo para fechar F-ESPERA e P0-DADOS até o congelamento. Decisão confirmada por Miguel no plano aprovado; prazo de congelamento permanece 15/11 às 23:59.
