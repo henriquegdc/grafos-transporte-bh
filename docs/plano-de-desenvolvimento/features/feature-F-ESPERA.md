@@ -10,12 +10,12 @@
 
 ## Retomada
 
-- **Última sessão:** 11/11/2026, branch `feat/F-ESPERA-simulacao`, baseada em `feat/P0-DADOS-integracao` (`a8bec84`), derivada da main atualizada (`fbb330d`).
-- **Onde parou:** núcleo, página, testes, benchmark e documentação separados da integração P0-DADOS/UI. Commit e push autorizados explicitamente por Miguel, sem abrir PR; revisão humana ainda pendente.
-- **Próximo passo:** Miguel revisar código/textos publicados e decidir quando abrir PR referenciando #8. Não abrir PR nesta sessão. Integrar P0-DADOS/UI antes de direcionar o PR de Espera para main.
-- **Arquivos tocados:** simulacao/espera.py, interface/paginas/espera.py, testes, benchmark/resultado, UML, GUIA e seção F-ESPERA do relatório. A integração P0-DADOS/UI está no commit-base a8bec84; o commit de Espera contém apenas seus próprios arquivos.
-- **Como testar:** `.venv/bin/python -m pytest -q`; `sh .githooks/pre-commit`. Instalação normal: Python 3.12 e requirements.txt.
-- **Bloqueios:** aprovação e integração de P0-DADOS/UI e revisão humana de Espera. As branches são encadeadas pela dependência de shell/mapa. Extensões adiadas para priorizar o essencial.
+- **Última sessão:** 15/11/2026, revisão do PR #51 na branch `feat/F-ESPERA-simulacao`, em worktree separado do #50.
+- **Onde parou:** feedback conferido no código; documentação do contrato, relatório e reprodução corrigida. Miguel autorizou commit e push separados das branches dos PRs #50 e #51; nenhum merge autorizado.
+- **Próximo passo:** integrar #45 e #50 preservando autoria e depois reorganizar a base deste PR. Integrar a tabela de esperas à página Trajetos com Henrique; revisar textos e gravar vídeo.
+- **Arquivos tocados:** este arquivo e `relatorio/secoes/F-ESPERA.tex`.
+- **Como testar:** `.venv/bin/python -m pytest -q`; `.venv/bin/python -m ruff check`; `.venv/bin/python scripts/verificar_imports.py`.
+- **Bloqueios:** base contém código de Arthur via #50; Trajetos ainda usa espera provisória. Aprovação formal, revisão humana e gravação pendentes; DoD não concluído.
 
 ## Objetivo
 Espera e simulação de trajeto. Fecha:
@@ -45,6 +45,15 @@ Contrato em `src/transporte/simulacao/espera.py`, publicado nesta sessão com `e
 - `calcular_esperas(intervalos: Mapping[tuple[str, str], float]) -> dict[tuple[str, str], float]`: H/2; recusa negativo, NaN e infinito; zero é válido.
 - `simular_trajeto(rede: Rede, origem: str, destino: str, saida_s: int, params: Parametros | None = None) -> Trajeto | None`: faixa fixa pela saída, esperas aplicadas sem transformação pelo construtor.
 - `interface/paginas/espera.py`: `TITULO` e `render(rede)` conforme P0-UI. Mantém o resultado em reruns e não exibe resultado de outro dataset.
+
+Uso pelos consumidores de G_E (mesmos `params` na estimativa e no construtor):
+
+```python
+esperas = calcular_esperas(estimar_intervalos(rede, params))
+ge = construir_ge(rede, faixa, params=params, esperas=esperas)
+```
+
+A tabela contém segundos de espera, sem nova divisão por dois. Esse contrato já é usado pela simulação; sua adoção pela página Trajetos ainda é pendente.
 
 Decisões de implementação E1–E4 aprovadas no plano por Miguel: partidas distintas por padrão e primeiro horário (D10); com menos de duas partidas, estimativa ausente e fallback do construtor; faixa fixa sem módulo de 24h; reutilizar F-ROTA e mapa do #45. Não alteram as fontes. Opcionais e Monte Carlo ficam fora desta entrega.
 
@@ -102,10 +111,11 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 
 ## Resultados para o relatório
 
-Execução em 11/11/2026, Python 3.12.13, macOS 26.6.2 arm64, na máquina desta sessão. Feed local baixado em 05/11, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2`; dia 2026-11-04. Comando:
+Execução em 11/11/2026, Python 3.12.13, macOS 26.6.2 arm64, na máquina desta sessão. Feed local baixado em 05/11, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2`; dia 2026-11-04. Comando reproduzível com o ambiente do README:
 
 ```sh
-PYTHONPATH=src /private/tmp/grafos-espera-venv/bin/python benchmarks/medir_espera.py dados/brutos/bhtrans.zip
+source .venv/bin/activate
+PYTHONPATH=src python benchmarks/medir_espera.py dados/brutos/bhtrans.zip
 ```
 
 Saída completa versionada em `benchmarks/resultados/espera-2026-11-11.json`. Dependências fixadas de `requirements.txt` instaladas no ambiente temporário. A leitura fica fora dos tempos abaixo. São 5 repetições de cada chamada com `medir`; médias e desvios amostrais:
@@ -140,7 +150,10 @@ Validação da interface: testes Streamlit AppTest com pasta e ZIP, isolamento d
 ## Pendências
 
 - Miguel revisar código, guia, explicação, decisões E1–E4 e roteiro; gravar vídeo no período de entrega.
-- Commit e push autorizados explicitamente por Miguel nesta sessão. PR não será aberto por instrução dele; revisão e integração continuam pendentes. Usar `Refs #8` enquanto o DoD não estiver completo.
+- PR #51 aberto; commit e push das correções autorizados por Miguel. Revisão e integração continuam pendentes. Usar `Refs #8` enquanto o DoD não estiver completo.
+- Confirmar modelo, chip e RAM da máquina usada em 11/11: o JSON histórico informa apenas macOS arm64 e processador `arm`; não inferir hardware a partir de outra medição.
+- Página Trajetos precisa adotar o contrato `esperas=` acima. Reprodução na rede pequena, sem caminhada: A → C às 08h dá 900 s sem tabela e 1.200 s com H/2.
+- Após integrar #45, adaptar o mapa de Espera para `trajeto=` preservando os metadados de linhas/padrões; `caminhos=` sozinho não distingue tipos de trecho.
 - Integrar uma única base de UI (#45/#49); não alterar os arquivos de feature de Arthur/Rafael.
 - Relatório compilado com Tectonic 0.17.0; revisão visual final registrada no fechamento. O rascunho global ainda contém seções pendentes de outros donos e está abaixo do mínimo de 12 páginas; integração final cabe ao grupo.
 - Prazo original 11/11: se o DoD não fechar, aplicar corte do §7.3: essencial ocupa P2; F-ESPERA-2 adiada e opcional retirada do ciclo.
@@ -159,3 +172,10 @@ Validação da interface: testes Streamlit AppTest com pasta e ZIP, isolamento d
 ### Separação de branches 11/11/2026: integração P0-DADOS/UI publicada em a8bec84, sem PR. F-ESPERA baseada nesse commit; testes da página em test_pagina_espera.py, sem misturar o escopo com test_integracao_dados.py. Commit/push de Espera autorizados, sem trailers de atribuição; PR não será aberto. O hook é verificado manualmente com sh .githooks/pre-commit, pois o arquivo versionado não tem bit executável.
 
 ### Validação da branch separada 11/11/2026: 565 testes passaram após separar carregamento e página de Espera (530 da base P0-DADOS/UI e 35 de Espera). Hook executado manualmente e diff sem erros. Commit/push autorizados para feat/F-ESPERA-simulacao, sem abrir PR; revisão humana e integração futuras.
+
+### Revisão do PR #51 · 15/11/2026
+Feedback integral analisado: sem revisões formais ou threads inline. Corrigidos separadores decimais e escopo da medição no relatório, explicitado padrão/sentido e documentado contrato para consumidores de G_E. Comando temporário substituído pelo ambiente padrão. Consulta 14788851 → 14792190 e validação da página já constam em Resultados; não duplicadas. Não foi introduzido cache: a medição de 248,7 ms corresponde à função completa, sem renderização da interface. JSON histórico preservado; identificação completa da máquina ainda requer confirmação. Autoria, integração com Trajetos e mapa e tarefas humanas permanecem pendentes. Miguel autorizou publicação separada das correções, sem merge.
+
+Validação nesta sessão: 565 testes passaram em 2,38 s com Python 3.12.13; Ruff e verificação de imports sem erros. Execução no worktree com o Python da `.venv` do checkout principal, preservando as correções do #50.
+
+Verificação antes da publicação: projeto LaTeX compilado com sucesso pelo compilador integrado do editor, a partir da seção alterada.

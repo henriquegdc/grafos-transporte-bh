@@ -1,7 +1,8 @@
 \subsection{Espera e simulação por faixa horária}\label{sec:F-ESPERA}
 
 A estimativa usa as partidas distintas de cada padrão, identificadas pelo
-primeiro horário de cada viagem, dentro de uma faixa $[a,b)$. Após ordenar os
+primeiro horário de cada viagem. Aqui, a estimativa por linha é feita por
+padrão (sentido e sequência de paradas), sem reunir variantes distintas, dentro de uma faixa $[a,b)$. Após ordenar os
 horários $t_1,\ldots,t_n$, calcula-se o intervalo médio
 $H=(t_n-t_1)/(n-1)$ e a espera $H/2$. As frequências já foram expandidas pelo
 leitor. Padrões com apenas uma partida usam a espera provisória de 300~s,
@@ -25,7 +26,10 @@ No instantâneo de 05/11/2026 (SHA-256 iniciado em \texttt{623bdf422fb0}),
 serviço de 04/11, o pico da manhã teve 481 padrões com estimativa e 20 com espera
 provisória. O grafo teve $V=46.100$ e $E=208.956$. Em macOS arm64 com
 Python~3.12.13, cinco repetições de \texttt{medir} produziram média de
-5.309~ms para estimar intervalos e 12.441~ms para consultar o grafo pronto.
+5,309~ms para estimar intervalos e 12,441~ms para consultar o grafo pronto.
+A função completa de simulação, chamada pela página a cada consulta, levou
+248,7~ms em média, incluindo a estimativa, a construção de $G_E$ e a busca.
+Essa medição não inclui a renderização da interface nem a leitura do GTFS.
 A consulta 14788851 $\rightarrow$ 14792190 às 08h resultou em 40,24~min,
 sendo 9,72 de caminhada, 15,34 de espera e 15,18 de viagem. Não é um pior caso.
 Comando, desvios e resultados completos constam na feature e no JSON gerado por
