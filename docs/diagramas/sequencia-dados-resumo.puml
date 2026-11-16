@@ -1,0 +1,20 @@
+@startuml
+title P0-DADOS: do feed à rede normalizada
+skinparam dpi 180
+actor Analista
+participant "Leitor GTFS" as Leitor
+database "Pasta ou ZIP" as GTFS
+participant Rede
+Analista -> Leitor: ler(caminho, dia)
+Leitor -> GTFS: Ler calendário e exceções
+Leitor -> GTFS: Ler paradas, linhas e viagens ativas
+Leitor -> GTFS: Percorrer stop_times.txt em fluxo
+Leitor -> Rede: Agrupar padrões e guardar horários por viagem
+Leitor -> Rede: Expandir frequências e ordenar partidas
+Leitor --> Analista: Rede e inconsistências do dia
+opt Recorte por caixa ou linhas
+  Analista -> Rede: recortar(caixa, linhas)
+  Rede -> Rede: Separar trechos; reunir padrões equivalentes
+  Rede --> Analista: Nova rede com referências preservadas
+end
+@enduml
