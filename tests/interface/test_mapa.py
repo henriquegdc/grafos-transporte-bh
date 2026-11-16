@@ -6,7 +6,8 @@ import folium
 import pytest
 from folium.plugins import HeatMap, MarkerCluster
 
-from transporte.interface.mapa import criar_mapa
+import transporte.interface.mapa as modulo_mapa
+from transporte.interface.mapa import atualizar_controle_camadas, criar_mapa
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,27 @@ class Padrao:
     id: str
     linha_id: str
     paradas: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Linha:
+    id: str
+    nome: str
+
+
+@dataclass(frozen=True)
+class Trecho:
+    tipo: str
+    paradas: tuple[str, ...]
+    tempo_s: float
+    padrao: str | None = None
+
+
+@dataclass(frozen=True)
+class Trajeto:
+    origem: str
+    destino: str
+    trechos: tuple[Trecho, ...]
 
 
 @dataclass
@@ -77,15 +99,78 @@ def test_criar_mapa_rejeita_caminho_com_parada_ausente(rede: Rede) -> None:
 def test_criar_mapa_rejeita_coordenada_invalida(rede: Rede) -> None:
     rede.paradas["B"] = Parada("B", "Invalida", 91.0, 0.0)
 
-    with pytest.raises(ValueError, match="Coordenadas invalidas"):
+    with pytest.raises(ValueError, match="Coordenadas inválidas"):
         criar_mapa(rede)
 
 
 def test_criar_mapa_rejeita_intensidade_negativa(rede: Rede) -> None:
-    with pytest.raises(ValueError, match="Intensidade invalida"):
+    with pytest.raises(ValueError, match="Intensidade inválida"):
         criar_mapa(rede, intensidades={"A": -1.0})
 
 
 def test_criar_mapa_rejeita_rede_sem_paradas() -> None:
     with pytest.raises(ValueError, match="sem paradas"):
         criar_mapa(Rede({}, {}, {}))
+
+
+def test_controle_camadas_inclui_camada_adicionada_depois_da_criacao(rede: Rede) -> None:
+    mapa = criar_mapa(rede, mostrar_paradas=False)
+    camada = folium.FeatureGroup(name="Camada da página").add_to(mapa)
+
+    controle = atualizar_controle_camadas(mapa)
+    mapa.get_root().render()
+
+    assert camada.layer_name in controle.overlays
+    assert sum(isinstance(item, folium.LayerControl) for item in mapa._children.values()) == 1
+
+
+def test_criar_mapa_mostra_trechos_e_marcadores_do_trajeto(rede: Rede) -> None:
+    rede.linhas = {"L1": Linha("L1", "Linha & 1"), "L2": Linha("L2", "Linha 2")}
+    rede.padroes = {
+        "P1": Padrao("P1", "L1", ("A", "B")),
+        "P2": Padrao("P2", "L2", ("A", "B")),
+    }
+    trajeto = Trajeto(
+        "A",
+        "A",
+        (
+            Trecho("espera", ("A",), 300, "P1"),
+            Trecho("viagem", ("A", "B"), 300, "P1"),
+            Trecho("caminhada", ("B", "A"), 70),
+            Trecho("espera", ("A",), 60, "P2"),
+            Trecho("viagem", ("A", "B"), 120, "P2"),
+        ),
+    )
+
+    mapa = criar_mapa(rede, mostrar_paradas=False, trajeto=trajeto)
+    elementos = _descendentes(mapa)
+    html = mapa.get_root().render()
+
+    linhas = [elemento for elemento in elementos if isinstance(elemento, folium.PolyLine)]
+    assert len(linhas) == 3
+    assert [linha.options["color"] for linha in linhas] == ["#1F77B4", "#228B22", "#1F77B4"]
+    assert sum(isinstance(elemento, folium.CircleMarker) for elemento in elementos) == 3
+    assert sum(type(elemento) is folium.Marker for elemento in elementos) == 2
+    assert "Ônibus · Linha &amp; 1" in html
+    assert "Baldeação" in html
+    assert "Origem" in html and "Destino" in html
+
+
+def test_criar_mapa_rejeita_trecho_de_espera_com_mais_de_uma_parada(rede: Rede) -> None:
+    trajeto = Trajeto(
+        "A",
+        "B",
+        (Trecho("espera", ("A", "B"), 60, "P1"),),
+    )
+
+    with pytest.raises(ValueError, match="precisa de uma parada"):
+        criar_mapa(rede, trajeto=trajeto)
+
+
+def test_render_mapa_solicita_lista_vazia_de_objetos_retornados(monkeypatch, rede: Rede) -> None:
+    argumentos = {}
+    monkeypatch.setattr(modulo_mapa, "st_folium", lambda _mapa, **kwargs: argumentos.update(kwargs))
+
+    modulo_mapa.render_mapa(rede)
+
+    assert argumentos["returned_objects"] == []

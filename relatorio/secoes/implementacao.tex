@@ -3,4 +3,30 @@
 % Conteúdo: Núcleo de grafo e heap, organização do código e interface
 \section{Implementação}\label{sec:impl}
 
-\pendente{Núcleo de grafo e heap, organização do código e interface. Dono: Thiago e Arthur.}
+O núcleo representa o grafo dirigido por listas de adjacência próprias, com identificadores
+estáveis para vértices e arestas; o heap binário também é implementado no projeto. A interface
+P0-UI é uma aplicação Streamlit com navegação por páginas. O ponto de entrada usa o leitor GTFS
+de P0-DADOS para carregar pastas ou arquivos ZIP, mantém a rede normalizada em cache e entrega
+uma cópia isolada por sessão. A página inicial exibe o dia de serviço, o resumo da rede, as
+inconsistências do leitor e os totais de vértices e arestas de G_P e G_E, construídos pelos
+construtores de P0-MODELO.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{../docs/diagramas/componentes.png}
+  \caption{Fluxo de componentes do feed GTFS até a interface.}
+  \label{fig:componentes}
+\end{figure}
+
+O mapa usa Folium e streamlit-folium, com camadas selecionáveis para paradas, padrões, caminhos
+e intensidades. A página de trajetos pode passar os trechos publicados por F-ROTA para desenhar
+segmentos a pé e de ônibus, incluindo rótulos e marcadores de origem, destino e troca de padrão.
+As páginas das features seguem o contrato comum \texttt{render(rede)}.
+
+Os testes de integração exercitam a carga da pasta e do ZIP de rede de teste, o resumo mostrado
+na página, o mapa, a navegação e a preservação da rede anterior quando uma nova leitura falha.
+Na rede de teste (4 paradas, 2 linhas e 2 padrões), a faixa \texttt{pico\_manha} produziu
+G\_P com V=4 e E=13, e G\_E com V=9 e E=18. A suíte de interface passou com 24 testes; a suíte
+completa passou com 632 testes, em Python 3.14.4, na árvore de validação combinada com P0-DADOS.
+A rede de teste não substitui o feed GTFS real: como os dados reais não estão disponíveis neste
+ambiente, a medição de desempenho e a validação de escala permanecem pendentes.

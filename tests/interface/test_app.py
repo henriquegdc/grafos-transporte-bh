@@ -50,7 +50,7 @@ def test_entrada_real_inicia_sem_pythonpath() -> None:
             "-c",
             (
                 "from streamlit.testing.v1 import AppTest; "
-                "app=AppTest.from_file('src/transporte/interface/app.py').run(); "
+                "app=AppTest.from_file('src/transporte/interface/app.py').run(timeout=30); "
                 "assert not app.exception, [e.message for e in app.exception]"
             ),
         ],

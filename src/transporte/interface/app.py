@@ -1,4 +1,4 @@
-"""Aplicacao Streamlit e ponto de integracao das paginas do projeto."""
+"""Aplicação Streamlit e ponto de integração das páginas. estado: implementado."""
 
 from __future__ import annotations
 
@@ -8,23 +8,28 @@ from copy import deepcopy
 from hashlib import sha256
 from importlib import import_module, util
 from pathlib import Path
+from zipfile import BadZipFile
 
 # The documented command runs this file without installing the src-layout package.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import streamlit as st
 
+from transporte.dados.leitor_gtfs import ler
 from transporte.interface.mapa import render_mapa
 from transporte.interface.protocolos import CarregadorRede, RedeUI
+from transporte.modelo.construtores import construir_ge, construir_gp
+from transporte.modelo.parametros import Parametros
 
-TITULO = "Analise da rede de transporte de Belo Horizonte"
+TITULO = "Análise da rede de transporte de Belo Horizonte"
 CHAVE_REDE = "rede-p0-ui"
+CHAVE_RESUMO_VISOES = "resumo-visoes-p0-ui"
 PAGINAS = {
     "Trajetos": "transporte.interface.paginas.trajetos",
     "Espera": "transporte.interface.paginas.espera",
-    "Baldeacoes": "transporte.interface.paginas.baldeacoes",
+    "Baldeações": "transporte.interface.paginas.baldeacoes",
     "Centralidades": "transporte.interface.paginas.centralidades",
-    "Eficiencia": "transporte.interface.paginas.eficiencia",
+    "Eficiência": "transporte.interface.paginas.eficiencia",
     "Falhas": "transporte.interface.paginas.falhas",
 }
 _RAIZ = Path(__file__).resolve().parents[3]
@@ -37,13 +42,27 @@ def _carregar_rede_em_cache(
     identidade: str,
     _carregador: CarregadorRede,
 ) -> RedeUI:
-    """Carrega uma fonte uma vez por origem/versao usando o loader do P0-DADOS."""
+    """Carrega uma fonte pelo loader de P0-DADOS e reutiliza seu resultado no cache.
+
+    Entradas: origem da pasta/ZIP, identidade observável da fonte e loader.
+    Saída: Rede compartilhada do cache; `carregar_rede` devolve uma cópia por sessão.
+    Casos de borda: erros do loader são propagados, sem armazenar um resultado parcial.
+    Complexidade: depende do loader apenas quando a chave ainda não está no cache.
+    """
     del identidade
     return _carregador(Path(origem))
 
 
 def listar_fontes(diretorios: Sequence[Path] = _FONTES_PADRAO) -> tuple[Path, ...]:
-    """Lista arquivos GTFS zip e diretorios com stops.txt nas pastas indicadas."""
+    """Descobre ZIPs e pastas GTFS na raiz ou um nível abaixo dos diretórios.
+
+    Entradas: diretórios a consultar; diretórios ausentes são ignorados.
+    Saída: caminhos absolutos únicos e ordenados, sem validar o conteúdo de ZIPs.
+    Casos de borda: diretório sem `stops.txt`, arquivo não ZIP e diretório inexistente
+        não são tratados como fontes; a validação GTFS é responsabilidade de P0-DADOS.
+    Complexidade: O(D + Z), sendo D as entradas imediatas consultadas e Z os ZIPs
+        encontrados; espaço O(Z + F), sendo F as pastas GTFS encontradas.
+    """
     fontes: set[Path] = set()
     for diretorio in diretorios:
         if not diretorio.is_dir():
@@ -60,7 +79,13 @@ def listar_fontes(diretorios: Sequence[Path] = _FONTES_PADRAO) -> tuple[Path, ..
 
 
 def resumo_rede(rede: RedeUI) -> dict[str, int]:
-    """Conta os elementos descritos no contrato normalizado de P0-DADOS."""
+    """Conta paradas, linhas e padrões da rede normalizada.
+
+    Entrada: Rede de P0-DADOS.
+    Saída: contagens em um dicionário com as chaves `paradas`, `linhas` e `padroes`.
+    Casos de borda: mapas vazios produzem contagens zero.
+    Complexidade: tempo e espaço O(1).
+    """
     return {
         "paradas": len(rede.paradas),
         "linhas": len(rede.linhas),
@@ -83,14 +108,34 @@ def _identidade_fonte(origem: Path, carregador: CarregadorRede) -> str:
 
 
 def carregar_rede(origem: Path, carregador: CarregadorRede) -> RedeUI:
-    """Carrega a fonte pelo cache e devolve uma copia isolada para a sessao."""
+    """Carrega uma pasta/ZIP GTFS pelo cache e isola o objeto entregue à sessão.
+
+    Entradas: caminho de fonte descoberto por `listar_fontes` e loader de P0-DADOS.
+    Saída: cópia profunda da Rede cacheada, independente de mutações em outras sessões.
+    Casos de borda: falhas de leitura ou cópia são propagadas; a fonte é identificada
+        pelos caminhos, tamanhos e tempos de modificação dos arquivos.
+    Complexidade: O(F) para inspecionar metadados dos F arquivos e O(R) para copiar os
+        R elementos da Rede; o parsing só ocorre quando há cache miss.
+    """
     identidade = _identidade_fonte(origem, carregador)
     rede_compartilhada = _carregar_rede_em_cache(str(origem), identidade, carregador)
     return deepcopy(rede_compartilhada)
 
 
-def _render_inicio(carregador: CarregadorRede | None) -> None:
-    st.title("Início")
+def _resumo_visoes(rede: RedeUI) -> tuple[dict[str, tuple[int, int]], str]:
+    """Constrói G_P e G_E da faixa inicial e devolve seus totais V/E."""
+    parametros = Parametros()
+    faixa = parametros.faixas[0].nome
+    gp = construir_gp(rede, parametros)
+    ge = construir_ge(rede, faixa, parametros)
+    return {
+        "G_P": (gp.grafo.num_vertices(), gp.grafo.num_arestas()),
+        "G_E": (ge.grafo.num_vertices(), ge.grafo.num_arestas()),
+    }, faixa
+
+
+def _render_inicio(carregador: CarregadorRede) -> None:
+    st.header("Início")
     fontes = listar_fontes()
     if not fontes:
         st.info(
@@ -106,45 +151,83 @@ def _render_inicio(carregador: CarregadorRede | None) -> None:
             ),
         )
         if st.button("Carregar rede", type="primary"):
-            if carregador is None:
-                st.warning(
-                    "Carregamento bloqueado: P0-DADOS ainda nao publicou uma funcao "
-                    "de carregamento. A interface ja aceita o contrato Rede do projeto."
-                )
+            try:
+                with st.spinner("Carregando e preparando as visões da rede..."):
+                    nova_rede = carregar_rede(fonte, carregador)
+                    resumo_visoes, faixa = _resumo_visoes(nova_rede)
+            except (OSError, ValueError, UnicodeError, BadZipFile, KeyError) as erro:
+                st.error(f"Não foi possível carregar a rede: {erro}")
             else:
-                st.session_state[CHAVE_REDE] = carregar_rede(fonte, carregador)
+                st.session_state[CHAVE_REDE] = nova_rede
+                st.session_state[CHAVE_RESUMO_VISOES] = (resumo_visoes, faixa)
 
     rede = st.session_state.get(CHAVE_REDE)
     if rede is None:
-        if carregador is None and fontes:
-            st.caption("A integracao com o carregador depende da feature P0-DADOS.")
         return
 
     resumo = resumo_rede(rede)
     st.subheader("Resumo da rede")
     colunas = st.columns(3)
+    rotulos = {"paradas": "Paradas", "linhas": "Linhas", "padroes": "Padrões"}
     for coluna, (rotulo, quantidade) in zip(colunas, resumo.items(), strict=True):
-        coluna.metric(rotulo.capitalize(), quantidade)
+        coluna.metric(rotulos[rotulo], quantidade)
+    st.caption(f"Dia de serviço: {rede.dia or 'não informado'}")
+
+    resumo_visoes = st.session_state.get(CHAVE_RESUMO_VISOES)
+    if resumo_visoes is None:
+        try:
+            resumo_visoes = _resumo_visoes(rede)
+        except (ValueError, KeyError) as erro:
+            st.error(f"Não foi possível construir as visões da rede: {erro}")
+            return
+        st.session_state[CHAVE_RESUMO_VISOES] = resumo_visoes
+    totais, faixa = resumo_visoes
+    st.subheader("Visões do grafo")
+    colunas = st.columns(2)
+    for coluna, (nome, (vertices, arestas)) in zip(colunas, totais.items(), strict=True):
+        coluna.metric(f"{nome} · vértices (V)", vertices)
+        coluna.metric(f"{nome} · arestas (E)", arestas)
+    st.caption(f"G_E exibido para a faixa {faixa}.")
+
+    if rede.inconsistencias:
+        st.warning(f"Foram encontradas {len(rede.inconsistencias)} inconsistências no GTFS.")
+        with st.expander("Ver inconsistências"):
+            for inconsistencia in rede.inconsistencias:
+                st.write(inconsistencia)
+    else:
+        st.success("Nenhuma inconsistência encontrada no GTFS.")
+
     if rede.paradas:
         render_mapa(rede, mostrar_paradas=True, mostrar_linhas=True, chave="mapa-inicio")
     else:
-        st.info("A rede carregada nao contem paradas para exibir no mapa.")
+        st.info("A rede carregada não contém paradas para exibir no mapa.")
 
 
 def _render_pagina(nome: str, rede: RedeUI) -> None:
     modulo = PAGINAS[nome]
     if util.find_spec(modulo) is None:
-        st.info(f"A pagina {nome} ainda nao foi implementada.")
+        st.info(f"A página {nome} ainda não foi implementada.")
         return
     pagina = import_module(modulo)
     render = getattr(pagina, "render", None)
     if not callable(render):
-        raise TypeError(f"O modulo {modulo} precisa publicar render(rede).")
+        raise TypeError(f"O módulo {modulo} precisa publicar render(rede).")
     render(rede)
 
 
-def main(carregador: CarregadorRede | None = None) -> None:
-    """Renderiza a aplicacao; recebe o loader de P0-DADOS quando estiver disponivel."""
+def main(carregador: CarregadorRede = ler) -> None:
+    """Renderiza a aplicação Streamlit com o loader oficial de P0-DADOS.
+
+    Entrada: loader que recebe um caminho de pasta/ZIP e devolve a Rede normalizada;
+        `ler` é o padrão e outros loaders podem ser injetados em testes.
+    Saída: None; configura a navegação, carrega a rede selecionada e despacha páginas
+        pelo contrato `render(rede)`.
+    Casos de borda: fonte ausente é informada; erro de carga mantém a Rede anterior;
+        página ainda não criada exibe indisponibilidade e módulo sem `render` falha
+        explicitamente com TypeError.
+    Complexidade: depende do carregamento e da construção das visões na primeira carga;
+        navegação subsequente reutiliza o estado de sessão.
+    """
     st.set_page_config(page_title=TITULO, page_icon="🚌", layout="wide")
     st.title(TITULO)
     pagina = st.sidebar.radio("Navegação", ("Início", *PAGINAS))

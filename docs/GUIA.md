@@ -180,14 +180,18 @@ indisponível sem impedir a navegação.
 O mapa reutilizável de `src/transporte/interface/mapa.py` recebe a `Rede` normalizada: mostra
 paradas agrupadas, padrões como linhas, caminhos como polilinhas e intensidades como mapa de
 calor. Cada visualização fica em uma camada Folium que pode ser ligada ou desligada. As páginas
-podem chamar `render_mapa` com apenas as camadas de que precisam.
+podem chamar `render_mapa` com apenas as camadas de que precisam. Para um resultado de F-ROTA,
+`trajeto` permite desenhar cada trecho a pé, de espera ou de ônibus com rótulo e cor; marcadores
+identificam origem, destino e baldeações a partir dos trechos de ônibus no resultado.
 
 A página inicial procura arquivos GTFS `.zip` e diretórios com `stops.txt` em
-`dados/rede-teste/` e `dados/brutos/`. O objeto carregado fica em `st.cache_resource`, indexado
-pela origem e pela identidade da fonte; cada sessão recebe uma cópia profunda para que
-simulações mutáveis não alterem a rede de outras sessões. A leitura do GTFS continua sendo
-responsabilidade de P0-DADOS: até essa feature publicar e integrar o carregador, a aplicação
-informa o bloqueio e não tenta interpretar o feed por conta própria.
+`dados/rede-teste/` e `dados/brutos/`. O botão de carga chama `transporte.dados.leitor_gtfs.ler`,
+que aceita uma pasta ou ZIP e devolve a `Rede` normalizada de P0-DADOS. A interface apresenta o
+dia de serviço, quantidades de paradas/linhas/padrões, totais V/E de G_P e G_E (na faixa
+`pico_manha`) e inconsistências do leitor. O objeto carregado fica em `st.cache_resource`,
+indexado pela origem e pelos metadados dos arquivos; cada sessão recebe uma cópia profunda para
+que simulações mutáveis não alterem a rede de outras sessões. Um erro de carga é mostrado sem
+substituir a rede anterior.
 
 ## 7. Como testamos e medimos (Rafael)
 Gabarito à mão, comparação de resultado com NetworkX, medição de tempo.
@@ -357,5 +361,7 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    intensidades de calor, cada uma como camada separada.
 4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
    interação do Streamlit; a chave considera a origem e a versão observável da fonte.
-5. **O carregamento está pronto sem P0-DADOS?** Não; a UI mostra o bloqueio até receber um
-   carregador que devolva a `Rede`, sem inventar outro modelo.
+5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
+   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
+   inconsistências e V/E de G_P e G_E. A medição em um feed real ainda depende de um feed
+   disponível no ambiente.
