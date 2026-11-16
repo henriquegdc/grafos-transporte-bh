@@ -10,12 +10,12 @@
 
 ## Retomada
 
-- **Última sessão:** 15/11/2026, revisão do PR #51 na branch `feat/F-ESPERA-simulacao`, em worktree separado do #50.
-- **Onde parou:** feedback conferido no código; documentação do contrato, relatório e reprodução corrigida. Miguel autorizou commit e push separados das branches dos PRs #50 e #51; nenhum merge autorizado.
-- **Próximo passo:** integrar #45 e #50 preservando autoria e depois reorganizar a base deste PR. Integrar a tabela de esperas à página Trajetos com Henrique; revisar textos e gravar vídeo.
-- **Arquivos tocados:** este arquivo e `relatorio/secoes/F-ESPERA.tex`.
-- **Como testar:** `.venv/bin/python -m pytest -q`; `.venv/bin/python -m ruff check`; `.venv/bin/python scripts/verificar_imports.py`.
-- **Bloqueios:** base contém código de Arthur via #50; Trajetos ainda usa espera provisória. Aprovação formal, revisão humana e gravação pendentes; DoD não concluído.
+- **Última sessão:** 16/11/2026, atendimento ao último comentário de Rafael no PR #50, também referente ao #51.
+- **Onde parou:** branch rebaseada diretamente sobre origin/main (6b44827), com o #45 integrado. Reaplicados apenas os dois commits próprios de Espera; o commit a8bec84 foi retirado da base. O #51 não depende mais do #50.
+- **Próximo passo:** revisão e aprovação do #51. Após o merge, adotar trajeto= no mapa e combinar o uso da tabela de esperas com Henrique (Trajetos) e Arthur (Eficiência); Miguel revisa textos e grava vídeo.
+- **Arquivos tocados:** este arquivo; demais mudanças resultam do rebase.
+- **Como testar:** Python da .venv do checkout principal com -m pytest -q; sh .githooks/pre-commit com essa .venv no PATH; git diff --check.
+- **Bloqueios:** aprovação formal e itens humanos do DoD pendentes; a sobreposição de autoria e a dependência do #50 foram resolvidas.
 
 ## Objetivo
 Espera e simulação de trajeto. Fecha:
@@ -152,9 +152,9 @@ Validação da interface: testes Streamlit AppTest com pasta e ZIP, isolamento d
 - Miguel revisar código, guia, explicação, decisões E1–E4 e roteiro; gravar vídeo no período de entrega.
 - PR #51 aberto; commit e push das correções autorizados por Miguel. Revisão e integração continuam pendentes. Usar `Refs #8` enquanto o DoD não estiver completo.
 - Confirmar modelo, chip e RAM da máquina usada em 11/11: o JSON histórico informa apenas macOS arm64 e processador `arm`; não inferir hardware a partir de outra medição.
-- Página Trajetos precisa adotar o contrato `esperas=` acima. Reprodução na rede pequena, sem caminhada: A → C às 08h dá 900 s sem tabela e 1.200 s com H/2.
+- Combinar após o merge com Henrique (Trajetos) e Arthur (Eficiência) a adoção do contrato `esperas=` acima. Reprodução na rede pequena, sem caminhada: A → C às 08h dá 900 s sem tabela e 1.200 s com H/2.
 - Após integrar #45, adaptar o mapa de Espera para `trajeto=` preservando os metadados de linhas/padrões; `caminhos=` sozinho não distingue tipos de trecho.
-- Integrar uma única base de UI (#45/#49); não alterar os arquivos de feature de Arthur/Rafael.
+- ~~Integrar uma única base de UI (#45/#49).~~ Resolvido pelo rebase sobre a main com #45 em 16/11; interface de Arthur preservada.
 - Relatório compilado com Tectonic 0.17.0; revisão visual final registrada no fechamento. O rascunho global ainda contém seções pendentes de outros donos e está abaixo do mínimo de 12 páginas; integração final cabe ao grupo.
 - Prazo original 11/11: se o DoD não fechar, aplicar corte do §7.3: essencial ocupa P2; F-ESPERA-2 adiada e opcional retirada do ciclo.
 - H/2, faixa fixa e regra D10 são limitações documentadas, sem implementar G_T nesta entrega.
@@ -179,3 +179,8 @@ Feedback integral analisado: sem revisões formais ou threads inline. Corrigidos
 Validação nesta sessão: 565 testes passaram em 2,38 s com Python 3.12.13; Ruff e verificação de imports sem erros. Execução no worktree com o Python da `.venv` do checkout principal, preservando as correções do #50.
 
 Verificação antes da publicação: projeto LaTeX compilado com sucesso pelo compilador integrado do editor, a partir da seção alterada.
+
+### Rebase independente do #50 · 16/11/2026
+Retirado a8bec84 da ancestralidade própria com rebase --onto origin/main a8bec84; os commits c688f46 e c4b01cf foram reaplicados sem conflito. A base 6b44827 já contém a interface e o mapa corrigidos pelo #45. Decisão: manter somente o escopo de Espera e retirar a dependência do #50 da descrição do PR. Backups locais preservam o histórico anterior. Melhorias indicadas por Rafael para depois do merge e tarefas humanas seguem nas pendências; não houve alteração de features de outros donos.
+
+Validação após rebase: Python 3.12 da .venv do checkout principal, -m pytest -q → 668 passed in 2.84s. O hook sem a .venv no PATH encontrou Python global sem Ruff; repetido com o ambiente do projeto, passou com imports e Ruff verdes. git diff --check sem erros.
