@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** aguardar F-MET. Não iniciar antes disso; quando liberar, publicar as assinaturas (etapa 1 do plano de implementação).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de F-MET.
+- **Última sessão:** 16/11, Thiago (decisão de escopo; nenhum código desta feature).
+- **Onde parou:** **cortada pelo congelamento de 15/11** (plano-de-projeto §7.1: depois do congelamento, só correção). O RF-MET-05 (intermediação por amostragem e erro contra a exata) foi atendido dentro da F-MET, porque o RNF-06 exige amostragem nas métricas de todos os pares: `estimar_intermediacao` em `src/transporte/algoritmos/centralidade.py` e a comparação com a exata em `benchmarks/medir_centralidade.py` (resultados no arquivo da F-MET). O RF-MET-04 (proximidade) não foi feito.
+- **Próximo passo:** nenhum neste ciclo. Se o grupo reabrir o escopo, a proximidade reaproveita o Dijkstra por origem do Brandes (mesma amostragem de origens).
+- **Arquivos tocados:** nenhum além deste arquivo.
+- **Como testar:** os testes da amostragem estão em `tests/algoritmos/test_centralidade.py` (F-MET).
+- **Bloqueios:** congelamento do código em 15/11.
 
 ## Objetivo
 Proximidade e intermediação amostrada. Fecha:
@@ -25,7 +25,7 @@ Proximidade e intermediação amostrada. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
+| Núcleo (algoritmo) | cortado | 16/11: congelamento; RF-MET-05 atendido pela F-MET (`estimar_intermediacao`), RF-MET-04 não feito |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
 | Testes | não iniciado | |
@@ -90,3 +90,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Thiago.
+### Corte 16/11/2026: feature cortada pelo congelamento de 15/11; RF-MET-05 entregue pela F-MET (amostragem com erro, RNF-06); RF-MET-04 (proximidade) não feito.

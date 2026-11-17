@@ -9,12 +9,12 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** aguardar F-MET. Não iniciar antes disso; quando liberar, publicar as assinaturas (etapa 1 do plano de implementação).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de F-MET.
+- **Última sessão:** 16/11, Thiago (decisão de escopo; nenhum código desta feature).
+- **Onde parou:** **cortada pelo congelamento de 15/11** (plano-de-projeto §7.1). Opcional, prevista só se sobrasse tempo; a F-MET essencial ainda não tinha a página nessa data.
+- **Próximo passo:** nenhum neste ciclo.
+- **Arquivos tocados:** nenhum além deste arquivo.
+- **Como testar:** não há testes.
+- **Bloqueios:** congelamento do código em 15/11.
 
 ## Objetivo
 Comunidades. Fecha:
@@ -24,7 +24,7 @@ Comunidades. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
+| Núcleo (algoritmo) | cortado | 16/11: congelamento do código em 15/11 |
 | Modelo e dados | não iniciado | |
 | Interface | não iniciado | |
 | Testes | não iniciado | |
@@ -87,3 +87,4 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Thiago.
+### Corte 16/11/2026: feature opcional cortada pelo congelamento de 15/11.
