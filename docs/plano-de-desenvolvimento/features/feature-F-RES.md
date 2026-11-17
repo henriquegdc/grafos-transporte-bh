@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 17/11/2026.
 - **Onde parou:** PR #47 integrado na `main` em 12/11 (`eb3c123`), com o núcleo, os testes, a medição, o diagrama (`.puml`), a seção do relatório e o roteiro. Em 16/11: "Como funciona" e perguntas copiados para o `docs/GUIA.md` (§5.6 e §10). Em 17/11: as 3 decisões da F-RES registradas no GUIA §8 e ajustes da revisão do PR #53. Etapas 1, 2, 3 e 5 feitas. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
-- **Próximo passo:** (1) página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`), se o grupo aprovar a exceção ao congelamento proposta em 16/11 para páginas e integração; a P0-UI entrou em 16/11 (#45) e o `app.py` já procura o módulo. (2) Quando a F-EFI (`feat/F-EFI-eficiencia`) entrar, trocar a `eficiencia_global` provisória pelo import de `transporte.algoritmos.eficiencia` (mesma assinatura) e apagar a daqui. (3) Caio revisar o roteiro do vídeo antes de gravar. (4) Gerar `docs/diagramas/sequencia-falhas.png` com o PlantUML. (5) Gravar o trecho do vídeo até 18/11 (plano-de-projeto §14.4); o Henrique monta o vídeo em 20/11.
+- **Próximo passo:** (1) página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`), se o grupo aprovar a exceção ao congelamento proposta em 16/11 para páginas e integração; a P0-UI entrou em 16/11 (#45) e o `app.py` já procura o módulo. (2) Quando a F-EFI (`feat/F-EFI-eficiencia`) entrar, trocar a `eficiencia_global` provisória pelo import de `transporte.algoritmos.eficiencia` (mesma assinatura) e apagar a daqui. (3) Caio revisar o roteiro do vídeo antes de gravar. (4) Gravar o trecho do vídeo até 18/11 (plano-de-projeto §14.4); o Henrique monta o vídeo em 20/11.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `tests/simulacao/test_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, este arquivo.
 - **Como testar:** `pytest tests/simulacao` (89 testes); `pytest` completo (603 em 10/11); `python benchmarks/medir_falhas.py` com o feed em `dados/brutos/bhtrans.zip` (baixar com `python scripts/baixar_gtfs.py`).
 - **Bloqueios:** a página depende da decisão do grupo sobre o congelamento de 15/11; a eficiência oficial depende do merge da F-EFI (Arthur).
@@ -91,7 +91,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
@@ -137,7 +137,7 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 - **Eficiência da F-EFI (Arthur):** `eficiencia_global` aqui é provisória. A da F-EFI, na branch `feat/F-EFI-eficiencia`, já tem a mesma assinatura (`origens`, `n_referencia`). Quando ela entrar na `main`, trocar o import e apagar esta.
 - **Página Falhas:** a P0-UI já entrou (#45) e o `app.py` já procura `transporte.interface.paginas.falhas`. A página depende só da exceção ao congelamento, proposta ao grupo em 16/11.
 - ~~**Decisões a confirmar pelo Caio**~~ **resolvido em 17/11:** denominador fixo na eficiência, definições de isolada e desconectada e trecho em um sentido só, registrados no `docs/GUIA.md` §8.
-- **Etapa 6:** feitos o diagrama (`.puml`), a seção do relatório, o roteiro e o GUIA §5.6. Faltam o PNG do diagrama, a figura da tela na seção do relatório (depende da página) e a gravação do vídeo até 18/11.
+- **Etapa 6:** feitos o diagrama (`.puml` e `.png`), a seção do relatório, o roteiro e o GUIA §5.6. Faltam a figura da tela na seção do relatório (depende da página) e a gravação do vídeo até 18/11.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
