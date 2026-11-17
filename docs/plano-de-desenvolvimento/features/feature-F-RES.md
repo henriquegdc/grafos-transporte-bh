@@ -9,9 +9,9 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 16/11/2026.
-- **Onde parou:** PR #47 integrado na `main` em 12/11 (`eb3c123`), com o núcleo, os testes, a medição, o diagrama (`.puml`), a seção do relatório e o roteiro. Em 16/11: "Como funciona" e perguntas copiados para o `docs/GUIA.md` (§5.6 e §10). Etapas 1, 2, 3 e 5 feitas. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
-- **Próximo passo:** (1) página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`), se o grupo aprovar a exceção ao congelamento proposta em 16/11 para páginas e integração; a P0-UI entrou em 16/11 (#45) e o `app.py` já procura o módulo. (2) Quando a F-EFI (`feat/F-EFI-eficiencia`) entrar, trocar a `eficiencia_global` provisória pelo import de `transporte.algoritmos.eficiencia` (mesma assinatura) e apagar a daqui. (3) Caio revisar o rascunho de "Como funciona", as perguntas e o roteiro, e confirmar as 3 decisões. (4) Gerar `docs/diagramas/sequencia-falhas.png` com o PlantUML. (5) Gravar o trecho do vídeo em 20/11.
+- **Última sessão:** 17/11/2026.
+- **Onde parou:** PR #47 integrado na `main` em 12/11 (`eb3c123`), com o núcleo, os testes, a medição, o diagrama (`.puml`), a seção do relatório e o roteiro. Em 16/11: "Como funciona" e perguntas copiados para o `docs/GUIA.md` (§5.6 e §10). Em 17/11: as 3 decisões da F-RES registradas no GUIA §8 e ajustes da revisão do PR #53. Etapas 1, 2, 3 e 5 feitas. `src/transporte/simulacao/falhas.py` (`estado: implementado`) tem o Tarjan iterativo, a eficiência global provisória, a falha de parada, trecho e linha, e `simular_falha`, que compara antes e depois e desfaz a falha. São 89 testes em `tests/simulacao/test_falhas.py`, com gabarito à mão, NetworkX e a rede de teste. Também há tempo medido no feed real (`benchmarks/medir_falhas.py`). O checkpoint de 07/11 não foi cumprido; a feature foi reduzida ao mínimo dos RFs (gatilho §7.3).
+- **Próximo passo:** (1) página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`), se o grupo aprovar a exceção ao congelamento proposta em 16/11 para páginas e integração; a P0-UI entrou em 16/11 (#45) e o `app.py` já procura o módulo. (2) Quando a F-EFI (`feat/F-EFI-eficiencia`) entrar, trocar a `eficiencia_global` provisória pelo import de `transporte.algoritmos.eficiencia` (mesma assinatura) e apagar a daqui. (3) Caio revisar o roteiro do vídeo antes de gravar. (4) Gerar `docs/diagramas/sequencia-falhas.png` com o PlantUML. (5) Gravar o trecho do vídeo até 18/11 (plano-de-projeto §14.4); o Henrique monta o vídeo em 20/11.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `tests/simulacao/test_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, este arquivo.
 - **Como testar:** `pytest tests/simulacao` (89 testes); `pytest` completo (603 em 10/11); `python benchmarks/medir_falhas.py` com o feed em `dados/brutos/bhtrans.zip` (baixar com `python scripts/baixar_gtfs.py`).
 - **Bloqueios:** a página depende da decisão do grupo sobre o congelamento de 15/11; a eficiência oficial depende do merge da F-EFI (Arthur).
@@ -31,7 +31,7 @@ Falhas e resiliência. Fecha:
 | Interface | não iniciado | P0-UI na `main` desde 16/11 (#45); falta a página, que depende da exceção ao congelamento |
 | Testes | concluído | 10/11: 89 testes (gabarito à mão, 40 grafos aleatórios contra o NetworkX no Tarjan, 15 na eficiência, rede de teste ponta a ponta) |
 | Desempenho (tempo medido) | concluído | 10/11: `benchmarks/medir_falhas.py` no feed real (ver Resultados) |
-| Guia (explicação e quiz) | em andamento | 16/11: copiado para o GUIA §5.6 e §10; falta revisão do Caio e as decisões no §8 |
+| Guia (explicação e quiz) | concluído | 16/11: GUIA §5.6 e §10; 17/11: as 3 decisões no GUIA §8 |
 | Relatório | em andamento | `relatorio/secoes/F-RES.tex` com resultado, complexidade e limitação; falta a figura da tela (depende da página) |
 | Vídeo | em andamento | Roteiro (rascunho) abaixo |
 
@@ -86,16 +86,16 @@ _Rascunho do agente em 10/11; o Caio revisa._
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
+- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
+- [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
+- [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [ ] Página ou bloco na interface funcionando com o dataset real
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
-- [ ] Roteiro do vídeo escrito no arquivo da feature
+- [x] Roteiro do vídeo escrito no arquivo da feature
 - [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
 
 ## Plano de implementação
@@ -104,7 +104,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 1 | Contrato (assinaturas com estado "planejado") | feita em 10/11, junto com a etapa 2 (atraso) |
 | 2 | Algoritmo com testes de corretude | feita em 10/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | feita em 10/11 (rede de teste e feed real) |
-| 4 | Página na interface | bloqueada pela P0-UI |
+| 4 | Página na interface | depende da exceção ao congelamento (a P0-UI entrou em 16/11, #45) |
 | 5 | Tempo medido na rede real e complexidade justificada | feita em 10/11 (ver Resultados) |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
 
@@ -134,10 +134,10 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 
 ## Pendências
 - **Checkpoint de 07/11 perdido.** Nada da F-RES existia em 07/11. Pelo gatilho do plano-de-projeto §7.3, a feature foi reduzida ao mínimo dos RFs: núcleo, testes e medição em 10/11. A página e a etapa 6 ficam como pendência.
-- **Eficiência da F-EFI (Arthur):** `eficiencia_global` aqui é provisória. Quando a F-EFI publicar a dela, trocar e apagar esta. Combinar com o Arthur que a dela aceite `origens` e `n_referencia`, ou equivalente, porque a perda depende do mesmo denominador.
-- **Página Falhas:** depende do `app.py` e do contrato de página da P0-UI.
-- **Decisões a confirmar pelo Caio:** o denominador fixo na eficiência, as definições de isolada e desconectada e o trecho com um sentido só (ver Como funciona). Registrar no `docs/GUIA.md` §8 depois de confirmadas.
-- **Etapa 6:** diagrama UML de sequência, seção `relatorio/secoes/F-RES.tex`, roteiro do vídeo e incorporação ao GUIA §5.6.
+- **Eficiência da F-EFI (Arthur):** `eficiencia_global` aqui é provisória. A da F-EFI, na branch `feat/F-EFI-eficiencia`, já tem a mesma assinatura (`origens`, `n_referencia`). Quando ela entrar na `main`, trocar o import e apagar esta.
+- **Página Falhas:** a P0-UI já entrou (#45) e o `app.py` já procura `transporte.interface.paginas.falhas`. A página depende só da exceção ao congelamento, proposta ao grupo em 16/11.
+- ~~**Decisões a confirmar pelo Caio**~~ **resolvido em 17/11:** denominador fixo na eficiência, definições de isolada e desconectada e trecho em um sentido só, registrados no `docs/GUIA.md` §8.
+- **Etapa 6:** feitos o diagrama (`.puml`), a seção do relatório, o roteiro e o GUIA §5.6. Faltam o PNG do diagrama, a figura da tela na seção do relatório (depende da página) e a gravação do vídeo até 18/11.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -145,3 +145,4 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 ### Núcleo 10/11/2026: checkpoint de 07/11 perdido, feature reduzida ao mínimo dos RFs. Tarjan iterativo, falhas de parada, trecho e linha e perda de eficiência (provisória) em `src/transporte/simulacao/falhas.py`, com 89 testes e medição no feed real. pytest com 603 verdes e hook verde. Branch `feat/F-RES-falhas`.
 ### Merge 12/11/2026: PR #47 integrado na `main` (`eb3c123`).
 ### Guia 16/11/2026: "Como funciona" e perguntas no `docs/GUIA.md` (§5.6 e §10). Página Falhas desbloqueada pela P0-UI (#45), mas sujeita à exceção ao congelamento.
+### Revisão 17/11/2026: PR #53 rebaseado sobre a `main` com a F-BALD (#48 e #49); decisões no GUIA §8; pendências e DoD atualizados; prazo do vídeo corrigido para 18/11.

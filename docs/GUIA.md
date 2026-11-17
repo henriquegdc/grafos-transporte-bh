@@ -239,6 +239,7 @@ caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige r
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
 
 ```python
+from transporte.modelo.construtores import construir_gp
 from transporte.simulacao.falhas import Falha, indexar_linhas, simular_falha
 
 gp = construir_gp(rede)
@@ -388,6 +389,9 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 11/11 | Laço P → P na G_L (B2, F-BALD) | Descer, andar e pegar o mesmo padrão mais atrás é outro embarque; sem o laço, o NetworkX achou trajetos com um ônibus a menos | Proibir troca para o mesmo padrão |
 | 11/11 | Caminhada de até 300 m, uma por vez, entre paradas, na F-BALD; destino a até 300 m da origem vai a pé (B3) | É a ligação que a modelagem define para a G_L; encadear caminhadas tornaria a distância a pé ilimitada | Caminhadas encadeadas, como no G_E |
 | 11/11 | G_L do dia por padrão ou de uma faixa, só com os padrões com partida nela, pela regra D10 (B4, F-BALD) | A F-BALD-2 compara com o G_E da mesma faixa sem usar linha que não circula nela | Só a G_L do dia; só por faixa |
+| 17/11 | Perda de eficiência da F-RES com o denominador de antes da falha: as mesmas origens e o mesmo n antes e depois (R1) | Com o n de depois, remover uma parada mal conectada aumentaria a eficiência, porque os pares ruins dela sairiam da média; com o mesmo n, os pares da parada removida contam 0 e a perda nunca é negativa | Renormalizar pelo n de depois da falha |
+| 17/11 | Parada isolada = ficou sozinha na componente fortemente conexa depois da falha e não estava antes; desconectada = saiu da maior componente (R2, F-RES) | "Saiu da maior" fica ambíguo quando duas componentes empatam de tamanho; a isolada não depende de desempate. A desconectada continua útil para quem caiu num grupo pequeno | Um único critério, "fora da maior componente" |
+| 17/11 | Falha de trecho remove só a aresta de viagem a -> b, num sentido, e mantém a caminhada (R3, F-RES) | Interdição costuma ser de uma mão, e a volta é outro trecho de G_P; a caminhada entre as paradas continua possível | Remover os dois sentidos e a caminhada |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
