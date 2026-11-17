@@ -122,7 +122,7 @@ class VisaoGL(Visao):
         padrao_do_vertice: vértice -> id do padrão.
         paradas_do_padrao: vértice -> sequência de paradas do padrão.
         transferencias: id da aresta -> trocas não dominadas daquela aresta P -> Q, em
-            ordem decrescente do índice de desembarque e crescente do de embarque. Uma
+            ordem decrescente do índice de desembarque e também do de embarque. Uma
             troca (i, x, j, y) é dominada por outra que desce mais tarde (ou igual) em P e
             embarca mais cedo (ou igual) em Q, porque esta serve a todo passageiro que a
             primeira serve.

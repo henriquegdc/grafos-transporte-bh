@@ -2,19 +2,19 @@
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
 **Dono:** Rafael (@Rafael-Fonseca1510) · **Issue:** #9 · **Visões do grafo:** G_L
-**Depende de:** P0-DADOS (na `main`, #42), P0-GRAFO (na `main`, #35), P0-UI (página: PR #45, aberto) · **Bloqueia:** F-BALD-2
+**Depende de:** P0-DADOS (na `main`, #42), P0-GRAFO (na `main`, #35), P0-UI (na `main`, #45) · **Bloqueia:** F-BALD-2
 **Prazo:** 11/11 (checkpoint 07/11)
 
 > Fonte de verdade: docs/fontes/REQUISITOS.md (RF-GRF-06, RF-BAL-01, RF-BAL-02). Modelagem: docs/fontes/modelagem.md.
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 11/11, Rafael, branches `feat/F-BALD-linhas` (núcleo, testes, medição e documentação) e `feat/F-BALD-pagina` (página, sobre a anterior e com o P0-UI #45 por merge).
-- **Onde parou:** etapas 1 a 3, 5 e 6 concluídas; etapa 4 pronta na `feat/F-BALD-pagina`, que espera o #45. `construir_gl` e `menos_baldeacoes` passam em 52 testes (566 na suíte) e batem com o NetworkX em 200 de 200 consultas no feed real; 36,7 ms por consulta (ver Resultados). Decisões B1 a B7 propostas, e falta o Rafael aceitar. Seção do relatório compilando (`relatorio/secoes/F-BALD.tex`).
-- **Próximo passo:** revisar as decisões B1 a B7 e o "Como funciona". Depois, abrir o PR da `feat/F-BALD-linhas` para a `main` com `Closes #9`. Quando o #45 (P0-UI) entrar, atualizar a `feat/F-BALD-pagina` com a `main` e abrir o PR da página. Avisar o Arthur e o Henrique das pendências (controle de camadas do mapa e texto da G_L na modelagem).
+- **Última sessão:** 16/11, Rafael, branch `feat/F-BALD-linhas` (PR #48), rebaseada sobre a `main` (`cbb1f90`, com #45, #50 e #51).
+- **Onde parou:** etapas 1 a 3, 5 e 6 concluídas; etapa 4 pronta na `feat/F-BALD-pagina` (PR #49). Ajustes da revisão do #48 feitos: conflito do `docs/GUIA.md` com a §5.2 da F-ESPERA resolvido (ficam a §5.2 e a §5.3, no texto e nas perguntas); decisões B1 a B7 e "Como funciona" revisados e aceitos pelo Rafael, sem as marcas de rascunho no GUIA §8; docstring de `VisaoGL.transferencias` corrigida (i e j decrescentes, como `_trocas_nao_dominadas` gera). `construir_gl` e `menos_baldeacoes` batem com o NetworkX em 200 de 200 consultas no feed real; 36,7 ms por consulta (ver Resultados).
+- **Próximo passo:** subir a branch rebaseada (`git push --force-with-lease`), preencher a descrição do #48 com `Refs #9` e pedir nova revisão. Depois do merge do #48, atualizar a `feat/F-BALD-pagina` com a `main`, trocar o `_controle_de_camadas_por_ultimo` da página pelo `atualizar_controle_camadas` do P0-UI e fechar o #49 com `Closes #9`. Avisar o Henrique do texto da G_L na modelagem e o Miguel do limite do `baixar_gtfs.py`.
 - **Arquivos tocados:** `src/transporte/modelo/visoes.py` (`VisaoGL`, `BALDEACAO`), `src/transporte/modelo/linhas.py`, `src/transporte/algoritmos/baldeacoes.py`, `src/transporte/interface/paginas/baldeacoes.py` (só na branch da página), `tests/modelo/test_linhas.py`, `tests/algoritmos/test_baldeacoes.py`, `tests/integracao/test_integracao_baldeacoes_rede_teste.py`, `tests/interface/test_pagina_baldeacoes.py` (só na branch da página), `benchmarks/medir_baldeacoes.py`, `docs/diagramas/atividade-menos-baldeacoes.{puml,png}`, `relatorio/secoes/F-BALD.tex`, `relatorio/figuras/baldeacoes-mapa.jpg`, `docs/GUIA.md` (§5.3, §8 e §10), este arquivo.
 - **Como testar:** `pytest tests/modelo/test_linhas.py tests/algoritmos/test_baldeacoes.py tests/integracao/test_integracao_baldeacoes_rede_teste.py` (52 testes); `ruff check`. Página, na `feat/F-BALD-pagina`: `pytest tests/interface/test_pagina_baldeacoes.py` (6 testes). Medição: `PYTHONPATH=src python benchmarks/medir_baldeacoes.py dados/brutos/bhtrans.zip` (cerca de 8 min, quase tudo na conferência com o NetworkX).
-- **Bloqueios:** a página depende do #45 (P0-UI). O `streamlit run` do #45 ainda não recebe o `ler()`, então a página só foi exercitada no feed real pelo `AppTest` (ver Pendências).
+- **Bloqueios:** nenhum para o #48. A página (#49) espera o #48 entrar, porque está montada sobre ele.
 
 ## Objetivo
 Menos baldeações. Fecha:
@@ -28,10 +28,10 @@ Menos baldeações. Fecha:
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 11/11: `menos_baldeacoes` (BFS por camadas sobre a G_L, com a posição de embarque como rótulo), `estado: implementado` |
 | Modelo e dados | concluído | 11/11: `construir_gl` e `VisaoGL`; integração com `dados/rede-teste` pelo `ler()` (5 testes) e com o feed real (Resultados) |
-| Interface | em andamento | 11/11: página `Baldeações` na `feat/F-BALD-pagina` (6 testes; roda no feed real pelo `AppTest`, consulta em 22 ms); espera o #45 entrar na `main` |
+| Interface | em andamento | 11/11: página `Baldeações` na `feat/F-BALD-pagina` (6 testes; roda no feed real pelo `AppTest`, consulta em 22 ms); o #45 já entrou, e a página (#49) entra depois do #48 |
 | Testes | concluído | 11/11: 52 testes. Gabarito à mão (linha direta, troca na mesma parada e a pé, a pé nas pontas, ordem dentro do padrão, padrão que melhora numa camada posterior, laço, circular, desempates), bordas (origem = destino, destino perto, inalcançável, parada sem padrão, parada inexistente, falhas e reativação) e NetworkX num grafo de estados em 12 redes aleatórias (480 consultas). Fora da suíte, 12.000 consultas em 400 redes com 0 divergências |
 | Desempenho (tempo medido) | concluído | 11/11: 36,7 ms por consulta (máximo 172,9 ms) e G_L do pico em 3,1 s no feed real; ver Resultados |
-| Guia (explicação e quiz) | em andamento | 11/11: Como funciona e 5 perguntas, copiados para o `docs/GUIA.md` §5.3 e §10; falta a revisão do Rafael |
+| Guia (explicação e quiz) | concluído | 11/11: Como funciona e 5 perguntas, copiados para o `docs/GUIA.md` §5.3 e §10; 16/11: revisados pelo Rafael |
 | Relatório | concluído | 11/11: `relatorio/secoes/F-BALD.tex` com figura (mapa real), resultado, complexidade e limitação; compilado com MiKTeX sem erro (cerca de 0,7 página) |
 | Vídeo | em andamento | 11/11: roteiro abaixo; gravação no P3 |
 
@@ -89,7 +89,7 @@ Sem a restrição de ordem dentro do padrão, os passos 2 a 5 são exatamente o 
 
 **Complexidade.** V e E de G_L, T trocas guardadas, r camadas (baldeações + 1, ou + 2 sem trajeto), s paradas a até 300 m da origem e do destino. Cada camada percorre só os padrões que melhoraram na anterior e, de cada um, as arestas e as trocas, parando na primeira troca que já não serve: O(V + E + T) por camada, O(r (V + E + T) + s) no total. Espaço O(r V) para os rótulos de todas as camadas, que a reconstrução usa. A construção da G_L custa O(V + K log K + L + C) esperado: a grade espacial do P0-MODELO para os K pares a até 300 m, e uma passada sobre as C trocas candidatas, da última posição de descida para a primeira, que já monta a fronteira sem ordenar. No feed real (ver Resultados): 36,7 ms por consulta e 3,1 s para montar a G_L do pico da manhã.
 
-**Decisões e alternativas descartadas** (B1 a B7, propostas em 11/11; o Rafael confirma):
+**Decisões e alternativas descartadas** (B1 a B7, propostas em 11/11 e aceitas pelo Rafael em 16/11):
 
 - **B1. BFS por camadas com a posição de embarque, sobre a G_L dirigida com as trocas na aresta.** Alternativas: (a) BFS comum na G_L, descartado porque dá só um limite inferior e trajetos impossíveis (14 de 200 pares no feed real); (b) BFS 0-1 no G_E, com peso 1 no embarque. A (b) é exata, mas não constrói a G_L que o RF-GRF-06 pede, roda sobre um grafo com 46.100 vértices em vez de 501 e permite encadear caminhadas.
 - **B2. Laço P → P.** Descer, andar até 300 m e pegar o mesmo padrão mais atrás (ou esperar o próximo ônibus de um padrão circular) é outro embarque, então conta como baldeação. Sem o laço, o NetworkX achou trajetos com um ônibus a menos que os nossos.
@@ -118,7 +118,7 @@ Sem a restrição de ordem dentro do padrão, os passos 2 a 5 são exatamente o 
 ## Critérios de aceite
 - [x] RF-GRF-06: Construir a visão G_L (linhas) (11/11: `construir_gl`; no feed real, V = 698 e E = 149.551 no dia, V = 501 e E = 85.606 no pico da manhã)
 - [x] RF-BAL-01: Calcular o trajeto com o menor número de baldeações entre duas paradas (11/11: 200 de 200 consultas no feed real com 0 divergências contra o NetworkX)
-- [ ] RF-BAL-02: Mostrar a sequência de linhas e as paradas de troca no mapa (11/11: página pronta na `feat/F-BALD-pagina`, conferida no feed real pelo `AppTest` e na figura do relatório; marcar quando estiver na `main`, depois do #45)
+- [ ] RF-BAL-02: Mostrar a sequência de linhas e as paradas de troca no mapa (11/11: página pronta na `feat/F-BALD-pagina`, conferida no feed real pelo `AppTest` e na figura do relatório; marcar quando o #49 estiver na `main`)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
@@ -128,9 +128,9 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (11/11: 52 testes; NetworkX num grafo de estados, porque ele não tem um equivalente direto do mínimo de baldeações)
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (11/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (11/11)
-- [ ] Página ou bloco na interface funcionando com o dataset real (11/11: funciona pelo `AppTest` no feed real; falta entrar na `main` com o #45, e o `streamlit run` do #45 passar o `ler()`)
+- [ ] Página ou bloco na interface funcionando com o dataset real (11/11: funciona pelo `AppTest` no feed real; falta o #49 entrar na `main`)
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (11/11: `atividade-menos-baldeacoes`)
-- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (11/11; falta a revisão do Rafael)
+- [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (11/11; revisadas pelo Rafael em 16/11)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (11/11)
 - [x] Roteiro do vídeo escrito no arquivo da feature (11/11)
@@ -142,9 +142,9 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 11/11 (publicado já implementado, como na F-ROTA: ninguém consome a G_L antes da F-BALD-2, que é do mesmo dono) |
 | 2 | Algoritmo com testes de corretude | concluída em 11/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 11/11 (rede de teste pelo `ler()` e feed real) |
-| 4 | Página na interface | pronta em 11/11 na `feat/F-BALD-pagina`; espera o #45 (P0-UI) |
+| 4 | Página na interface | pronta em 11/11 na `feat/F-BALD-pagina` (#49); entra depois do #48 |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 11/11 |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 11/11 (rascunho; Rafael revisa) |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 11/11; revisada pelo Rafael em 16/11 |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -183,9 +183,9 @@ Rascunho de 11/11 (Rafael revisa):
 4. **Resultado e limitação (30 s):** 36,7 ms por consulta na rede inteira, conferido com o NetworkX em 200 pares; o BFS comum erraria em 14. Limitação: conta trocas, não tempo; quanto custa a mais é a F-BALD-2.
 
 ## Pendências
-- **Rafael (dono):** revisar e aceitar (ou mudar) as decisões B1 a B7 e o rascunho do Como funciona; só então as linhas do `docs/GUIA.md` §8 perdem o "(rascunho para Rafael revisar)".
-- **P0-UI (Arthur), mapa:** `criar_mapa` já adiciona o `folium.LayerControl`. Camadas que uma página acrescenta depois são citadas pelo controle antes de existirem no JavaScript, e o Leaflet para com "Cannot read properties of undefined (reading 'setZIndex')", sem desenhar o trajeto. A página Baldeações contorna isso movendo o controle para o fim (`_controle_de_camadas_por_ultimo`, com teste). A página Trajetos da `feat/F-ROTA-pagina` (`f2d409f`) tem o mesmo problema, conferido em 11/11 renderizando o `mapa_trajeto` dela: o controle sai antes das camadas no HTML. Avisar o Henrique. Sugestão ao Arthur: `criar_mapa(..., controle_de_camadas=False)` ou uma função que a página chama por último.
-- **P0-UI (Arthur), carregador:** no #45, `streamlit run src/transporte/interface/app.py` chama `main()` sem carregador e o botão "Carregar rede" avisa que está bloqueado; a `main` já tem o `ler()` do #42. Até isso mudar, nenhuma página roda pelo comando do AGENTS.md.
+- ~~**Rafael (dono):** revisar e aceitar (ou mudar) as decisões B1 a B7 e o rascunho do Como funciona.~~ **feito em 16/11:** aceitas; as linhas do `docs/GUIA.md` §8 perderam a marca de rascunho.
+- ~~**P0-UI (Arthur), mapa:** `criar_mapa` já adiciona o `folium.LayerControl`. Camadas que uma página acrescenta depois são citadas pelo controle antes de existirem no JavaScript, e o Leaflet para com "Cannot read properties of undefined (reading 'setZIndex')", sem desenhar o trajeto. A página Baldeações contorna isso movendo o controle para o fim (`_controle_de_camadas_por_ultimo`, com teste). A página Trajetos da `feat/F-ROTA-pagina` (`f2d409f`) tem o mesmo problema, conferido em 11/11 renderizando o `mapa_trajeto` dela: o controle sai antes das camadas no HTML. Avisar o Henrique. Sugestão ao Arthur: `criar_mapa(..., controle_de_camadas=False)` ou uma função que a página chama por último.~~ **resolvido no #45:** o P0-UI publicou `atualizar_controle_camadas(mapa)`. No #49, trocar o `_controle_de_camadas_por_ultimo` da página por ele.
+- ~~**P0-UI (Arthur), carregador:** no #45, `streamlit run src/transporte/interface/app.py` chama `main()` sem carregador e o botão "Carregar rede" avisa que está bloqueado.~~ **resolvido no #45:** `main(carregador=ler)`.
 - **P0-MODELO e modelagem (Henrique):** `docs/fontes/modelagem.md` §3.4 descreve a G_L como "ligação quando duas linhas compartilham parada ... sem peso", e o `relatorio/secoes/modelagem.tex` diz que a G_L "reduz a pergunta das baldeações a uma busca em largura entre padrões". A implementação é dirigida e guarda a posição das trocas, porque o BFS comum só dá limite inferior (B1). Proposta de texto para a tabela: "P → Q quando dá para descer de P e embarcar em Q na mesma parada ou a até R; a aresta guarda as posições da troca". Não alterei as fontes (AGENTS.md §1).
 - **P0-DADOS (Miguel):** `scripts/baixar_gtfs.py` falhou em 11/11 com o curl no limite de 120 s (`exit status 28`) e funcionou com 900 s. Sugerir um limite maior, ou um parâmetro. O instantâneo de 11/11 tem SHA-256 diferente do de 05/11, mas as mesmas contagens.
 - **F-BALD-2 (Rafael):** `TrajetoBaldeacoes` não tem tempo. Para o RF-BAL-03, somar no G_E da mesma faixa (`construir_gl(rede, faixa=...)`) a espera do embarque e as viagens de cada perna, e comparar com `trajeto_mais_rapido`.
@@ -198,3 +198,4 @@ Rascunho de 11/11 (Rafael revisa):
 ### Sessão 11/11/2026: etapa 5 no feed real: 36,7 ms por consulta, máximo 172,9 ms, 0 divergências em 200; construção otimizada de 7,7 s para 4,5 s (dia); `benchmarks/medir_baldeacoes.py`.
 ### Sessão 11/11/2026: etapa 4 na `feat/F-BALD-pagina` (com o #45 por merge): página Baldeações e correção do controle de camadas do mapa; conferida no feed real pelo `AppTest`.
 ### Sessão 11/11/2026: etapa 6: Como funciona, 5 perguntas, diagrama `atividade-menos-baldeacoes`, `docs/GUIA.md` §5.3, §8 e §10, `relatorio/secoes/F-BALD.tex` com figura do mapa real, roteiro do vídeo; decisões B1 a B7 propostas.
+### Revisão 16/11/2026: ajustes pedidos na revisão do #48. Rebase sobre a `main` (`cbb1f90`), com o conflito do `docs/GUIA.md` resolvido mantendo a §5.2 (F-ESPERA) e a §5.3 (F-BALD); decisões B1 a B7 aceitas pelo Rafael e marcas de rascunho retiradas do GUIA §8; docstring de `VisaoGL.transferencias` corrigida para i e j decrescentes. Na revisão, o revisor rodou 720 testes verdes, com hook e ruff limpos, sobre a `main` atual.
