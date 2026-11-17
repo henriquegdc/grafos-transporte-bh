@@ -9,9 +9,9 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 10/11/2026.
-- **Onde parou:** hook, `scripts/verificar_imports.py` (com testes), `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 integrados na `main` pelo PR #43 (`c3da48a`). `verificar_imports.py` rodado na `main` em 10/11: nenhum import proibido. Falta o que só se faz no site do GitHub: proteção da `main` e Kanban.
-- **Próximo passo:** pedir ao Henrique (dono do repositório) a regra da `main` em Settings > Branches, exigindo PR com 1 aprovação. Criar o Kanban (GitHub Projects) com as issues e usá-lo no fechamento de 11/11 (plano-de-projeto §13). Confirmar no grupo que todos rodaram `pip install -r requirements.txt` e `git config core.hooksPath .githooks`.
+- **Última sessão:** 16/11/2026.
+- **Onde parou:** hook, `scripts/verificar_imports.py` (com testes), `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 integrados na `main` pelo PR #43 (`c3da48a`). Fechamento de 15/11 feito em 16/11 na `main` (`cbb1f90`): nenhum import proibido, ruff limpo, pytest com 667 verdes e 1 falha (ver Pendências). Alerta ao grupo: só as páginas Espera e Baldeações estão na `main`. Proteção da `main` e Kanban continuam pendentes.
+- **Próximo passo:** 17/11: listar as lacunas do `docs/GUIA.md` por dono (prazo 18/11, plano-de-projeto §7.3). 21/11: montar o `.zip` (código, `.tex` e PDF do relatório) e conferir os seis envios no Canvas (checklist §2.1, itens 10 e 11). Pedir ao Henrique a regra da `main` exigindo 1 aprovação.
 - **Arquivos tocados:** `.githooks/pre-commit`, `.gitattributes`, `scripts/verificar_imports.py`, `tests/scripts/test_verificar_imports.py`, `requirements.txt`, `pyproject.toml`, `README.md`, `AGENTS.md` (§4).
 - **Como testar:** `pytest` (231 testes em 05/11, 30 deles do script); `sh .githooks/pre-commit`; para ver o bloqueio, criar um `.py` em `src/` com `import networkx` e tentar commitar.
 - **Bloqueios:** nenhum.
@@ -111,6 +111,20 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 - **RNF-07:** a parte da P0-REPO (versões fixadas) está feita. Dataset com data e origem e o script de download são da P0-DADOS (Miguel).
 - **Python 3.12:** as versões do `requirements.txt` foram validadas num `.venv` com Python 3.14.4, a única versão nesta máquina. Todas declaram suporte ao 3.12 (`Requires-Python`), mas falta instalar num 3.12 real. O Thiago tem `.venv` 3.12.14 (P0-GRAFO).
 - **Avisar o Rafael (P0-AVAL) e o Thiago (P0-GRAFO):** o `PYTHONPATH=src` não é mais necessário; podem tirar a pendência dos arquivos deles.
+- **Fechamento de 15/11 (feito em 16/11):**
+  - **Interface (checklist §2.1, item 3):** na `main` só existem as páginas Espera e Baldeações (esta pelo #49, em 16/11). Trajetos e Eficiência estão em branches sem merge, e Centralidades e Falhas não existem. Proposta ao grupo: exceção ao congelamento até 18/11, só para páginas e integração.
+  - **Teste com timeout:** `tests/interface/test_integracao_dados.py::test_app_test_carrega_o_feed_e_renderiza_o_widget_do_mapa` estoura 30 s quando o feed real está em `dados/brutos/` (o `ler` leva cerca de 40 s num i5-1235U), e confere `dia == "2026-11-04"`, que muda quando a PBH atualiza o feed. Avisado o Arthur (P0-UI).
+  - **Thiago (P0-GRAFO e F-MET):** arquivos parados desde 05/11; faltam a página Centralidades, a medição no G_P real, o GUIA §4 e §5.4, as perguntas de verificação, o diagrama, a seção do relatório e o roteiro. Avisado.
+- **Lacunas do `docs/GUIA.md` (listadas em 17/11; prazo dos donos: 18/11, plano-de-projeto §7.3):**
+  - §1 Visão geral (Caio, integrador): só o esqueleto de 29/10; falta o problema, as seis perguntas e o caminho do dado com o diagrama de componentes.
+  - §3 Modelagem, parte geral (Henrique): falta a explicação de G_P, G_E, G_L e G_T e da espera esperada; só existe a subseção dos construtores.
+  - §4 Núcleo do grafo e heap (Thiago): só o esqueleto de 29/10.
+  - §5.4 Centralidades (Thiago): não existe.
+  - §5.5 Eficiência (Arthur): escrita na branch `feat/F-EFI-eficiencia`, ainda sem merge.
+  - §5.7 Desejáveis e opcionais (Caio): registrar quais foram feitas; nenhuma está na `main` em 17/11.
+  - §7 Como testamos (Rafael): falta a parte geral (gabarito à mão e comparação com o NetworkX); só existe a medição.
+  - §9 Glossário (Caio, integrador): vazio, só o título.
+  - §10 Perguntas: faltam P0-GRAFO e F-MET (Thiago), que não têm perguntas nem no arquivo da feature, e F-EFI (Arthur, na branch).
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -118,3 +132,5 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Hook 05/11/2026: `verificar_imports.py` com 30 testes, hook de pre-commit, `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 na branch `feat/P0-REPO-hook`. Suíte com 231 testes verdes. Proteção da `main` e Kanban pendentes (site do GitHub).
 ### Merge 06/11/2026: PR #43 integrado na `main` (`c3da48a`).
 ### Fechamento 10/11/2026: `verificar_imports.py` rodado na `main` (`fbb330d`), sem import proibido. Proteção da `main` e Kanban seguem pendentes.
+### Fechamento 15/11/2026 (feito em 16/11): na `main` (`cbb1f90`), nenhum import proibido, ruff limpo, pytest com 667 verdes e 1 falha por timeout. Alerta ao grupo sobre as páginas que faltam na interface (ver Pendências).
+### Guia 17/11/2026: lacunas do `docs/GUIA.md` listadas por dono (ver Pendências); prazo 18/11.
