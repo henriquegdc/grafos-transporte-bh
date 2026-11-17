@@ -1,0 +1,44 @@
+% Subseção da F-BALD (menos baldeações). Dono: Rafael.
+% Fontes: docs/plano-de-desenvolvimento/features/feature-F-BALD.md (Como funciona e
+% Resultados); números de benchmarks/medir_baldeacoes.py em 11/11/2026.
+% Figura: mapa da página Baldeações para o primeiro par sorteado com a semente 2026.
+\subsection{Menos baldeações}\label{sec:F-BALD}
+
+Dadas duas paradas, a ferramenta acha o trajeto com o menor número de trocas de ônibus e
+mostra a sequência de linhas e as paradas de troca no mapa
+(Figura~\ref{fig:baldeacoes-mapa}). A visão usada é $G_L$: um vértice por padrão de linha e
+uma aresta dirigida $P \to Q$ quando é possível descer de $P$ e embarcar em $Q$ na mesma
+parada ou em paradas a até 300~m. Sobre ela, o mínimo de baldeações é uma busca em largura:
+cada camada é um ônibus a mais.
+
+Um BFS comum sobre $G_L$, porém, só dá um limite inferior. Os padrões têm sentido: quem
+embarca em $P$ na décima parada não pode usar uma troca que está na terceira. Por isso cada
+aresta guarda onde a troca acontece (posição de descida em $P$, posição de embarque em $Q$),
+só com as trocas não dominadas, e o BFS por camadas leva como rótulo de cada padrão a posição
+de embarque mais cedo. Um padrão volta a uma camada posterior se for alcançado numa posição
+mais cedo, porque isso abre trocas que antes não serviam. A primeira camada que chega a até
+300~m do destino dá o mínimo de ônibus, e as baldeações são esse número menos um. O custo é
+$O(r(V + E + T))$ por consulta, com $r$ camadas (baldeações $+\,1$) e $T$ trocas guardadas,
+porque cada camada só percorre os padrões que melhoraram na anterior.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.42\linewidth]{baldeacoes-mapa}
+\caption{Trajeto com 2 baldeações (linhas 342, 6350 e 643) entre o Barreiro e a Pampulha,
+na $G_L$ do pico da manhã. Os círculos laranja são as trocas, feitas a pé entre
+plataformas das estações Barreiro e Pampulha.}
+\label{fig:baldeacoes-mapa}
+\end{figure}
+
+No feed real (quarta-feira 04/11/2026, 9.659 paradas, 698 padrões), a $G_L$ do pico da
+manhã tem $V = 501$ padrões, $E = 85.606$ arestas e 215.050 trocas guardadas, e é montada em
+$3{,}1$~s. Em 200 pares de paradas sorteados, a consulta levou $36{,}7$~ms em média e
+$172{,}9$~ms no pior caso (Intel Core i5-1235U); todos os pares tiveram trajeto, com 0
+(16 pares), 1 (101), 2 (78) e 3 (5) baldeações, e o resultado coincidiu com o caminho mínimo
+do NetworkX num grafo de estados independente nos 200. O BFS comum daria menos baldeações
+que o possível em 14 dos 200 pares, o que justifica guardar a posição das trocas.
+
+\emph{Limitação:} o critério é só o número de baldeações; o trajeto escolhido pode ser bem
+mais lento que o mais rápido, comparação que fica para a F-BALD-2. A caminhada é em linha
+reta, uma por vez, e $G_L$ ignora os horários, exceto ao filtrar as linhas com partida na
+faixa escolhida.
