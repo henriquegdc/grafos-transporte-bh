@@ -3,9 +3,20 @@
 % Conteúdo: Núcleo de grafo e heap, organização do código e interface
 \section{Implementação}\label{sec:impl}
 
-O núcleo representa o grafo dirigido por listas de adjacência próprias, com identificadores
-estáveis para vértices e arestas; o heap binário também é implementado no projeto. A interface
-P0-UI é uma aplicação Streamlit com navegação por páginas. O ponto de entrada usa o leitor GTFS
+O núcleo (\texttt{src/transporte/grafo/}) não usa biblioteca de grafo nem o
+\texttt{heapq}. O grafo guarda os atributos de vértices e arestas em listas paralelas
+indexadas por identificadores estáveis, e a lista de adjacência de cada vértice contém os
+identificadores das arestas que saem dele, o que permite arestas paralelas (viagem e
+caminhada entre as mesmas paradas) e devolve, no caminho, o tipo de cada passo. Vértices e
+arestas são desativados por uma marcação em $O(1)$ e as buscas os ignoram, o que permite
+simular falhas sem reconstruir o grafo. A fila de prioridade é um heap binário de mínimo
+próprio, e o Dijkstra usa inserção preguiçosa, mantendo $O((V + E)\log V)$. No feed real,
+um Dijkstra completo leva 250~ms em $G_P$ ($V = 9{.}660$) e 777~ms em $G_E$ do pico da
+manhã ($V = 46{.}102$), com distâncias iguais às do NetworkX em 20 origens sorteadas; o
+heap faz 100 mil inserções e extrações em 1,5~s (Intel Core 5 120U, Python 3.12). Como
+limitação, o grafo só aceita pesos não negativos e nunca remove vértices ou arestas.
+
+A interface P0-UI é uma aplicação Streamlit com navegação por páginas. O ponto de entrada usa o leitor GTFS
 de P0-DADOS para carregar pastas ou arquivos ZIP, mantém a rede normalizada em cache e entrega
 uma cópia isolada por sessão. A página inicial exibe o dia de serviço, o resumo da rede, as
 inconsistências do leitor e os totais de vértices e arestas de G_P e G_E, construídos pelos

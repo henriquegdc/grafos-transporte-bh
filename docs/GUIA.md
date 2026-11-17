@@ -116,8 +116,56 @@ embarque às 09h20 no entrepico (D10); numa linha circular dá para "dar a volta
 variante de itinerário tem espera própria (D1); caminhada em linha reta, sem ruas.
 
 ## 4. Núcleo do grafo e heap (Thiago)
-Lista de adjacência, desativação de vértices e arestas, heap binário, BFS e Dijkstra,
-inserção preguiçosa, complexidades.
+
+Estrutura, buscas e fila de prioridade são do projeto: nada de biblioteca de grafo em `src/` e
+nada de `heapq`. O núcleo não conhece GTFS: trabalha com vértices `0..V-1`, e cada visão guarda
+os mapas entre os ids do GTFS e os vértices.
+
+```python
+from transporte.grafo.grafo import Grafo
+from transporte.grafo.buscas import dijkstra, bfs, caminho, caminho_arestas
+
+g = Grafo()
+a, b = g.adicionar_vertice("A"), g.adicionar_vertice("B")
+e = g.adicionar_aresta(a, b, 300.0, "viagem")   # peso >= 0, finito
+r = dijkstra(g, a)            # r.dist, r.pred, r.pred_aresta
+caminho(r, b)                 # [a, b]
+g.desativar_vertice(b)        # O(1); vizinhos() deixa de devolver b
+g.reativar_vertice(b)
+```
+
+**Grafo (`grafo.py`).** Listas paralelas indexadas pelo id: rótulo e flag de ativo dos
+vértices; origem, destino, peso, tipo e flag das arestas; e a lista de adjacência `_adj[u]`
+com os **ids** das arestas que saem de u. O id deixa peso, tipo e estado num lugar só e
+permite arestas paralelas (viagem e caminhada entre o mesmo par). `vizinhos(u)` devolve
+`(destino, peso, id)` só das arestas utilizáveis (aresta, origem e destino ativos). Desativar
+é marcar um booleano: nada é removido, os ids continuam valendo e a F-RES fecha e reabre
+paradas sem reconstruir o grafo. Espaço O(V + E); inserir, desativar e reativar O(1).
+
+**Heap (`heap.py`).** Heap binário de mínimo numa lista (filhos de i em 2i + 1 e 2i + 2).
+Inserir sobe a folha nova; extrair põe a última folha na raiz e a desce pelo menor filho. Cada
+operação percorre a altura, O(log n). Pares `(prioridade, item)` comparados como tuplas: o
+empate sai pelo menor item, o que deixa os caminhos de mesmo custo determinísticos.
+
+**Dijkstra com inserção preguiçosa (`buscas.py`).** Não há "diminuir chave": quando acha um
+caminho melhor até v, insere `(nova distância, v)` de novo; a entrada antiga sai depois e é
+descartada porque v já está fechado. Passo a passo (`docs/diagramas/sequencia-dijkstra.puml`):
+extrai o menor `(d, u)`; se u já está fechado, descarta; senão fecha u (com pesos ≥ 0, d é
+definitiva) e relaxa cada vizinho, inserindo de novo quem melhorou. Com `destino`, para quando
+ele é fechado. `caminho` e `caminho_arestas` reconstroem pelos predecessores; a F-ROTA usa as
+arestas para saber o tipo de cada passo. A BFS é a mesma ideia com fila, contando arestas.
+
+Exemplo: 0→1 (4), 0→2 (1), 2→1 (2), 1→3 (1). Fecha 0 e insere (4, 1) e (1, 2); fecha 2 e acha
+0→2→1 = 3, insere (3, 1) sem tirar o (4, 1); fecha 1 e insere (4, 3); o (4, 1) sai e é
+descartado; fecha 3 com 4. Caminho: 0, 2, 1, 3.
+
+**Complexidade.** BFS O(V + E). Dijkstra: cada relaxamento bem-sucedido insere uma entrada,
+então o heap recebe no máximo E + 1 entradas, cada uma O(log E) ≤ O(2 log V): tempo
+O((V + E) log V) e espaço O(V + E). É o limite do Dijkstra com "diminuir chave", sem o mapa
+vértice → posição no heap.
+
+Limitações: sem pesos negativos (no projeto todo peso é tempo); vértice e aresta nunca são
+removidos, só desativados; com `destino`, só a distância do destino é garantida.
 
 ## 5. Features
 Uma subseção por feature, copiada e ajustada de "Como funciona e por quê" do arquivo da feature:
