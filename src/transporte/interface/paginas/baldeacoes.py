@@ -20,7 +20,7 @@ from streamlit_folium import st_folium
 
 from transporte.algoritmos.baldeacoes import TrajetoBaldeacoes, menos_baldeacoes
 from transporte.algoritmos.trajeto import A_PE, ONIBUS
-from transporte.interface.mapa import criar_mapa
+from transporte.interface.mapa import atualizar_controle_camadas, criar_mapa
 from transporte.interface.protocolos import RedeUI
 from transporte.modelo.linhas import construir_gl
 from transporte.modelo.parametros import Parametros
@@ -154,22 +154,9 @@ def mapa_trajeto(rede: RedeUI, trajeto: TrajetoBaldeacoes) -> folium.Map:
     latitudes = [lat for lat, _ in coordenada.values()]
     longitudes = [lon for _, lon in coordenada.values()]
     mapa.fit_bounds([[min(latitudes), min(longitudes)], [max(latitudes), max(longitudes)]])
-    _controle_de_camadas_por_ultimo(mapa)
+    # As camadas do trajeto entram depois do controle que o criar_mapa já pôs no mapa.
+    atualizar_controle_camadas(mapa)
     return mapa
-
-
-def _controle_de_camadas_por_ultimo(mapa: folium.Map) -> None:
-    """Move o LayerControl do mapa base para depois das camadas desta página.
-
-    O folium escreve o JavaScript na ordem dos filhos do mapa. O criar_mapa da P0-UI já
-    adiciona o LayerControl; as camadas acrescentadas depois dele seriam citadas pelo
-    controle antes de existirem, e o Leaflet para com "Cannot read properties of undefined
-    (reading 'setZIndex')", sem desenhar o trajeto. O(filhos do mapa).
-    """
-    for nome, filho in list(mapa._children.items()):
-        if isinstance(filho, folium.LayerControl):
-            del mapa._children[nome]
-            mapa._children[nome] = filho
 
 
 def _rotulo_faixa(params: Parametros, nome: str) -> str:
