@@ -282,6 +282,50 @@ até 300 m, uma por vez (B3); G_L do dia ou de uma faixa, com a regra D10 (B4).
 Limitações: conta trocas, não tempo; a G_L não vê horários, a não ser no filtro por faixa;
 caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige reconstruir a G_L.
 
+### 5.4 Centralidades (F-MET)
+
+Quais paradas mais importam para a rede: as com mais ligações (grau) e as por onde passam mais
+caminhos mínimos entre outras paradas (intermediação, os "gargalos").
+
+```python
+from transporte.algoritmos.centralidade import (
+    graus, distribuicao_graus, intermediacao, estimar_intermediacao, ranking)
+
+g = construir_gp(rede).grafo
+r = graus(g, tipos={"viagem"})                  # r.entrada, r.saida
+est = estimar_intermediacao(g, 50, semente=2026, normalizar=True)
+ranking(g, est.valores, 10)                     # [(vértice, valor)], decrescente
+est.erro_padrao                                 # ± de cada parada
+```
+
+**Visão G_P**, porque a pergunta é sobre a parada física; em G_E cada parada vira várias
+plataformas e a centralidade se dividiria entre elas.
+
+**Graus.** Cada aresta utilizável soma 1 na saída da origem e 1 na entrada do destino (M1). A
+página conta só as de viagem: a caminhada liga todas as paradas vizinhas e inflaria o grau.
+
+**Brandes.** bc(v) = soma, sobre os pares (s, t), da fração dos caminhos mínimos de s a t que
+passam por v. Para cada origem s: (1) um Dijkstra que conta σ[v], o número de caminhos mínimos
+de s a v, e guarda os predecessores; (2) do mais distante ao mais próximo, acumula
+δ[v] = Σ σ[v]/σ[w] · (1 + δ[w]) sobre os sucessores w, e bc[v] += δ[v]. Exemplo: 0→1→2→4 e
+0→3→2, pesos 1; de 0 a 2 há dois caminhos (por 1 e por 3), cada um ganha 1/2; bc = [0, 1, 3, 1, 0].
+Peso 0 é recusado (M2), porque estraga a contagem σ; o G_P tem piso de 1 s.
+
+**Amostragem (RNF-06, M5).** O exato faz um Dijkstra por parada, dezenas de minutos no feed
+real. `estimar_intermediacao` usa k origens sorteadas e multiplica por N/k: a média sobre todas
+as amostras possíveis é o valor exato (não viesada). O erro padrão de cada parada é
+N · s_v / √k · √((N − k)/N), com s_v o desvio das k dependências; zera quando k = N.
+
+**Página.** Monta G_P uma vez por rede, calcula a métrica escolhida e mostra o ranking (com
+± erro padrão quando é amostra), a distribuição de graus e o mapa de calor; as intensidades são
+divididas pelo maior valor, porque o Leaflet.heat satura acima de 1.
+
+**Complexidade.** Graus O(V + E). Brandes exato O(V (V + E) log V), sem pesos O(V (V + E));
+amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).
+
+Limitações: G_P não tem espera nem horário (rede estrutural); caminhada em linha reta até
+300 m; a estimativa é mais precisa nas paradas mais centrais do que nas de valor pequeno.
+
 ### 5.6 Falhas e resiliência (F-RES)
 
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
@@ -429,6 +473,12 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Linha circular usa uma plataforma por (parada, padrão) (D11) | É o que a chave do contrato `plataforma[(parada, padrão)]` implica; o passageiro pode dar a volta e seguir no início do padrão (limitação) | Uma plataforma por ocorrência da parada no padrão |
 | 05/11 | RNF-05: a consulta de trajeto responde em até 1 s na rede completa (R4 da F-ROTA) | Na primeira medição (feed real, G_E com 46.100 vértices), a média foi 75,8 ms e o pior caso de 200 consultas 162,2 ms: margem de cerca de 6 vezes para máquina mais lenta e para a página. A construção do G_E fica fora, porque é feita uma vez por faixa | X = 0,5 s, com margem de 3 vezes |
 | 05/11 | `construir_ge` recebe `esperas[(padrão, faixa)]`, a espera de embarque já calculada pela F-ESPERA, e a aplica sem transformação; substitui `intervalos`, de que o construtor tirava H/2 (P0-MODELO) | Calcular a espera é do RF-ESP-02. A versão essencial usa H/2, e a comparação com E[H²]/(2 E[H]), a espera com intervalos irregulares, é resultado a discutir (`modelagem.md`, espera esperada); dividindo H por 2 no construtor, essa comparação exigiria passar E[H²]/E[H] num campo chamado "intervalo". Mudado antes do merge do #38 e antes de a F-ESPERA começar, sem retrabalho | Manter `intervalos` com H/2 no construtor; receber H e a variância |
+| 05/11 | Núcleo: `Resultado(origem, dist, pred, pred_aresta)`, acessores `num_vertices`, `aresta(a)`, `vertice_ativo` etc. e reativação individual (G1 a G3, P0-GRAFO) | Os consumidores leem o tipo das arestas do caminho (baldeações) e percorrem os vértices sem tocar em atributos internos; a F-RES-2 religa um candidato por vez em O(1) | Só `dist` e `pred`; só `reativar_tudo`, O(V + E) a cada candidato |
+| 05/11 | Peso negativo, infinito ou NaN recusado na inserção; desativar é flag; empate no heap pelo menor item (G4 a G6, P0-GRAFO) | O Dijkstra só é correto com pesos ≥ 0; reativar volta exatamente ao estado anterior; caminhos de mesmo custo determinísticos para os gabaritos | Validar dentro do Dijkstra; remover vértices e arestas |
+| 05/11 | Dijkstra com inserção preguiçosa, sem "diminuir chave" (P0-GRAFO) | Mesmo O((V + E) log V) com código menor e sem o mapa vértice → posição no heap; custa espaço O(E) | Heap indexado com diminuir chave |
+| 05/11 | Grau conta arestas, com filtro por tipo; caminhos da intermediação como sequência de vértices (paralelas viram a de menor peso, laços ignorados); normalização opcional, ligada na página (M1, M3 e M4, F-MET) | Definições usuais, comparáveis ao NetworkX; viagem e caminhada entre o mesmo par são uma ligação só; o bruto é mais fácil de explicar e o normalizado compara redes de tamanhos diferentes | Vizinhos distintos; contar cada paralela como caminho distinto |
+| 16/11 | Intermediação por amostragem de k origens, com estimativa (N/k) · soma e erro padrão por parada com correção de população finita (M5, F-MET, RNF-06) | O exato faz um Dijkstra por parada (cerca de 40 min no G_P real); a amostra de origens é não viesada e informa o erro; mesmo formato de estimativa da F-EFI | Amostrar pares (s, t); exato na página |
+| 16/11 | F-MET-2 e F-MET-OPC cortadas pelo congelamento de 15/11; a intermediação amostrada com erro medido contra a exata (RF-MET-05) entrou pela F-MET, por causa do RNF-06 | Regra do calendário: depois de 15/11, só correção; a página essencial (RF-MET-03) ainda faltava | Fazer a proximidade (RF-MET-04) depois do congelamento |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
 | 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
 | 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
@@ -470,6 +520,19 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    paradas distintas é artefato do arredondamento e quebra a contagem de caminhos do Brandes;
    desembarcar não leva tempo e só liga a plataforma à própria parada.
 
+### 4. Núcleo do grafo e heap (P0-GRAFO)
+1. **Por que o heap pode ter o mesmo vértice várias vezes, e por que isso não quebra o
+   Dijkstra?** Em vez de diminuir a chave, inserimos de novo com a distância menor; a entrada
+   antiga sai depois e é descartada porque o vértice já está fechado.
+2. **Por que inserção preguiçosa continua O((V + E) log V)?** O heap recebe no máximo uma
+   entrada por relaxamento bem-sucedido, O(E), e cada operação custa O(log E) ≤ O(2 log V).
+3. **Por que a adjacência guarda o id da aresta?** Para ter peso, tipo e estado num lugar só,
+   permitir arestas paralelas e devolver o id no caminho (a F-ROTA lê o tipo de cada passo).
+4. **Como a F-RES fecha uma parada sem reconstruir o grafo?** Desativa o vértice (um booleano,
+   O(1)); `vizinhos` deixa de devolver as arestas que tocam nele.
+5. **Por que a distância é definitiva quando o vértice sai do heap?** Com pesos não negativos,
+   qualquer outro caminho até ele passa por um vértice ainda no heap, com distância ≥.
+
 ### 5.1 Trajeto mais rápido (F-ROTA)
 1. **Por que um único Dijkstra basta para somar caminhada, espera, viagem e baldeação?** Porque
    em G_E trocar de linha passa por uma aresta de embarque, que pesa a espera da nova linha.
@@ -501,6 +564,20 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    posição mais cedo, e embarcar antes abre trocas que antes não serviam.
 5. **O trajeto devolvido é o mais rápido entre os de menos baldeações?** Não. O critério é só o
    número de baldeações; o tempo a mais em relação ao mais rápido é a F-BALD-2.
+
+### 5.4 Centralidades (F-MET)
+1. **Por que não contar, para cada par, se o caminho mínimo passa por v?** São V² pares e pode
+   haver vários caminhos por par; o Brandes acumula as dependências por origem, com um Dijkstra
+   e uma passada de volta, em O(V (V + E) log V).
+2. **O que é σ[v]?** O número de caminhos mínimos de s a v; σ[v]/σ[w] é a fração dos caminhos
+   até w que passa pelo predecessor v.
+3. **Por que o Brandes ponderado recusa peso 0?** Dois vértices ficariam à mesma distância e a
+   contagem σ sairia errada; o G_P tem piso de 1 s.
+4. **Por que a estimativa com k origens multiplica por N/k, e o que é o "±"?** A soma de k
+   origens é, em média, k/N da soma de todas; o "±" é o erro padrão, quanto a estimativa varia
+   de uma amostra para outra.
+5. **Por que G_P e não G_E?** A pergunta é sobre a parada física; em G_E a parada vira várias
+   plataformas.
 
 ### 5.6 Falhas e resiliência (F-RES)
 1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).
