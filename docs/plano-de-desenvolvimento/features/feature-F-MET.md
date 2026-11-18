@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 16/11, Thiago, branch `feat/F-MET-pagina`.
 - **Onde parou:** etapas 1 a 6 feitas. Algoritmos na `main` desde o #37; nesta branch: `estimar_intermediacao` (amostragem de origens com erro padrão, RNF-06, decisão M5), a página Centralidades (ranking, distribuição de graus e mapa de calor, RF-MET-03), a medição no feed real com o Brandes exato como referência (`benchmarks/medir_centralidade.py`), Como funciona, perguntas, GUIA §5.4, diagrama de atividade, seção do relatório e roteiro. 224 testes de centralidade e 10 da página.
-- **Próximo passo:** revisão do PR desta branch por outro integrante (Refs #10). Antes de 19/11: fazer a captura da página para a figura do relatório e gravar o trecho do vídeo.
+- **Próximo passo:** revisão do PR desta branch por outro integrante (Refs #10). Depois: gravar o trecho do vídeo.
 - **Arquivos tocados:** `src/transporte/algoritmos/centralidade.py`, `src/transporte/interface/paginas/centralidades.py`, `tests/algoritmos/test_centralidade.py`, `tests/interface/test_pagina_centralidades.py`, `benchmarks/medir_centralidade.py`, `benchmarks/resultados/centralidade-2026-11-16.json`, `docs/diagramas/atividade-intermediacao.puml`, `docs/GUIA.md` (§5.4, §8 e §10), `relatorio/secoes/F-MET.tex`, `relatorio/secoes/fundamentacao.tex`, `relatorio/referencias.bib`, este arquivo.
 - **Como testar:** `pytest tests/algoritmos/test_centralidade.py tests/interface/test_pagina_centralidades.py`; `ruff check`; `python scripts/verificar_imports.py`. Página: `streamlit run src/transporte/interface/app.py`, carregar a rede e abrir Centralidades. Medição: `python scripts/baixar_gtfs.py` e `python benchmarks/medir_centralidade.py dados/brutos/bhtrans.zip --exato` (o exato leva cerca de 45 min na primeira vez e fica em `dados/cache/`).
 - **Bloqueios:** nenhum para o merge.
@@ -32,7 +32,7 @@ Centralidades. Fecha:
 | Testes | concluído | 16/11: 224 de centralidade e 10 da página; 05/11: 190 verdes; gabarito à mão, casos de borda (paralelas, laços, peso 0, desativação, grafos triviais) e comparação com o NetworkX (graus, graus por tipo, intermediação com e sem pesos, normalizada ou não) em grafos aleatórios com falhas; teste de mutação: sem a contagem de caminhos empatados, 32 testes falham |
 | Desempenho (tempo medido) | concluído | 16/11: ver Resultados |
 | Guia (explicação e quiz) | concluído | 16/11: Como funciona, perguntas e GUIA §5.4, §8 e §10 |
-| Relatório | parcial | 16/11: `relatorio/secoes/F-MET.tex` e algoritmos na Fundamentação; falta a captura da página para a figura |
+| Relatório | concluído | 16/11: `relatorio/secoes/F-MET.tex` e algoritmos na Fundamentação; 18/11: figura da página no feed real (`relatorio/figuras/centralidades.jpg`) |
 | Vídeo | parcial | 16/11: roteiro escrito; falta gravar |
 
 ## Especificação
@@ -86,7 +86,7 @@ Exemplo (o da fixture dos testes): 0→1→2→4 e 0→3→2, todos com peso 1. 
 
 **Amostragem (RNF-06; decisão M5).** O exato faz um Dijkstra por parada: no G_P real, cerca de 0,26 s por origem, ou 40 min no total, impraticável na página. `estimar_intermediacao(g, k, semente)` soma as dependências de só k origens sorteadas sem reposição e multiplica por N/k. Como cada origem tem a mesma chance de entrar, a média dessa estimativa sobre todas as amostras possíveis é exatamente o valor exato (não viesada; há teste que confere isso enumerando todas as amostras). Para informar o erro, guarda também a soma dos quadrados das dependências: o erro padrão de cada parada é N · s_v / √k · √((N − k)/N), com s_v o desvio amostral das k dependências e (N − k)/N a correção de população finita, que zera o erro quando k = N. É a amostragem de origens de Brandes e Pich (2007).
 
-**Ranking e mapa (RF-MET-03).** `ranking` ordena por valor decrescente, empate pelo menor id. A página monta G_P uma vez por rede (guardado na sessão), calcula a métrica escolhida e mostra a tabela das k mais centrais (com ± erro padrão quando é amostra), a distribuição de graus e o mapa de calor. O mapa usa o componente da P0-UI; as intensidades são divididas pelo maior valor, porque o Leaflet.heat satura acima de 1 e a intermediação chega a milhões.
+**Ranking e mapa (RF-MET-03).** `ranking` ordena por valor decrescente, empate pelo menor id. A página monta G_P uma vez por rede (guardado na sessão), calcula a métrica escolhida e mostra a tabela das k mais centrais (com ± erro padrão quando é amostra), a distribuição de graus e o mapa de calor. O mapa usa o mapa base da P0-UI com uma camada de calor própria: as intensidades são divididas pelo maior valor (o Leaflet.heat satura acima de 1 e a intermediação chega a milhões), e só entram as 10 % de paradas mais centrais (acima do percentil 90, `mais_centrais`), com raio de 12 px. O Leaflet.heat soma a opacidade das paradas vizinhas: com todas as 9.660 paradas e o raio padrão de 25 px, a captura de 18/11 mostrou o mapa inteiro saturado, sem informação. Com o corte, aparecem os corredores (Antônio Carlos, Anel Rodoviário, Centro) na intermediação e o hipercentro no grau.
 
 **Complexidade e por quê.** Graus: O(V + E), cada aresta vista uma vez. Distribuição: O(V + D log D), D graus distintos. Brandes exato ponderado: V Dijkstras, O(V (V + E) log V); sem pesos, BFS, O(V (V + E)). A fase 2 custa O(V + E) por origem (cada predecessor guardado é uma aresta). Espaço O(V + E): a adjacência simplificada é montada uma vez, e as listas de uma origem são descartadas antes da próxima. Amostrado com k origens: O(k (V + E) log V), k/N do exato. Ranking: O(V log V) pela ordenação.
 
@@ -125,7 +125,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (`atividade-intermediacao.puml` e `.png`, PlantUML 1.2026.9)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (texto, resultado e limitação prontos; falta a captura da página para a figura)
+- [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (figura: captura da página no feed real, 18/11)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
 
@@ -137,7 +137,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 16/11 (G_P do feed real) |
 | 4 | Página na interface | concluída em 16/11 |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 16/11 |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 16/11 (PNG do diagrama em 18/11), menos a captura da página |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída (16/11; PNG do diagrama e figura do relatório em 18/11) |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -178,7 +178,8 @@ Rascunho de 16/11 (Thiago revisa e grava):
 - ~~**Peso 0 no G_P (Henrique, P0-MODELO)**~~ **resolvido em 05/11:** piso de 1 s nas arestas de G_P e G_E (`Parametros.peso_minimo_s`, GUIA §8).
 - ~~**Página e mapa de calor (RF-MET-03)**~~ **feito em 16/11** (página Centralidades).
 - ~~**PNG do diagrama**~~ **feito em 18/11:** `docs/diagramas/atividade-intermediacao.png`, gerado com o PlantUML 1.2026.9.
-- **Figura do relatório:** captura da página com o ranking e o mapa de calor no feed real, em `relatorio/figuras/`, no lugar do `\pendente` de `F-MET.tex`.
+- ~~**Figura do relatório**~~ **feito em 18/11:** `relatorio/figuras/centralidades.jpg`, captura da página no app real (Edge headless; intermediação com 50 origens). A captura revelou o mapa de calor saturado, corrigido na mesma data (só as 10 % mais centrais, raio menor).
+- **P0-UI (Arthur), mapa de calor:** o `criar_mapa(intensidades=...)` usa os valores padrão do Leaflet.heat (raio 25, opacidade mínima 0,5) e satura com milhares de paradas; a F-MET passou a montar a própria camada. Se outra página usar `intensidades` com a rede inteira, vale o mesmo cuidado.
 - **Teste da `main` que depende do feed (avisar Arthur e Miguel):** `tests/interface/test_integracao_dados.py::test_app_test_carrega_o_feed_e_renderiza_o_widget_do_mapa` clica no primeiro conjunto de dados da lista; com `dados/brutos/bhtrans.zip` baixado, ele vem antes de `dados/rede-teste`, o teste carrega o feed real (cerca de 54 s, acima do timeout de 30 s, e outro dia de serviço) e falha. Não é desta feature; sugestão: fixar `listar_fontes` na rede de teste, como os outros testes do arquivo.
 - **Download do feed (Miguel):** `scripts/baixar_gtfs.py` usa `--max-time 120` no curl; em 16/11 foi preciso 900 s, como o Rafael já registrou em 11/11.
 - **F-EFI (Arthur):** a `estimar_eficiencia_global` do #52 usa o mesmo formato de estimativa (valor, erro padrão, amostra, população); manter os dois alinhados.
@@ -199,3 +200,4 @@ Rascunho de 16/11 (Thiago revisa e grava):
 ### PR 05/11/2026: #37 aberto para revisão do Henrique (Refs #10).
 ### Sessão 16/11/2026: branch `feat/F-MET-pagina`. `estimar_intermediacao` (amostragem de origens com erro padrão, RNF-06, decisão M5) com 34 testes novos (224 no arquivo); página Centralidades (RF-MET-03) com 10 testes; medição no feed real com o Brandes exato como referência (44 min) e o erro das amostras; Como funciona, perguntas, GUIA, diagrama de atividade, seção do relatório e roteiro. F-MET-2 e F-MET-OPC cortadas pelo congelamento.
 ### Sessão 18/11/2026: rebase do PR #54 sobre a `main` (revisão do Rafael: GUIA com 5.3, 5.4 e 5.6; `$G_P$` e `$G_E$` na Implementação); PNG do diagrama de atividade gerado com o PlantUML 1.2026.9.
+### Sessão 18/11/2026: captura da página no feed real para a figura do relatório; ela mostrou o mapa de calor saturado, corrigido com a camada própria (`mais_centrais`, raio 12) e 4 testes novos; título do ranking com "Brandes" em maiúscula.

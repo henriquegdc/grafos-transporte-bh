@@ -13,8 +13,16 @@ parada física: em $G_E$ a parada vira várias plataformas e a centralidade se d
 entre elas. O grau conta só as arestas de viagem, porque a caminhada de até 300~m ligaria
 todas as paradas vizinhas.
 
-\pendente{Figura: tela da página Centralidades com o ranking e o mapa de calor (captura a
-fazer pelo Thiago).}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.55\linewidth]{centralidades}
+\caption{Página Centralidades no feed real: intermediação estimada com 50 origens, ranking
+com o erro padrão e mapa de calor dos 10\% de paradas mais centrais. Os círculos são as dez
+primeiras, na Avenida Presidente Antônio Carlos e no Anel Rodoviário.}
+\label{fig:centralidades}
+\end{figure}
+
+A Figura~\ref{fig:centralidades} mostra a página no feed real.
 
 Os graus custam $O(V + E)$. O Brandes faz um Dijkstra com contagem de caminhos mínimos
 por origem e uma passada de volta acumulando dependências, em $O(V(V + E)\log V)$. A
