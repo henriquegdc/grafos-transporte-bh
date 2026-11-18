@@ -11,10 +11,10 @@
 ## Retomada
 - **Última sessão:** 16/11, Thiago, branch `feat/F-MET-pagina` (fechamento do DoD do núcleo junto com a F-MET).
 - **Onde parou:** código na `main` desde o #35 e o #36 (aprovados pelo Henrique). Em 16/11: tempo medido no feed real (`benchmarks/medir_nucleo.py`, Dijkstra igual ao NetworkX em G_P e G_E), Como funciona e por quê com a justificativa das complexidades, perguntas de verificação, GUIA §4, diagrama de sequência do Dijkstra (fonte), parágrafo do núcleo na Implementação e algoritmos na Fundamentação do relatório, roteiro do vídeo.
-- **Próximo passo:** revisão do PR da `feat/F-MET-pagina` (Refs #2). Depois: gerar `docs/diagramas/sequencia-dijkstra.png` com o PlantUML 1.2026.9 e gravar o trecho do vídeo.
+- **Próximo passo:** revisão do PR da `feat/F-MET-pagina` (Refs #2). Depois: gravar o trecho do vídeo.
 - **Arquivos tocados:** `benchmarks/medir_nucleo.py`, `benchmarks/resultados/nucleo-2026-11-16.json`, `docs/diagramas/sequencia-dijkstra.puml`, `docs/GUIA.md` (§4, §8 e §10), `relatorio/secoes/implementacao.tex`, `relatorio/secoes/fundamentacao.tex`, este arquivo. Código do núcleo sem mudança.
 - **Como testar:** `pytest tests/grafo` (187 testes); `ruff check`. Medição: `python scripts/baixar_gtfs.py` e `python benchmarks/medir_nucleo.py dados/brutos/bhtrans.zip`.
-- **Bloqueios:** nenhum. O PNG do diagrama depende do jar do PlantUML, fora do Git.
+- **Bloqueios:** nenhum.
 
 ## Objetivo
 Núcleo de grafos, heap e buscas. Fecha:
@@ -98,7 +98,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real: não aplicável, o núcleo não tem tela própria; todas as páginas o usam
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (fonte `sequencia-dijkstra.puml` pronta; falta o PNG)
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (`sequencia-dijkstra.puml` e `.png`, PlantUML 1.2026.9)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [x] O revisor do PR consegue explicar o que o código faz (Henrique, #35 e #36)
 - [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação: para a fundação, o núcleo entra em `implementacao.tex` (resultado e limitação; a figura de componentes já está lá) e os algoritmos em `fundamentacao.tex`
@@ -113,7 +113,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | concluída: usado pelos construtores desde o #38; medido no feed real em 16/11 |
 | 4 | Página na interface | não aplicável (sem tela própria) |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 16/11 |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 16/11, menos o PNG do diagrama |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 16/11 (PNG do diagrama em 18/11) |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -144,7 +144,7 @@ Rascunho de 16/11 (Thiago revisa e grava):
 ## Pendências
 - ~~**Avisar o grupo dos acréscimos ao contrato do §9 (G1 a G3)**~~ **feito em 05/11/2026:** grupo avisado e acréscimos aceitos pelo Henrique na revisão do PR #35. Continua aberto, para decisão do grupo: o §9 do `plano-de-projeto.md` passar a apontar para `src/transporte/grafo/` como contrato vigente (o Henrique concorda; `docs/fontes/` não muda por conta própria).
 - ~~**Confirmar com o Henrique (P0-MODELO)**~~ **confirmado em 05/11/2026 (revisão do PR #35):** `caminho_arestas` atende `VisaoGE.baldeacoes`; ele atualiza o `Resultado` no `classes.puml` e trata tempo negativo do GTFS no construtor antes de `adicionar_aresta` (pendências do P0-MODELO).
-- **PNG do diagrama:** gerar `docs/diagramas/sequencia-dijkstra.png` com o `plantuml-1.2026.9.jar` (fora do Git).
+- ~~**PNG do diagrama**~~ **feito em 18/11:** `docs/diagramas/sequencia-dijkstra.png`, gerado com o PlantUML 1.2026.9.
 - ~~**Ambiente local**~~ **resolvido em 05/11/2026:** Python 3.12.14 com pytest, networkx e ruff em `.venv`, criado com `uv`. O `requirements.txt`, a configuração do pytest e o hook continuam com a P0-REPO (Caio).
 
 ### ~~Decisões a tomar~~ Decididas em 05/11/2026: G1 a G6 propostas pelo Thiago e aceitas pelo Henrique na revisão do PR #35
@@ -168,3 +168,4 @@ Rascunho de 16/11 (Thiago revisa e grava):
 ### Sessão 05/11/2026: ajustes da revisão na branch `fix/P0-GRAFO-ajustes-revisao`: `caminho` e `caminho_arestas` validam o destino (destino negativo devolvia caminho errado sem erro); 9 testes novos, 187 no total.
 ### PR 05/11/2026: #36 aberto com os ajustes da revisão do #35.
 ### Sessão 16/11/2026: fechamento do DoD na branch `feat/F-MET-pagina`: tempo no feed real (Dijkstra igual ao NetworkX em G_P e G_E), Como funciona e por quê, perguntas, GUIA §4, diagrama de sequência do Dijkstra (fonte), núcleo na Implementação e algoritmos na Fundamentação do relatório, roteiro do vídeo.
+### Sessão 18/11/2026: rebase do PR #54 sobre a `main` (revisão do Rafael); PNG do diagrama de sequência do Dijkstra gerado com o PlantUML 1.2026.9.
