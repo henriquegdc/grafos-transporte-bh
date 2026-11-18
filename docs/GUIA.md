@@ -317,8 +317,10 @@ as amostras possíveis é o valor exato (não viesada). O erro padrão de cada p
 N · s_v / √k · √((N − k)/N), com s_v o desvio das k dependências; zera quando k = N.
 
 **Página.** Monta G_P uma vez por rede, calcula a métrica escolhida e mostra o ranking (com
-± erro padrão quando é amostra), a distribuição de graus e o mapa de calor; as intensidades são
-divididas pelo maior valor, porque o Leaflet.heat satura acima de 1.
+± erro padrão quando é amostra), a distribuição de graus e o mapa de calor. No calor, as
+intensidades são divididas pelo maior valor (o Leaflet.heat satura acima de 1) e só entram as
+10 % de paradas mais centrais, com raio menor: o Leaflet.heat soma a opacidade das vizinhas, e
+com as 9.660 paradas o mapa inteiro saturava.
 
 **Complexidade.** Graus O(V + E). Brandes exato O(V (V + E) log V), sem pesos O(V (V + E));
 amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).

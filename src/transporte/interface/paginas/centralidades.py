@@ -17,6 +17,7 @@ from time import perf_counter
 
 import folium
 import streamlit as st
+from folium.plugins import HeatMap
 from streamlit_folium import st_folium
 
 from transporte.algoritmos.centralidade import (
@@ -44,6 +45,14 @@ METRICAS = {
     ENTRADA: "Grau de entrada",
 }
 COR_TOP = "#d62728"
+# Mapa de calor: só a fração mais central das paradas, com raio menor que o padrão do
+# Leaflet.heat (25 px). O Leaflet.heat soma a opacidade das paradas vizinhas; com as
+# 9.660 paradas do feed real e os valores padrão, o mapa inteiro satura (conferido em
+# 18/11 na captura da página).
+FRACAO_CALOR = 0.10
+RAIO_CALOR = 12
+DESFOQUE_CALOR = 10
+OPACIDADE_MINIMA_CALOR = 0.25
 
 
 @dataclass(frozen=True)
@@ -173,16 +182,47 @@ def intensidades(visao: VisaoGP, valores: list[float]) -> dict[str, float]:
     }
 
 
+def mais_centrais(intens: dict[str, float], fracao: float = FRACAO_CALOR) -> dict[str, float]:
+    """Só as paradas com valor acima do percentil (1 - fracao) das intensidades dadas.
+
+    Corte = o valor na posição floor(n * fracao) da lista em ordem decrescente; ficam as
+    paradas estritamente acima dele (empates no corte saem, para o grau, cheio de empates,
+    não trazer metade da rede). Se nenhuma ficar acima (todos iguais, ou rede pequena),
+    ficam as que empatam com o corte.
+    Exemplo: valores 1 a 20 e fracao 0,1: corte = 18, ficam 19 e 20.
+    Complexidade: tempo O(n log n), pela ordenação; espaço O(n).
+    """
+    if not intens:
+        return {}
+    valores = sorted(intens.values(), reverse=True)
+    corte = valores[min(len(valores) - 1, int(len(valores) * fracao))]
+    acima = {p: v for p, v in intens.items() if v > corte}
+    return acima or {p: v for p, v in intens.items() if v >= corte}
+
+
 def mapa_centralidades(
     rede: RedeUI, visao: VisaoGP, calculo: Calculo, k: int
 ) -> folium.Map:
-    """Mapa de calor da métrica e um marcador numerado em cada uma das k mais centrais.
+    """Mapa de calor das paradas mais centrais e um marcador em cada uma das k primeiras.
 
-    Sem a camada de paradas (os marcadores das 9.660 paradas do feed real pesam). O(V + k).
+    Usa o mapa base da P0-UI sem a camada de paradas (os marcadores das 9.660 paradas do
+    feed real pesam) e acrescenta a própria camada de calor, com as `mais_centrais` e os
+    parâmetros FRACAO_CALOR, RAIO_CALOR etc.: com todas as paradas e o raio padrão o calor
+    satura (ver as constantes). O(V log V + k).
     """
-    mapa = criar_mapa(
-        rede, mostrar_paradas=False, intensidades=intensidades(visao, calculo.valores)
-    )
+    mapa = criar_mapa(rede, mostrar_paradas=False)
+    pontos = [
+        (float(rede.paradas[p].lat), float(rede.paradas[p].lon), v)
+        for p, v in mais_centrais(intensidades(visao, calculo.valores)).items()
+    ]
+    if pontos:
+        HeatMap(
+            pontos,
+            name="Mapa de calor",
+            radius=RAIO_CALOR,
+            blur=DESFOQUE_CALOR,
+            min_opacity=OPACIDADE_MINIMA_CALOR,
+        ).add_to(mapa)
     camada = folium.FeatureGroup(name=f"Top {k}")
     for posicao, (v, valor) in enumerate(ranking(visao.grafo, calculo.valores, k), start=1):
         parada_id = visao.parada_do_vertice[v]
@@ -263,7 +303,7 @@ def render(rede: RedeUI) -> None:
     colunas[1].metric("Ligações (E)", g.num_arestas())
     colunas[2].metric("Tempo do cálculo", f"{calculo.segundos:.2f} s")
     st.caption(calculo.descricao)
-    st.subheader(f"Ranking: {METRICAS[calculo.metrica].lower()}")
+    st.subheader(f"Ranking: {METRICAS[calculo.metrica]}")
     st.dataframe(tabela_ranking(rede, visao, calculo, k), hide_index=True, width="stretch")
     if calculo.distribuicao is not None:
         st.subheader("Distribuição de graus")
@@ -273,6 +313,10 @@ def render(rede: RedeUI) -> None:
             y_label="Paradas",
         )
     st.subheader("Mapa de calor")
+    st.caption(
+        f"Calor das {FRACAO_CALOR:.0%} paradas mais centrais (com todas, o mapa satura); "
+        f"círculos vermelhos: as {k} primeiras do ranking."
+    )
     st_folium(
         mapa_centralidades(rede, visao, calculo, k),
         height=550,

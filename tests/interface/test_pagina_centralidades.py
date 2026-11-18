@@ -78,6 +78,35 @@ def test_intensidades_normalizadas_pelo_maior(visao):
     assert pagina.intensidades(visao, [0.0] * 4) == {}
 
 
+def test_mais_centrais_gabarito_percentil():
+    """Valores 1 a 20 (paradas p1..p20), fração 0,1: corte = 3º maior = 18; ficam 19 e 20."""
+    intens = {f"p{i}": float(i) for i in range(1, 21)}
+    assert pagina.mais_centrais(intens, 0.1) == {"p19": 19.0, "p20": 20.0}
+
+
+def test_mais_centrais_empate_no_corte_sai():
+    """Como no grau: muitos empatados no corte não entram, só os estritamente acima."""
+    intens = {"a": 1.0, "b": 0.5, **{f"e{i}": 0.25 for i in range(18)}}
+    # n = 20, posição 2 em ordem decrescente: 0,25; ficam só a e b.
+    assert pagina.mais_centrais(intens, 0.1) == {"a": 1.0, "b": 0.5}
+
+
+def test_mais_centrais_bordas():
+    assert pagina.mais_centrais({}) == {}
+    iguais = {"a": 0.5, "b": 0.5, "c": 0.5}
+    assert pagina.mais_centrais(iguais) == iguais  # ninguém acima: ficam os empatados
+    assert pagina.mais_centrais({"a": 1.0, "b": 0.5}) == {"a": 1.0}
+
+
+def test_mapa_calor_so_com_as_mais_centrais_e_raio_menor(rede, visao):
+    c = pagina.calcular(visao, pagina.SAIDA, so_viagem=True)  # A 2, B 1, C 0, D 0
+    mapa = pagina.mapa_centralidades(rede, visao, c, 2)
+    calor = [f for f in mapa._children.values() if type(f).__name__ == "HeatMap"]
+    assert len(calor) == 1
+    assert len(calor[0].data) == 1  # só A, a mais central
+    assert calor[0].options["radius"] == pagina.RAIO_CALOR
+
+
 def test_mapa_tem_calor_top_e_controle_por_ultimo(rede, visao):
     c = pagina.calcular(visao, pagina.SAIDA, so_viagem=True)
     mapa = pagina.mapa_centralidades(rede, visao, c, 2)
