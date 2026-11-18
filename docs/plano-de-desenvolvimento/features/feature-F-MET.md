@@ -11,10 +11,10 @@
 ## Retomada
 - **Última sessão:** 16/11, Thiago, branch `feat/F-MET-pagina`.
 - **Onde parou:** etapas 1 a 6 feitas. Algoritmos na `main` desde o #37; nesta branch: `estimar_intermediacao` (amostragem de origens com erro padrão, RNF-06, decisão M5), a página Centralidades (ranking, distribuição de graus e mapa de calor, RF-MET-03), a medição no feed real com o Brandes exato como referência (`benchmarks/medir_centralidade.py`), Como funciona, perguntas, GUIA §5.4, diagrama de atividade, seção do relatório e roteiro. 224 testes de centralidade e 10 da página.
-- **Próximo passo:** revisão do PR desta branch por outro integrante (Refs #10). Depois do merge: gerar `docs/diagramas/atividade-intermediacao.png` com o PlantUML 1.2026.9, fazer a captura da página para a figura do relatório e gravar o trecho do vídeo.
+- **Próximo passo:** revisão do PR desta branch por outro integrante (Refs #10). Antes de 19/11: fazer a captura da página para a figura do relatório e gravar o trecho do vídeo.
 - **Arquivos tocados:** `src/transporte/algoritmos/centralidade.py`, `src/transporte/interface/paginas/centralidades.py`, `tests/algoritmos/test_centralidade.py`, `tests/interface/test_pagina_centralidades.py`, `benchmarks/medir_centralidade.py`, `benchmarks/resultados/centralidade-2026-11-16.json`, `docs/diagramas/atividade-intermediacao.puml`, `docs/GUIA.md` (§5.4, §8 e §10), `relatorio/secoes/F-MET.tex`, `relatorio/secoes/fundamentacao.tex`, `relatorio/referencias.bib`, este arquivo.
 - **Como testar:** `pytest tests/algoritmos/test_centralidade.py tests/interface/test_pagina_centralidades.py`; `ruff check`; `python scripts/verificar_imports.py`. Página: `streamlit run src/transporte/interface/app.py`, carregar a rede e abrir Centralidades. Medição: `python scripts/baixar_gtfs.py` e `python benchmarks/medir_centralidade.py dados/brutos/bhtrans.zip --exato` (o exato leva cerca de 45 min na primeira vez e fica em `dados/cache/`).
-- **Bloqueios:** nenhum para o merge. O PNG do diagrama depende do jar do PlantUML, fora do Git.
+- **Bloqueios:** nenhum para o merge.
 
 ## Objetivo
 Centralidades. Fecha:
@@ -122,7 +122,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (fonte `atividade-intermediacao.puml` pronta; falta o PNG)
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (`atividade-intermediacao.puml` e `.png`, PlantUML 1.2026.9)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (texto, resultado e limitação prontos; falta a captura da página para a figura)
@@ -137,7 +137,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 16/11 (G_P do feed real) |
 | 4 | Página na interface | concluída em 16/11 |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 16/11 |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 16/11, menos o PNG do diagrama e a captura da página |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 16/11 (PNG do diagrama em 18/11), menos a captura da página |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -177,7 +177,7 @@ Rascunho de 16/11 (Thiago revisa e grava):
 ## Pendências
 - ~~**Peso 0 no G_P (Henrique, P0-MODELO)**~~ **resolvido em 05/11:** piso de 1 s nas arestas de G_P e G_E (`Parametros.peso_minimo_s`, GUIA §8).
 - ~~**Página e mapa de calor (RF-MET-03)**~~ **feito em 16/11** (página Centralidades).
-- **PNG do diagrama:** gerar `docs/diagramas/atividade-intermediacao.png` com o `plantuml-1.2026.9.jar` (fora do Git, `*.jar` no `.gitignore`).
+- ~~**PNG do diagrama**~~ **feito em 18/11:** `docs/diagramas/atividade-intermediacao.png`, gerado com o PlantUML 1.2026.9.
 - **Figura do relatório:** captura da página com o ranking e o mapa de calor no feed real, em `relatorio/figuras/`, no lugar do `\pendente` de `F-MET.tex`.
 - **Teste da `main` que depende do feed (avisar Arthur e Miguel):** `tests/interface/test_integracao_dados.py::test_app_test_carrega_o_feed_e_renderiza_o_widget_do_mapa` clica no primeiro conjunto de dados da lista; com `dados/brutos/bhtrans.zip` baixado, ele vem antes de `dados/rede-teste`, o teste carrega o feed real (cerca de 54 s, acima do timeout de 30 s, e outro dia de serviço) e falha. Não é desta feature; sugestão: fixar `listar_fontes` na rede de teste, como os outros testes do arquivo.
 - **Download do feed (Miguel):** `scripts/baixar_gtfs.py` usa `--max-time 120` no curl; em 16/11 foi preciso 900 s, como o Rafael já registrou em 11/11.
@@ -198,3 +198,4 @@ Rascunho de 16/11 (Thiago revisa e grava):
 ### Sessão 05/11/2026: etapa 2, graus, distribuição, Brandes e ranking implementados com 190 testes verdes; RF-MET-01 e RF-MET-02 atendidos.
 ### PR 05/11/2026: #37 aberto para revisão do Henrique (Refs #10).
 ### Sessão 16/11/2026: branch `feat/F-MET-pagina`. `estimar_intermediacao` (amostragem de origens com erro padrão, RNF-06, decisão M5) com 34 testes novos (224 no arquivo); página Centralidades (RF-MET-03) com 10 testes; medição no feed real com o Brandes exato como referência (44 min) e o erro das amostras; Como funciona, perguntas, GUIA, diagrama de atividade, seção do relatório e roteiro. F-MET-2 e F-MET-OPC cortadas pelo congelamento.
+### Sessão 18/11/2026: rebase do PR #54 sobre a `main` (revisão do Rafael: GUIA com 5.3, 5.4 e 5.6; `$G_P$` e `$G_E$` na Implementação); PNG do diagrama de atividade gerado com o PlantUML 1.2026.9.
