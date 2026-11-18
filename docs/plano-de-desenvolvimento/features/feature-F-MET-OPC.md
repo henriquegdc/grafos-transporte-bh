@@ -25,13 +25,13 @@ Comunidades. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | cortado | 16/11: congelamento do código em 15/11 |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
+| Modelo e dados | não aplicável | feature cortada pelo congelamento (16/11) |
+| Interface | não aplicável | feature cortada pelo congelamento (16/11) |
+| Testes | não aplicável | feature cortada pelo congelamento (16/11) |
+| Desempenho (tempo medido) | não aplicável | feature cortada pelo congelamento (16/11) |
+| Guia (explicação e quiz) | não aplicável | feature cortada pelo congelamento (16/11) |
+| Relatório | não aplicável | feature cortada pelo congelamento (16/11) |
+| Vídeo | não aplicável | feature cortada pelo congelamento (16/11) |
 
 ## Especificação
 Assinaturas públicas: a definir na etapa 1 do plano de implementação e publicadas com `estado: planejado` antes de qualquer consumidor depender delas.
@@ -46,10 +46,12 @@ _A escrever a cada etapa concluída do plano de implementação, para um colega 
 _3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
 ## Critérios de aceite
-- [ ] RF-MET-06: Detectar comunidades por propagação de rótulos
+- [ ] RF-MET-06: Detectar comunidades por propagação de rótulos (não feito: cortado pelo congelamento)
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
+
+**Não aplicável: feature cortada pelo congelamento de 15/11** (ver Retomada); os itens abaixo ficam em aberto de propósito.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
 - [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde

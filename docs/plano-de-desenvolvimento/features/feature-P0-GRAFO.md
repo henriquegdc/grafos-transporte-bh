@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 16/11, Thiago, branch `feat/F-MET-pagina` (fechamento do DoD do núcleo junto com a F-MET).
 - **Onde parou:** código na `main` desde o #35 e o #36 (aprovados pelo Henrique). Em 16/11: tempo medido no feed real (`benchmarks/medir_nucleo.py`, Dijkstra igual ao NetworkX em G_P e G_E), Como funciona e por quê com a justificativa das complexidades, perguntas de verificação, GUIA §4, diagrama de sequência do Dijkstra (fonte), parágrafo do núcleo na Implementação e algoritmos na Fundamentação do relatório, roteiro do vídeo.
-- **Próximo passo:** revisão do PR da `feat/F-MET-pagina` (Refs #2). Depois: gravar o trecho do vídeo.
+- **Próximo passo:** aprovação e merge do PR #54 (`feat/F-MET-pagina`, Closes #2); gravar o trecho do vídeo (prazo dos trechos: 18/11, plano-de-projeto §14.4).
 - **Arquivos tocados:** `benchmarks/medir_nucleo.py`, `benchmarks/resultados/nucleo-2026-11-16.json`, `docs/diagramas/sequencia-dijkstra.puml`, `docs/GUIA.md` (§4, §8 e §10), `relatorio/secoes/implementacao.tex`, `relatorio/secoes/fundamentacao.tex`, este arquivo. Código do núcleo sem mudança.
 - **Como testar:** `pytest tests/grafo` (187 testes); `ruff check`. Medição: `python scripts/baixar_gtfs.py` e `python benchmarks/medir_nucleo.py dados/brutos/bhtrans.zip`.
 - **Bloqueios:** nenhum.
