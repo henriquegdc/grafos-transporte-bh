@@ -162,7 +162,7 @@ real com as esperas da F-ESPERA (18/11, `feature-F-ROTA.md`), no G_E com V = 46.
 E = 209.025: 65,9 ms por consulta em média e 129,6 ms no pior caso de 200 consultas, tempo
 mediano de 61,1 min e 0 divergências contra o NetworkX.
 
-**A página Trajetos** (`interface/paginas/trajetos.py`, `docs/diagramas/sequencia-trajetos-pagina.puml`)
+**A página Trajetos** (`interface/paginas/trajetos.py`, `docs/diagramas/sequencia-trajetos-pagina.png`)
 monta o G_E de cada faixa uma vez por sessão, com as esperas da F-ESPERA, e mostra as métricas
 (tempo total, a pé, espera, ônibus, baldeações), a tabela de trechos e o mapa com cada trecho
 numa camada. A origem e o destino vêm de uma lista de paradas ou de um ponto no mapa (F-ROTA-2,

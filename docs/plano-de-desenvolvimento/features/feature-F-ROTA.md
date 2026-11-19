@@ -11,8 +11,8 @@
 ## Retomada
 - **Última sessão:** 18/11/2026, Henrique, branch `feat/F-ROTA-trajetos` (PR #57) (junto com F-ROTA-2 e F-ROTA-OPC): página Trajetos (RF-ROT-02), teste de integração na rede de teste, nova medição com as esperas da F-ESPERA, seção do relatório, GUIA e diagrama da página.
 - **Onde parou:** todas as etapas feitas; falta o PR ser aprovado e integrado. Página conferida no navegador pelo dono com o feed real em 18/11.
-- **Próximo passo:** revisão do PR por outro integrante; depois do merge, marcar a feature como concluída. Gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml` (o agente não pôde baixar o PlantUML).
-- **Arquivos tocados (18/11):** `src/transporte/interface/paginas/trajetos.py`, `tests/interface/test_pagina_trajetos.py`, `tests/algoritmos/test_integracao_trajeto_rede_teste.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajetos-pagina.puml`, `docs/GUIA.md` §5.1, §5.7, §8 e §10, `relatorio/secoes/F-ROTA.tex`, `relatorio/figuras/trajetos-mapa.jpg`, este arquivo.
+- **Próximo passo:** revisão do PR por outro integrante; depois do merge, marcar a feature como concluída.
+- **Arquivos tocados (18/11):** `src/transporte/interface/paginas/trajetos.py`, `tests/interface/test_pagina_trajetos.py`, `tests/algoritmos/test_integracao_trajeto_rede_teste.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajetos-pagina.{puml,png}`, `docs/GUIA.md` §5.1, §5.7, §8 e §10, `relatorio/secoes/F-ROTA.tex`, `relatorio/figuras/trajetos-mapa.jpg`, este arquivo.
 - **Como testar:** `pytest` (801 verdes sem o feed em `dados/brutos/`; com o feed, `tests/interface/test_integracao_dados.py` falha por depender da fonte escolhida, teste de outro dono); `ruff check`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip`. Navegador: `streamlit run src/transporte/interface/app.py`, página Trajetos.
 - **Bloqueios:** nenhum.
 
@@ -101,7 +101,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (05/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (05/11)
 - [x] Página ou bloco na interface funcionando com o dataset real (18/11, conferida no navegador)
-- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (05/11: `sequencia-trajeto`; 18/11: `sequencia-trajetos-pagina.puml`, PNG pendente)
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (05/11: `sequencia-trajeto`; 18/11: `sequencia-trajetos-pagina.{puml,png}`)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (05/11; atualizado em 18/11)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (18/11)
@@ -116,7 +116,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 18/11 (teste na rede de teste com as esperas da F-ESPERA) |
 | 4 | Página na interface | concluída em 18/11 (AppTest e navegador com o feed real) |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 05/11; medida de novo com as esperas em 18/11 |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 18/11 (falta só o PNG do diagrama da página) |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 18/11 |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -172,7 +172,6 @@ Atualizado em 18/11 (Henrique revisa):
 - ~~**Script de medição:** `benchmarks/medir_modelo_rota.py` importa `transporte.dados`, que chega com o PR #42.~~ **feito:** o #42 está na `main`; o script rodou da branch sobre a `main` em 18/11.
 - ~~**Espera real:** refazer a medição de tempo total e baldeações quando a F-ESPERA publicar a tabela de esperas.~~ **feito em 18/11:** ver Resultados.
 - **PR:** aprovação de outro integrante; avisar que é código novo depois do congelamento de 15/11.
-- **PNG do diagrama** `sequencia-trajetos-pagina` a gerar com o PlantUML.
 - **Para o Arthur ou o Miguel:** `tests/interface/test_integracao_dados.py:59` espera o dia 2026-11-04 da rede de teste, mas com o feed em `dados/brutos/` o app escolhe `bhtrans.zip` e o teste falha. Sugestão: fixar `listar_fontes` com monkeypatch no teste.
 - **Para o dono do `implementacao.tex`:** `G_P` e `G_E` fora do modo matemático na linha 11 interrompem a compilação do relatório ("Missing $ inserted").
 - **Para o Arthur (cosmético):** nos nomes das camadas do mapa (`mapa.py`), tempos abaixo de 60 s saem crus, como "29.4047 s".

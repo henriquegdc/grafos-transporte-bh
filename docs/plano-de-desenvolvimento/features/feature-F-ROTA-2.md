@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 18/11/2026 (Henrique, com agente).
 - **Onde parou:** código, testes e medições prontos na branch `feat/F-ROTA-trajetos` (PR #57), ainda sem commit; decisão do A* registrada em Resultados. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
-- **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-OPC) e merge; gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml`. GUIA §5.7.1, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
+- **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-OPC) e merge. GUIA §5.7.1, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
 - **Arquivos tocados:** `src/transporte/algoritmos/a_estrela.py`, `src/transporte/interface/paginas/trajetos.py`, `tests/algoritmos/test_a_estrela.py`, `tests/interface/test_pagina_trajetos.py`, `benchmarks/medir_rota_extensoes.py`.
 - **Como testar:** `pytest tests/algoritmos/test_a_estrela.py tests/interface/test_pagina_trajetos.py`; medição: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`; navegador: `streamlit run src/transporte/interface/app.py`, página Trajetos.
 - **Bloqueios:** nenhum.
@@ -104,7 +104,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real, registrado no arquivo da feature com V, E e a máquina (18/11, com `perf_counter` por consulta no script, como a comparação pede expandidos e tempo da mesma execução)
 - [x] Página ou bloco na interface funcionando com o dataset real (18/11)
-- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (18/11: `sequencia-trajetos-pagina.puml`, compartilhado com F-ROTA e F-ROTA-OPC; PNG pendente)
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (18/11: `sequencia-trajetos-pagina.{puml,png}`, compartilhado com F-ROTA e F-ROTA-OPC)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (18/11, §5.7.1)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório, com figura, resultado e limitação (18/11: dentro de `relatorio/secoes/F-ROTA.tex`, que tem a figura da página)
@@ -119,7 +119,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | Feita (18/11) |
 | 4 | Página na interface | Feita (18/11): AppTest e conferência no navegador com o feed real |
 | 5 | Tempo medido na rede real e complexidade justificada | Feita (18/11) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Feita (18/11); falta só o PNG do diagrama |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Feita (18/11) |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -158,7 +158,6 @@ Rascunho de 18/11 (Henrique revisa):
 4. **Resultado e limitação (30 s):** mesmo custo do Dijkstra em 200 de 200 pares, mas 99,7% dos vértices expandidos e mais lento: trechos de 1 s no GTFS dão velocidade máxima de 1.258 m/s, e a h não vê as esperas. Uma velocidade realista podaria mais, mas perderia a garantia de ótimo.
 
 ## Pendências
-- PNG do diagrama `sequencia-trajetos-pagina`.
 - PR (junto com F-ROTA e F-ROTA-OPC), avisando o grupo de que é código novo depois do congelamento de 15/11.
 - Trabalho futuro, fora deste trabalho: interpolar no P0-MODELO os horários repetidos do GTFS, o que baixaria o vmax e daria ganho real ao A*.
 

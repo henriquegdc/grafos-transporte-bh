@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 18/11/2026 (Henrique, com agente).
 - **Onde parou:** código, testes e medição prontos na branch `feat/F-ROTA-trajetos` (PR #57), ainda sem commit. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
-- **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-2) e merge; gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml`. GUIA §5.7.2, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
+- **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-2) e merge. GUIA §5.7.2, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
 - **Arquivos tocados:** `src/transporte/algoritmos/alternativos.py`, seção de alternativos em `src/transporte/interface/paginas/trajetos.py`, `tests/algoritmos/test_alternativos.py`, `benchmarks/medir_rota_extensoes.py`.
 - **Como testar:** `pytest tests/algoritmos/test_alternativos.py tests/interface/test_pagina_trajetos.py`; medição: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`.
 - **Bloqueios:** nenhum.
@@ -95,7 +95,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real, registrado no arquivo da feature com V, E e a máquina (18/11, com `perf_counter` por consulta no script: cada consulta leva segundos e a distribuição importa mais que a média)
 - [x] Página ou bloco na interface funcionando com o dataset real (18/11)
-- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (18/11: `sequencia-trajetos-pagina.puml`, bloco "opt" do Yen; PNG pendente)
+- [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (18/11: `sequencia-trajetos-pagina.{puml,png}`, bloco "opt" do Yen)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (18/11, §5.7.2)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório, com figura, resultado e limitação (18/11: dentro de `relatorio/secoes/F-ROTA.tex`, que tem a figura da página)
@@ -110,7 +110,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | Feita (18/11) |
 | 4 | Página na interface | Feita (18/11): AppTest e conferência no navegador com o feed real |
 | 5 | Tempo medido na rede real e complexidade justificada | Feita (18/11) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Feita (18/11); falta só o PNG do diagrama |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Feita (18/11) |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -136,7 +136,6 @@ Rascunho de 18/11 (Henrique revisa):
 4. **Resultado e limitação (30 s):** mediana de 2,3 s com k = 3 e 4,6 s com k = 5, até 25 s; por isso só no botão. Limitação: alternativos podem ser variações pequenas do mesmo trajeto.
 
 ## Pendências
-- PNG do diagrama `sequencia-trajetos-pagina`.
 - PR (junto com F-ROTA e F-ROTA-2), avisando o grupo de que é código novo depois do congelamento de 15/11.
 
 ## Timeline
