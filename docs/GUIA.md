@@ -372,6 +372,49 @@ amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).
 Limitações: G_P não tem espera nem horário (rede estrutural); caminhada em linha reta até
 300 m; a estimativa é mais precisa nas paradas mais centrais do que nas de valor pequeno.
 
+### 5.5 Eficiência da rede (F-EFI)
+
+A eficiência estrutural usa G_P, um vértice por parada e pesos em segundos. Para cada origem,
+uma busca Dijkstra calcula as distâncias aos destinos; a contribuição é a soma de `1/d` para
+os outros vértices. A eficiência é a média das contribuições sobre os pares ordenados, sem
+pares de uma parada para ela mesma. Um destino inalcançável contribui zero.
+
+```python
+from transporte.algoritmos.eficiencia import (
+    eficiencia_global,
+    estimar_eficiencia_global,
+)
+
+valor_exato = eficiencia_global(gp.grafo)
+estimativa = estimar_eficiencia_global(gp.grafo, tamanho_amostra=100, semente=2026)
+estimativa.valor, estimativa.erro_padrao
+```
+
+`eficiencia_global(g, origens=None, n_referencia=None)` é a API compartilhada com a F-RES:
+aceita uma lista de origens e mantém uma população original fixa no denominador quando há
+vértices desativados. A amostra de origens é uniforme, sem reposição. O erro padrão da média
+amostrada usa a variância amostral das contribuições e a correção de população finita.
+
+O tempo médio de viagem usa G_E, mas apenas os vértices de paradas. Cada par ordenado distinto
+é amostrado sem reposição; para cada origem sorteada, um Dijkstra fornece os tempos aos destinos.
+O peso do caminho tem o significado usado em F-ROTA: caminhada, espera esperada da faixa e
+viagem de ônibus. Pares sem trajeto são contados separadamente e não entram como viagens de
+duração zero. O erro padrão é calculado sobre os tempos alcançáveis; em amostra incompleta com
+menos de duas viagens alcançáveis, ele não é estimável. Como o tamanho total da população
+alcançável não é conhecido sem avaliar todos os pares, a estimativa do erro não aplica correção
+para população finita. Com todos os pares OD avaliados e ao menos uma viagem alcançável, o erro
+é zero; sem viagem alcançável, valor e erro são `None`. Amostra e semente ficam visíveis na
+página para repetição.
+
+G_P foi escolhido para a eficiência estrutural, também para compartilhar a métrica com a F-RES.
+Não se aplica `1/d` a todos os vértices de G_E: as plataformas têm arestas de desembarque de
+peso zero, que tornariam a eficiência infinita. G_E é usado para os tempos entre paradas, sem
+incluir plataformas como origens ou destinos.
+
+Limitações: o tempo médio é condicional aos pares alcançáveis na amostra; a página
+utiliza a primeira faixa horária disponível, portanto os resultados
+de tempo dependem dessa faixa.
+
 ### 5.6 Falhas e resiliência (F-RES)
 
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
@@ -395,6 +438,8 @@ r.paradas_isoladas, r.perda_eficiencia
 **No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência; cada simulação com 100 origens leva de 18 a 26 s.
 
 Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A `eficiencia_global` daqui é provisória até a da F-EFI entrar, que tem a mesma assinatura.
+
+
 
 ## 6. Interface (Arthur)
 
@@ -523,6 +568,8 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Peso negativo, infinito ou NaN recusado na inserção; desativar é flag; empate no heap pelo menor item (G4 a G6, P0-GRAFO) | O Dijkstra só é correto com pesos ≥ 0; reativar volta exatamente ao estado anterior; caminhos de mesmo custo determinísticos para os gabaritos | Validar dentro do Dijkstra; remover vértices e arestas |
 | 05/11 | Dijkstra com inserção preguiçosa, sem "diminuir chave" (P0-GRAFO) | Mesmo O((V + E) log V) com código menor e sem o mapa vértice → posição no heap; custa espaço O(E) | Heap indexado com diminuir chave |
 | 05/11 | Grau conta arestas, com filtro por tipo; caminhos da intermediação como sequência de vértices (paralelas viram a de menor peso, laços ignorados); normalização opcional, ligada na página (M1, M3 e M4, F-MET) | Definições usuais, comparáveis ao NetworkX; viagem e caminhada entre o mesmo par são uma ligação só; o bruto é mais fácil de explicar e o normalizado compara redes de tamanhos diferentes | Vizinhos distintos; contar cada paralela como caminho distinto |
+| 15/11 | F-EFI usa G_P para eficiência global estrutural e G_E somente para o tempo médio entre paradas; pares ordenados, sem auto-pares; inalcançáveis somam zero na eficiência e são excluídos da média de tempo | G_P tem unidades de tempo sem as plataformas de custo zero de G_E; o custo total de G_E preserva a semântica de `Trajeto.tempo_total_s` da F-ROTA | Calcular eficiência sobre todos os nós de G_E; tratar viagem inexistente como duração zero |
+| 15/11 | Amostras de origem e de pares são uniformes sem reposição e têm semente explícita; o erro informado é erro padrão amostral | Evita duplicar observações por sorteio; permite repetição determinística e reporta dispersão da média sem inventar um nível de confiança | Amostragem não reproduzível ou intervalo de confiança com nível não especificado |
 | 16/11 | Intermediação por amostragem de k origens, com estimativa (N/k) · soma e erro padrão por parada com correção de população finita (M5, F-MET, RNF-06) | O exato faz um Dijkstra por parada (cerca de 40 min no G_P real); a amostra de origens é não viesada e informa o erro; mesmo formato de estimativa da F-EFI | Amostrar pares (s, t); exato na página |
 | 16/11 | F-MET-2 e F-MET-OPC cortadas pelo congelamento de 15/11; a intermediação amostrada com erro medido contra a exata (RF-MET-05) entrou pela F-MET, por causa do RNF-06 | Regra do calendário: depois de 15/11, só correção; a página essencial (RF-MET-03) ainda faltava | Fazer a proximidade (RF-MET-04) depois do congelamento |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
@@ -642,6 +689,18 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    de uma amostra para outra.
 5. **Por que G_P e não G_E?** A pergunta é sobre a parada física; em G_E a parada vira várias
    plataformas.
+
+### 5.5 Eficiência da rede (F-EFI)
+1. **Por que a eficiência global usa G_P?** Para medir a estrutura entre paradas sem incluir
+   plataformas nem arestas de desembarque de peso zero; isso também alinha a API compartilhada com a F-RES.
+2. **Por que os pares são ordenados?** O grafo é dirigido, então A→B e B→A podem ter distâncias
+   diferentes.
+3. **Como o cálculo evita um Dijkstra para cada par?** Executa uma busca por origem e lê nela as
+   distâncias aos destinos necessários.
+4. **Como os pares inalcançáveis entram nas métricas?** Na eficiência contribuem zero; no tempo
+   médio são contados à parte, mas não viram viagens de duração zero.
+5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
+   amostra e a semente para reproduzir o cálculo.
 
 ### 5.6 Falhas e resiliência (F-RES)
 1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).
