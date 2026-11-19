@@ -106,9 +106,10 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - **Rede:** 9.660 paradas, 303 linhas, 698 padrões e 24.503 viagens; G_P: V=9.660, E=122.799; G_E (`pico_manha`): V=46.102, E=209.025.
 - **Máquina:** Windows 11 (10.0.26200), AMD Ryzen 7 7730U with Radeon Graphics, 15,4 GB RAM; Python 3.14.4.
 - **Tempo medido por `medir` (3 repetições):** eficiência global amostrada, 100 origens: média 8,696 s, desvio amostral 0,130 s; tempo médio de viagem, 100 pares: média 26,321 s, desvio amostral 0,125 s. A leitura do GTFS e a construção dos grafos/esperas ocorreram fora das chamadas cronometradas.
-- **Valor da eficiência previamente revisado:** `6,139 × 10⁻⁴ s⁻¹` para 100 origens, igual à medição do Caio. O benchmark desta etapa registra os tempos das chamadas; `medir` descarta os valores retornados.
+- **Valor da eficiência (feed de 18/11):** `5,884 × 10⁻⁴ s⁻¹` (erro padrão `1,20 × 10⁻⁵`) para 100 origens e semente 2026; `estimar_eficiencia_global(gp.grafo, tamanho_amostra=100, semente=2026)` no G_P acima, conferido pelo revisor em 19/11 com o feed de SHA-256 `8cb0a4…` e igual ao da captura da página. O benchmark desta etapa registra os tempos das chamadas; `medir` descarta os valores retornados.
+- **Valor anterior, feed de 11/11:** o `6,139 × 10⁻⁴ s⁻¹` conferido na revisão de 17/11 e medido pelo Caio na F-RES é do feed de 11/11 (SHA-256 `459f3a…`, G_P com V=9.659 e E=122.732). Com uma parada a mais, as 100 origens sorteadas com a semente 2026 mudam, e a diferença (cerca de 2 erros padrão) vem da amostra e dos dados, não do código.
 
-O benchmark usa a versão mais recente baixada em 18/11 e pode variar com o hardware, o Python, a amostra e a semente. O valor escalar confirmado pelo revisor é registrado como evidência fornecida, não como resultado do benchmark temporal desta etapa.
+O benchmark usa a versão mais recente baixada em 18/11 e pode variar com o hardware, o Python, a amostra e a semente.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. **Problema (25 s):** explicar que a eficiência estrutural resume os caminhos entre paradas e que o tempo médio complementa a análise com caminhada, espera e ônibus.
