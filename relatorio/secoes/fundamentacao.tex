@@ -1,6 +1,44 @@
 % Seção: Fundamentação
 % Dono: Thiago e Henrique · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: GTFS, modelos de grafo para transporte, algoritmos usados
+% Rascunho de 18/11 (Henrique); Thiago revisa a parte de algoritmos e centralidade.
+% Fontes: docs/fontes/modelagem.md §3.2 a §3.5.
 \section{Fundamentação}\label{sec:fund}
 
-\pendente{GTFS, modelos de grafo para transporte, algoritmos usados. Dono: Thiago e Henrique.}
+\paragraph{GTFS.} O \emph{General Transit Feed Specification}~\cite{gtfs-reference} descreve
+a programação de uma rede de transporte em arquivos CSV: \texttt{stops.txt} (paradas e
+coordenadas), \texttt{routes.txt} (linhas), \texttt{trips.txt} (viagens, cada uma de uma
+linha e de um serviço), \texttt{stop\_times.txt} (o horário de cada viagem em cada parada) e
+\texttt{calendar.txt} e \texttt{calendar\_dates.txt} (em que dias cada serviço opera). Não há
+grafo pronto no formato: ele precisa ser derivado das viagens, e as escolhas dessa derivação
+decidem o que cada algoritmo consegue responder.
+
+\paragraph{Grafos para transporte.} Um grafo dirigido e ponderado $G = (V, E, w)$ com
+$w: E \to \mathbb{R}_{\ge 0}$ é a base de todas as visões deste trabalho; o custo de um caminho
+é a soma dos pesos das arestas. Na literatura de transporte público há duas famílias de
+modelo~\cite{pyrga2008}. No \emph{modelo dependente do tempo}, cada aresta guarda a função de
+chegada em função da partida, e a busca respeita os horários. No \emph{modelo expandido no
+tempo}, cada evento de partida ou chegada vira um vértice, o que mantém pesos fixos ao custo de
+um grafo muito maior. Este trabalho usa grafos com pesos fixos por faixa horária, nos quais a
+espera é um valor esperado: para partidas com intervalo regular $H$ e chegada do passageiro ao
+acaso, a espera média é $H/2$, e com intervalos irregulares passa a $E[H^2]/(2E[H])$, que é
+maior. Separar a parada da plataforma (parada $\times$ linha) faz a troca de linha custar uma
+nova espera; a Seção~\ref{sec:modelagem} descreve as visões.
+
+\paragraph{Caminhos mínimos.} A busca em largura (BFS) acha o caminho com menos arestas em
+$O(V + E)$; serve para contar baldeações num grafo de linhas. O algoritmo de
+Dijkstra~\cite{dijkstra1959} acha caminhos mínimos com pesos não negativos fechando os vértices
+em ordem de distância; com um heap binário e inserção preguiçosa, custa
+$O((V + E)\log V)$~\cite{cormen2009}. O A*~\cite{hart1968} ordena os vértices por
+$g(v) + h(v)$, em que $h$ estima o custo restante; se $h$ é consistente,
+$h(u) \le w(u, v) + h(v)$, o caminho devolvido continua ótimo e a poda depende de quão
+apertada é a estimativa. O algoritmo de Yen~\cite{yen1971} lista os $k$ caminhos sem ciclo de
+menor custo, refazendo uma busca a partir de cada vértice do caminho anterior.
+
+\paragraph{Medidas da rede.} A intermediação de um vértice é a fração dos caminhos mínimos
+entre outros pares que passam por ele; o algoritmo de Brandes~\cite{brandes2001} a calcula com
+uma busca por origem, em $O(V(V + E)\log V)$ com pesos. A eficiência global~\cite{latora2001} é
+a média de $1/d(u, v)$ sobre os pares ordenados, com par sem caminho somando 0, o que a torna
+definida mesmo em grafo desconexo. As componentes fortemente conexas, obtidas pelo algoritmo de
+Tarjan~\cite{tarjan1972} em $O(V + E)$, mostram que paradas ficam sem ida e volta quando uma
+parte da rede falha.
