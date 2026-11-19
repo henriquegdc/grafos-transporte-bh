@@ -1,10 +1,24 @@
 % Seção: Fundamentação
 % Dono: Thiago e Henrique · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: GTFS, modelos de grafo para transporte, algoritmos usados
-% Thiago: subseção de algoritmos (núcleo e centralidades). Henrique: GTFS e modelos.
+% Thiago: subseção de algoritmos (núcleo e centralidades). Henrique: GTFS e modelos, e o
+% parágrafo final (A*, Yen, eficiência, Tarjan), rascunhado em 18/11 para o Thiago revisar.
 \section{Fundamentação}\label{sec:fund}
 
-\pendente{GTFS e modelos de grafo para transporte. Dono: Henrique.}
+\subsection{GTFS e modelos de grafo para transporte}
+
+O GTFS~\cite{gtfs-reference} descreve a programação de uma rede em arquivos CSV: paradas
+com coordenadas (\texttt{stops.txt}), linhas (\texttt{routes.txt}), viagens
+(\texttt{trips.txt}), o horário de cada viagem em cada parada (\texttt{stop\_times.txt}) e
+os dias de operação de cada serviço (\texttt{calendar.txt} e \texttt{calendar\_dates.txt}).
+Não há grafo pronto no formato: ele é derivado das viagens. Na literatura há duas famílias
+de modelo~\cite{pyrga2008}: no \emph{dependente do tempo}, cada aresta guarda a chegada em
+função da partida; no \emph{expandido no tempo}, cada evento de partida ou chegada vira um
+vértice, com pesos fixos e um grafo muito maior. Este trabalho usa pesos fixos por faixa
+horária, e a espera entra como valor esperado: com intervalo regular $H$ e chegada ao acaso,
+a espera média é $H/2$; com intervalos irregulares, $E[H^2]/(2E[H])$, que é maior. Separar a
+parada da plataforma (parada $\times$ linha) faz a troca de linha custar uma nova espera
+(Seção~\ref{sec:modelagem}).
 
 \subsection{Algoritmos de caminho mínimo e centralidade}
 
@@ -38,5 +52,9 @@ origens sorteadas e multiplicando por $N/k$, o que dá uma estimativa não viesa
 do custo. O \emph{grau} de entrada e de saída, a contagem das arestas que chegam e saem
 de cada vértice, completa as medidas de centralidade usadas.
 
-\pendente{Demais algoritmos das features (A*, Yen, Tarjan, eficiência): donos das features,
-se couber no orçamento de 1 página.}
+O A*~\cite{hart1968} ordena os vértices por $g(v) + h(v)$, em que $h$ estima o custo
+restante; com $h$ consistente, $h(u) \le w(u, v) + h(v)$, o caminho continua ótimo. O
+algoritmo de Yen~\cite{yen1971} lista os $k$ caminhos sem ciclo de menor custo, com uma
+busca a partir de cada vértice do caminho anterior. A eficiência global~\cite{latora2001} é
+a média de $1/d(u, v)$ sobre os pares ordenados, com par sem caminho somando 0, e as
+componentes fortemente conexas saem do algoritmo de Tarjan~\cite{tarjan1972} em $O(V + E)$.
