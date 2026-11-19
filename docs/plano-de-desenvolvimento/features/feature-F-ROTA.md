@@ -9,7 +9,7 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 18/11/2026, Henrique, branch `feat/F-ROTA-pagina` (junto com F-ROTA-2 e F-ROTA-OPC): página Trajetos (RF-ROT-02), teste de integração na rede de teste, nova medição com as esperas da F-ESPERA, seção do relatório, GUIA e diagrama da página.
+- **Última sessão:** 18/11/2026, Henrique, branch `feat/F-ROTA-trajetos` (PR #57) (junto com F-ROTA-2 e F-ROTA-OPC): página Trajetos (RF-ROT-02), teste de integração na rede de teste, nova medição com as esperas da F-ESPERA, seção do relatório, GUIA e diagrama da página.
 - **Onde parou:** todas as etapas feitas; falta o PR ser aprovado e integrado. Página conferida no navegador pelo dono com o feed real em 18/11.
 - **Próximo passo:** revisão do PR por outro integrante; depois do merge, marcar a feature como concluída. Gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml` (o agente não pôde baixar o PlantUML).
 - **Arquivos tocados (18/11):** `src/transporte/interface/paginas/trajetos.py`, `tests/interface/test_pagina_trajetos.py`, `tests/algoritmos/test_integracao_trajeto_rede_teste.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajetos-pagina.puml`, `docs/GUIA.md` §5.1, §5.7, §8 e §10, `relatorio/secoes/F-ROTA.tex`, `relatorio/figuras/trajetos-mapa.jpg`, este arquivo.
@@ -136,7 +136,7 @@ _Todo número vem com o comando que o gerou._
 
 Limitação: a espera nas arestas de embarque é a padrão de 300 s, porque a tabela de esperas da F-ESPERA ainda não existe. Com espera fixa, baldear custa pouco, o que explica as 31 consultas com 3 ou mais baldeações; tempo total e baldeações não vão para o relatório antes de rodar com as esperas reais. O tempo de consulta não depende disso.
 
-**Com as esperas da F-ESPERA, 18/11/2026 (substitui a de 05/11 no relatório).** Comando: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip`, com o script já montando o G_E das consultas com `calcular_esperas(estimar_intervalos(rede))` (H/2 por padrão e faixa), sobre a `main` em `11be1a2` mais a branch `feat/F-ROTA-pagina`. Feed: GTFS da PBH baixado em 18/11/2026 por `scripts/baixar_gtfs.py`, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026: 9.660 paradas, 698 padrões, 24.503 viagens. Máquina: Intel Core i5-13600KF, 31,8 GB, Windows 11, Python 3.12.10.
+**Com as esperas da F-ESPERA, 18/11/2026 (substitui a de 05/11 no relatório).** Comando: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip`, com o script já montando o G_E das consultas com `calcular_esperas(estimar_intervalos(rede))` (H/2 por padrão e faixa), sobre a `main` em `11be1a2` mais a branch `feat/F-ROTA-trajetos` (PR #57). Feed: GTFS da PBH baixado em 18/11/2026 por `scripts/baixar_gtfs.py`, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026: 9.660 paradas, 698 padrões, 24.503 viagens. Máquina: Intel Core i5-13600KF, 31,8 GB, Windows 11, Python 3.12.10.
 
 | Medida | Valor |
 |---|---|
@@ -199,4 +199,4 @@ Atualizado em 18/11 (Henrique revisa):
 ### Revisão 09/11/2026: Rafael revisa o #39 em comentário: código pronto; pede atualizar a branch com a `main`, a Retomada e a descrição do PR; confirma que o contrato atende a F-BALD-2.
 ### Sessão 09/11/2026: branch atualizada por merge com a `main` (que já tem o #38), conflito do GUIA §8 resolvido com as linhas dos dois lados; "intervalos" da F-ESPERA trocado por "tabela de esperas" aqui e no GUIA §5.1; 502 testes na suíte, hook verde.
 ### Merge 09/11/2026: PR #39 integrado na `main`, sem aprovação formal no GitHub (decisão do Henrique).
-### Sessão 18/11/2026: página Trajetos (RF-ROT-02) com F-ROTA-2 e F-ROTA-OPC na branch `feat/F-ROTA-pagina`; teste de integração na rede de teste; medição com as esperas da F-ESPERA (65,9 ms por consulta, tempo mediano 61,1 min); seção do relatório, GUIA e diagrama da página; conferência no navegador pelo dono.
+### Sessão 18/11/2026: página Trajetos (RF-ROT-02) com F-ROTA-2 e F-ROTA-OPC na branch `feat/F-ROTA-trajetos` (PR #57); teste de integração na rede de teste; medição com as esperas da F-ESPERA (65,9 ms por consulta, tempo mediano 61,1 min); seção do relatório, GUIA e diagrama da página; conferência no navegador pelo dono.

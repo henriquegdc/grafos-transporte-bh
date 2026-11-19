@@ -10,7 +10,7 @@
 
 ## Retomada
 - **Última sessão:** 18/11/2026 (Henrique, com agente).
-- **Onde parou:** código, testes e medição prontos na branch `feat/F-ROTA-pagina`, ainda sem commit. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
+- **Onde parou:** código, testes e medição prontos na branch `feat/F-ROTA-trajetos` (PR #57), ainda sem commit. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
 - **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-2) e merge; gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml`. GUIA §5.7.2, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
 - **Arquivos tocados:** `src/transporte/algoritmos/alternativos.py`, seção de alternativos em `src/transporte/interface/paginas/trajetos.py`, `tests/algoritmos/test_alternativos.py`, `benchmarks/medir_rota_extensoes.py`.
 - **Como testar:** `pytest tests/algoritmos/test_alternativos.py tests/interface/test_pagina_trajetos.py`; medição: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`.

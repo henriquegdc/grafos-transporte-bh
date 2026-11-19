@@ -10,7 +10,7 @@
 
 ## Retomada
 - **Última sessão:** 18/11/2026 (Henrique, com agente).
-- **Onde parou:** código, testes e medições prontos na branch `feat/F-ROTA-pagina`, ainda sem commit; decisão do A* registrada em Resultados. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
+- **Onde parou:** código, testes e medições prontos na branch `feat/F-ROTA-trajetos` (PR #57), ainda sem commit; decisão do A* registrada em Resultados. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
 - **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-OPC) e merge; gerar o PNG de `docs/diagramas/sequencia-trajetos-pagina.puml`. GUIA §5.7.1, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
 - **Arquivos tocados:** `src/transporte/algoritmos/a_estrela.py`, `src/transporte/interface/paginas/trajetos.py`, `tests/algoritmos/test_a_estrela.py`, `tests/interface/test_pagina_trajetos.py`, `benchmarks/medir_rota_extensoes.py`.
 - **Como testar:** `pytest tests/algoritmos/test_a_estrela.py tests/interface/test_pagina_trajetos.py`; medição: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`; navegador: `streamlit run src/transporte/interface/app.py`, página Trajetos.
@@ -124,7 +124,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
 
-**A* contra Dijkstra e parada mais próxima, 18/11/2026.** Comando: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`, sobre a `main` em `11be1a2` mais a branch `feat/F-ROTA-pagina`. Feed: GTFS da PBH baixado em 18/11/2026, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026: 9.660 paradas, 698 padrões. Máquina: Intel Core i5-13600KF, 31,8 GB, Windows 11, Python 3.12.10. G_E do pico da manhã com as esperas da F-ESPERA: V = 46.102, E = 209.025; 200 pares sorteados (semente 2026), todos com trajeto.
+**A* contra Dijkstra e parada mais próxima, 18/11/2026.** Comando: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`, sobre a `main` em `11be1a2` mais a branch `feat/F-ROTA-trajetos` (PR #57). Feed: GTFS da PBH baixado em 18/11/2026, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026: 9.660 paradas, 698 padrões. Máquina: Intel Core i5-13600KF, 31,8 GB, Windows 11, Python 3.12.10. G_E do pico da manhã com as esperas da F-ESPERA: V = 46.102, E = 209.025; 200 pares sorteados (semente 2026), todos com trajeto.
 
 | Medida | Dijkstra | A* (vmax = 1.258,2 m/s, admissível) | A*, experimento sem as arestas no piso (vmax = 43,4 m/s) |
 |---|---|---|---|
