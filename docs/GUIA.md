@@ -282,6 +282,50 @@ até 300 m, uma por vez (B3); G_L do dia ou de uma faixa, com a regra D10 (B4).
 Limitações: conta trocas, não tempo; a G_L não vê horários, a não ser no filtro por faixa;
 caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige reconstruir a G_L.
 
+#### Menos baldeações contra mais rápido (F-BALD-2)
+
+Quanto tempo custa fazer menos baldeações? `comparar_baldeacoes` responde para um par de
+paradas: o mais rápido (F-ROTA, no G_E), o mínimo k de baldeações (F-BALD, na G_L) e o mais
+rápido entre os trajetos com até k baldeações. A diferença de tempo entre os dois é o
+**tempo a mais**; a diferença de baldeações, as **baldeações evitadas**. Aparece na página
+Baldeações quando se escolhe uma faixa.
+
+```python
+from transporte.algoritmos.comparacao_baldeacoes import comparar_baldeacoes
+
+c = comparar_baldeacoes(ge, gl, "A", "D")   # G_E e G_L da mesma faixa; None sem trajeto
+c.tempo_a_mais_s, c.baldeacoes_evitadas, c.tempo_por_baldeacao_evitada_s
+c.mais_rapido, c.menos_baldeacoes, c.rapido_com_menos_baldeacoes
+```
+
+**Por que não cronometrar o trajeto da F-BALD.** A G_L não tem tempo, e entre os trajetos com k
+baldeações a F-BALD escolhe por caminhada e tamanho da última perna (B5). O custo honesto de
+evitar baldeações é o do **mais rápido** entre os de k baldeações (C1). Exemplo (teste
+`test_escolhe_o_mais_rapido_entre_os_de_menos_baldeacoes`): o mais rápido de A a D usa três
+ônibus em 1.080 s; com uma baldeação há Q1 + R3 em 1.360 s e R1 + Q3 em 1.660 s. O tempo a
+mais é 280 s, não 580 s.
+
+**O algoritmo** (`docs/diagramas/atividade-comparar-baldeacoes.png`). Se o mais rápido já faz
+até k baldeações, ele mesmo é a resposta e nada é evitado. Senão, um Dijkstra no G_E em que o
+estado é (vértice, embarques feitos): embarcar soma um, as outras arestas não, e estado com
+mais de k + 1 embarques não existe (C2). Um estado é descartado se o vértice já foi fechado com
+menos embarques: chegou antes, ou junto, e com menos ônibus.
+
+**Complexidade.** O((k + 2)(V + E) log((k + 2) V)) no pior caso, com V e E do G_E: são
+(k + 2) V estados. Na prática cada vértice fecha poucas vezes, pelo descarte dos dominados.
+No feed real (17/11, `feature-F-BALD-2.md`), no G_E do pico da manhã (V = 46.100, E = 208.956), a
+comparação leva 212,9 ms por par em média (máximo 1.015,5 ms). Em 200 pares, o mais rápido já
+tinha o mínimo de baldeações em 160; nos outros 40, evitar baldeação custou 1,5 min na mediana
+e 14,5 min no máximo, com 0 divergências contra o NetworkX num grafo em camadas.
+
+**Um caso curioso.** No G_E as caminhadas se encadeiam e na G_L é uma de até 300 m por vez
+(B3). Então o mais rápido pode fazer menos baldeações que o "mínimo" da G_L, andando mais. Nesse
+caso ele é a resposta e nada é evitado (C3).
+
+Limitações: herda as da F-ROTA (espera média H/2, faixa fixa pela saída) e as da F-BALD; só
+compara numa faixa, porque no dia inteiro não há G_E; mostra um ponto da troca (k
+baldeações), não todos os trajetos não dominados, que são a F-BALD-OPC.
+
 ### 5.4 Centralidades (F-MET)
 
 Quais paradas mais importam para a rede: as com mais ligações (grau) e as por onde passam mais
@@ -492,6 +536,11 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 17/11 | Perda de eficiência da F-RES com o denominador de antes da falha: as mesmas origens e o mesmo n antes e depois (R1) | Com o n de depois, remover uma parada mal conectada aumentaria a eficiência, porque os pares ruins dela sairiam da média; com o mesmo n, os pares da parada removida contam 0 e a perda nunca é negativa | Renormalizar pelo n de depois da falha |
 | 17/11 | Parada isolada = ficou sozinha na componente fortemente conexa depois da falha e não estava antes; desconectada = saiu da maior componente (R2, F-RES) | "Saiu da maior" fica ambíguo quando duas componentes empatam de tamanho; a isolada não depende de desempate. A desconectada continua útil para quem caiu num grupo pequeno | Um único critério, "fora da maior componente" |
 | 17/11 | Falha de trecho remove só a aresta de viagem a -> b, num sentido, e mantém a caminhada (R3, F-RES) | Interdição costuma ser de uma mão, e a volta é outro trecho de G_P; a caminhada entre as paradas continua possível | Remover os dois sentidos e a caminhada |
+| 17/11 | O tempo do trajeto de menos baldeações é o do mais rápido no G_E com no máximo k baldeações, com k o mínimo da F-BALD (C1, F-BALD-2) | A G_L não tem tempo, e o trajeto que a F-BALD devolve sai de um desempate (B5) que não olha o tempo: cronometrá-lo inflaria o custo de evitar baldeações | Cronometrar no G_E o trajeto da F-BALD; penalidade fixa por baldeação no Dijkstra (a modelagem não usa penalidade, e ela não garante o mínimo) |
+| 17/11 | Dijkstra com o número de embarques no estado, camadas implícitas e descarte de estado dominado (C2, F-BALD-2) | Exato, usa o HeapMin do núcleo e não copia o G_E: cada vértice fecha no máximo k + 2 vezes | Montar o G_E em k + 2 camadas a cada consulta; busca lexicográfica (baldeações, tempo), que acharia o mínimo do G_E, não o da G_L |
+| 17/11 | O limite k vem da G_L, mas a busca no G_E encadeia caminhadas como a F-ROTA; se o mais rápido já faz até k baldeações, ele é a resposta (C3, F-BALD-2) | Mantém o mesmo modelo de tempo nos dois trajetos comparados, e tempo a mais e baldeações evitadas nunca ficam negativos | Restringir a caminhada a uma por vez no G_E, que mudaria o modelo de tempo da F-ROTA |
+| 17/11 | Comparação só numa faixa, com o G_E montado com as esperas H/2 da F-ESPERA, num bloco da página Baldeações (C4, F-BALD-2) | O tempo depende das esperas e das linhas que circulam na faixa; as esperas são as mesmas da página Espera | Comparar também no dia inteiro; espera fixa de 300 s; página separada |
+| 19/11 | Exceção ao congelamento de 15/11 para a F-BALD-2 (RF-BAL-03, desejável), feita em 17/11 e aprovada pelo grupo | A feature ficou completa, com testes, medição e documentação, e só acrescenta um bloco à página Baldeações, sem mudar o que já estava na `main` | Deixar a F-BALD-2 fora do escopo e registrar o RF-BAL-03 como limitação no relatório (plano-de-projeto §7.3) |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
@@ -566,6 +615,19 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    posição mais cedo, e embarcar antes abre trocas que antes não serviam.
 5. **O trajeto devolvido é o mais rápido entre os de menos baldeações?** Não. O critério é só o
    número de baldeações; o tempo a mais em relação ao mais rápido é a F-BALD-2.
+
+#### Menos baldeações contra mais rápido (F-BALD-2)
+1. **Por que o tempo do trajeto de menos baldeações não é o do trajeto da F-BALD?** Porque a
+   F-BALD escolhe entre os de k baldeações sem olhar o tempo. O custo de evitar baldeações é o do
+   mais rápido entre eles.
+2. **O que guarda o estado do Dijkstra da F-BALD-2?** O vértice do G_E e quantos embarques já
+   foram feitos. Embarcar soma um; acima de k + 1 embarques o estado não existe.
+3. **Quando um estado é descartado?** Quando o vértice já foi fechado com menos embarques: esse
+   outro chegou antes, ou junto, e tudo o que se faz a partir do descartado se faz a partir dele.
+4. **Por que as baldeações evitadas podem ser zero mesmo com o mais rápido fazendo baldeações?**
+   Porque ele pode já ter o mínimo k, ou até menos que k, encadeando caminhadas no G_E.
+5. **Por que a comparação só aparece numa faixa?** Porque o tempo depende das esperas e das
+   linhas que circulam na faixa, e o G_E existe só por faixa.
 
 ### 5.4 Centralidades (F-MET)
 1. **Por que não contar, para cada par, se o caminho mínimo passa por v?** São V² pares e pode
