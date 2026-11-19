@@ -1,5 +1,5 @@
 % Seção: F-EFI · Eficiência da rede (RF-EFI-01 e RF-EFI-02)
-% Resultados experimentais na rede real pendentes; ver feature-F-EFI.md.
+% Resultados experimentais no GTFS real; detalhes reprodutíveis em feature-F-EFI.md.
 \subsection{Eficiência da rede}\label{sec:F-EFI}
 
 A eficiência estrutural é calculada em $G_P$, cuja unidade é a parada. Para cada origem,
@@ -12,18 +12,24 @@ $1/d(i,j)$ sobre os pares ordenados distintos. Pares sem caminho contribuem zero
 Como os pesos representam segundos, a unidade do resultado é $\mathrm{s}^{-1}$.
 Quando a métrica é amostrada, sorteiam-se origens uniformemente sem reposição; o erro
 padrão usa a variância amostral das contribuições e correção de população finita.
+Não se aplica a eficiência global diretamente a G_E: suas arestas de desembarque têm peso
+zero, o que pode produzir distância zero e eficiência indefinida entre vértices distintos.
 
 O tempo médio de viagem usa $G_E$, que soma caminhada, espera esperada e viagem de ônibus,
-como no contrato de F-ROTA. A amostra contém pares ordenados distintos de paradas, não
-plataformas; portanto, as arestas de desembarque de peso zero não entram na média de
-$1/d$. Uma busca por origem fornece os tempos aos destinos da amostra. Pares sem trajeto
-são informados separadamente e não são tratados como viagens de duração zero.
+como no contrato de F-ROTA. A página calcula as esperas com a F-ESPERA. A amostra contém
+pares ordenados distintos de paradas, não plataformas; uma busca por origem fornece os
+tempos aos destinos da amostra. Pares sem trajeto são informados separadamente e não são
+tratados como viagens de duração zero.
 
 \pendente{Figura da página Eficiência.}
 
-\pendente{Medição com o GTFS real: média e desvio de cinco execuções, tamanho da amostra,
-$V$, $E$, máquina e comando. O feed real não estava disponível durante esta implementação.}
+\textbf{Medição.} No GTFS de 18/11/2026, G_P tem $V=9\,660$, $E=122\,799$ e G_E do pico da
+manhã tem $V=46\,102$, $E=209\,025$. Com 100 origens e 100 pares, semente 2026 e três
+repetições, \texttt{medir} registrou eficiência: $8{,}696 \pm 0{,}130$ s; tempo médio:
+$26{,}321 \pm 0{,}125$ s. O revisor confirmou separadamente o valor de eficiência
+$6{,}139 \times 10^{-4}\,\mathrm{s}^{-1}$ para 100 origens, igual ao resultado do Caio.
+Comando, SHA-256 e especificação da máquina estão em \texttt{feature-F-EFI.md}.
 
 \textbf{Limitações.} $G_P$ usa tempos medianos de viagem e caminhada, sem espera. Em $G_E$,
-a espera continua no valor provisório de 300~s até a integração da tabela da F-ESPERA. O
-tempo médio estimado é condicional aos pares alcançáveis na amostra.
+esperas são calculadas pela F-ESPERA; padrões sem intervalo estimável usam o fallback de
+\texttt{Parametros}. O tempo médio estimado é condicional aos pares alcançáveis na amostra.

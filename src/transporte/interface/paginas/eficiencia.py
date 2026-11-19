@@ -12,6 +12,7 @@ from transporte.algoritmos.eficiencia import (
 from transporte.interface.protocolos import RedeUI
 from transporte.modelo.construtores import construir_ge, construir_gp
 from transporte.modelo.parametros import Parametros
+from transporte.simulacao.espera import calcular_esperas, estimar_intervalos
 
 _CHAVE_VISOES = "visoes-f-efi"
 _CHAVE_RESULTADOS = "resultados-f-efi"
@@ -42,7 +43,8 @@ def _obter_visoes(rede: RedeUI):
     parametros = Parametros()
     faixa = parametros.faixas[0].nome
     gp = construir_gp(rede, parametros)
-    ge = construir_ge(rede, faixa, parametros)
+    esperas = calcular_esperas(estimar_intervalos(rede, parametros))
+    ge = construir_ge(rede, faixa, parametros, esperas=esperas)
     st.session_state[_CHAVE_VISOES] = (rede, gp, ge, faixa)
     return gp, ge, faixa
 
@@ -63,7 +65,7 @@ def _mostrar_resultados(
     st.caption(
         "G_P mede eficiência estrutural com tempos medianos de viagem e caminhada. "
         f"G_E usa a faixa {faixa} e o custo total da F-ROTA (caminhada, espera e ônibus). "
-        "A espera padrão de 300 s permanece até a integração da tabela da F-ESPERA."
+        "As esperas são estimadas pela F-ESPERA."
     )
 
 
@@ -89,6 +91,7 @@ def render(rede: RedeUI) -> None:
     sessões. As métricas só rodam após o envio do formulário.
     """
     st.header("Eficiência da rede")
+    st.caption("Os cálculos podem levar algum tempo, especialmente com amostras maiores.")
     quantidade_paradas = len(rede.paradas)
     quantidade_pares = quantidade_paradas * max(0, quantidade_paradas - 1)
     if quantidade_paradas < 2:

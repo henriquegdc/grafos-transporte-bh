@@ -2,19 +2,19 @@
 
 **Período:** 1 · Essenciais (04/11 a 11/11) · **Classe:** prioritária
 **Dono:** Arthur (@ArthurkkLS) · **Issue:** #11 · **Visões do grafo:** G_E ou G_P
-**Depende de:** P0-MODELO · **Bloqueia:** F-RES (função de eficiência até 07/11), F-EFI-2
+**Depende de:** P0-MODELO, F-ESPERA · **Bloqueia:** F-RES (função de eficiência até 07/11), F-EFI-2
 **Prazo:** 11/11 (checkpoint 07/11)
 
 > Fonte de verdade: docs/fontes/REQUISITOS.md (RF-EFI-01, RF-EFI-02). Modelagem: docs/fontes/modelagem.md.
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 15/11/2026, Arthur.
-- **Onde parou:** núcleo, página, testes e documentação implementados. A suíte completa passou (660 testes, Python 3.14.4); Ruff, verificador de imports, hook manual, formatação dos arquivos F-EFI e `git diff --check` também passaram. A API `eficiencia_global(g, origens=None, n_referencia=None)` preserva a matemática da eficiência provisória da F-RES. Faltam medição e validação no feed real, revisão cruzada e fechamento dos itens de entrega que dependem de artefatos/resultados reais.
-- **Próximo passo:** quando `dados/brutos/` estiver disponível, medir a rede real com `medir` e validar a página; combinar com Caio a substituição da implementação provisória da F-RES e com o grupo a atualização da espera de G_E.
-- **Arquivos tocados:** `src/transporte/algoritmos/eficiencia.py`, `src/transporte/interface/paginas/eficiencia.py`, `tests/algoritmos/test_eficiencia.py`, `tests/interface/test_pagina_eficiencia.py`, `docs/GUIA.md`, `docs/diagramas/sequencia-eficiencia.puml`, `relatorio/secoes/F-EFI.tex` e este arquivo.
-- **Como testar:** `python -m pytest tests/algoritmos/test_eficiencia.py tests/interface/test_pagina_eficiencia.py -q`; `python -m pytest -q`; `ruff check`; format check dos quatro arquivos F-EFI; `python scripts/verificar_imports.py`; `.githooks/pre-commit`; `git diff --check`. A suíte completa e as verificações aplicáveis foram executadas nesta sessão; o format check de diretórios amplos ainda encontra arquivos antigos fora do escopo.
-- **Bloqueios:** `dados/brutos/` não está disponível, então a medição de desempenho e validação de interface na rede real não podem ser feitas. G_E ainda usa espera padrão de 300 s até F-ESPERA. O plano prevê congelamento do código em 15/11, às 23:59; alinhar com o grupo qualquer trabalho de integração posterior.
+- **Última sessão:** 18/11/2026, Arthur.
+- **Onde parou:** página integrada a F-ESPERA e benchmark reproduzível executado no GTFS baixado nesta sessão. O revisor já confirmou 754 testes no Python 3.12.10 e a eficiência de `6,139 × 10⁻⁴ s⁻¹` para 100 origens, igual à medição do Caio. O benchmark temporal desta sessão está registrado abaixo; algoritmo e valor confirmado não foram reimplementados.
+- **Próximo passo:** revisar os resultados e a integração no PR #52; ainda faltam a captura da página para o relatório e a revisão/aprovação final.
+- **Arquivos tocados nesta etapa:** `benchmarks/medir_eficiencia.py`, `src/transporte/interface/paginas/eficiencia.py`, `tests/interface/test_pagina_eficiencia.py`, `docs/diagramas/sequencia-eficiencia.png`, `relatorio/secoes/F-EFI.tex` e este arquivo.
+- **Como testar:** `python -m pytest tests/algoritmos/test_eficiencia.py tests/interface/test_pagina_eficiencia.py -q`; `$env:PYTHONPATH='src'; python benchmarks/medir_eficiencia.py dados/brutos/bhtrans.zip`; `ruff check` nos arquivos alterados; `python scripts/verificar_imports.py`; `git diff --check`. A suíte completa de 754 testes no Python 3.12.10 foi validada pelo revisor; nesta etapa, 28 testes direcionados de algoritmo e interface passaram em Python 3.14.4.
+- **Bloqueios:** nenhum bloqueio de algoritmo ou feed. A validação visual da página no feed real, a figura de tela do relatório e a aprovação do PR ainda dependem de revisão manual.
 
 ## Objetivo
 Eficiência da rede. Fecha:
@@ -26,13 +26,13 @@ Eficiência da rede. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | implementado | 15/11: eficiência global em G_P e tempo médio amostrado em G_E, usando Dijkstra do núcleo |
-| Modelo e dados | em andamento | Construtores de G_P/G_E e Rede de teste disponíveis; falta validar no feed real |
-| Interface | implementado | 15/11: página `render(rede)` com tamanho de amostra e semente configuráveis; AppTest verde na rede de teste |
-| Testes | implementado | 15/11: 660 testes verdes na suíte; gabaritos à mão, NetworkX, casos extremos, compatibilidade F-RES e AppTest |
-| Desempenho (tempo medido) | não iniciado | |
+| Modelo e dados | implementado | 18/11: G_E da página usa intervalos e esperas calculados pela F-ESPERA; benchmark executado no GTFS de 18/11 |
+| Interface | implementado | 18/11: `render(rede)` usa as esperas da F-ESPERA; AppTest verifica peso de embarque calculado, além das métricas |
+| Testes | implementado | Revisor confirmou 754 testes no Python 3.12.10; nesta etapa, 28 testes direcionados de algoritmo e interface passaram no Python 3.14.4 |
+| Desempenho (tempo medido) | medido | 18/11: benchmark reproduzível; resultados e hash registrados abaixo |
 | Guia (explicação e quiz) | em andamento | Explicação e perguntas adicionadas ao arquivo e ao GUIA; revisão cruzada pendente |
-| Relatório | em andamento | Seção estruturada; medição/figura real pendentes |
-| Vídeo | em andamento | Roteiro atualizado para demonstração; gravação e resultado real pendentes |
+| Relatório | em andamento | Resultados reais incluídos; figura de tela pendente |
+| Vídeo | em andamento | Roteiro atualizado com resultado real; gravação pendente |
 
 ## Especificação
 Assinaturas públicas em `src/transporte/algoritmos/eficiencia.py` (`estado: implementado`):
@@ -60,7 +60,7 @@ G_P foi escolhido para RF-EFI-01 por medir eficiência estrutural e manter compa
 
 **Complexidade.** Uma busca Dijkstra por origem custa O((V + E) log V), usando o heap próprio do núcleo. A eficiência exata executa V buscas; a estimativa executa s. Para o tempo médio, k origens distintas atendem aos m pares amostrados, custando O(V + k (V + E) log V + m). A memória de cada execução é a do Dijkstra, O(V + E), mais O(m) para guardar os pares e tempos amostrados.
 
-**Limitações.** G_P usa tempos medianos de viagem e caminhada, sem espera. Em G_E, o valor depende da faixa e a espera continua provisória em 300 s até a F-ESPERA fornecer a tabela. A média de viagens é condicional aos pares alcançáveis na amostra. Sem `dados/brutos/`, não foi possível medir desempenho na rede real nesta sessão.
+**Limitações.** G_P usa tempos medianos de viagem e caminhada, sem espera. Em G_E, a página calcula intervalos e esperas pela F-ESPERA; padrões sem intervalo estimável usam o fallback configurado em `Parametros`. A média de viagens é condicional aos pares alcançáveis na amostra.
 
 ## Perguntas de verificação
 1. **Por que a eficiência global usa G_P?** Para medir a estrutura entre paradas sem incluir plataformas nem arestas de desembarque de peso zero; também mantém a métrica comparável à provisória da F-RES.
@@ -80,41 +80,50 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (hook executado manualmente; não está configurado como hook automático neste checkout)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real (AppTest cobre a rede de teste)
-- [ ] Diagrama UML da feature gerado em `docs/diagramas/` (fonte PlantUML criada; PNG pendente)
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
+- [ ] Página ou bloco na interface funcionando com o dataset real (AppTest cobre a rede de teste; falta validação visual da aplicação)
+- [x] Diagrama UML da feature gerado em `docs/diagramas/` (`sequencia-eficiencia.puml` e PNG)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
-- [x] Roteiro do vídeo escrito no arquivo da feature (rascunho, sem resultado real)
+- [x] Roteiro do vídeo escrito no arquivo da feature (gravação pendente)
 - [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 15/11; compatibilidade F-RES documentada |
-| 2 | Algoritmo com testes de corretude | concluída; suíte completa passou (660 testes, Python 3.14.4) |
-| 3 | Integração com a visão do grafo e com os dados reais | integrada às visões; rede real pendente |
+| 2 | Algoritmo com testes de corretude | concluída; revisor confirmou 754 testes no Python 3.12.10 |
+| 3 | Integração com a visão do grafo e com os dados reais | integrada às visões e às esperas da F-ESPERA; benchmark real executado |
 | 4 | Página na interface | implementada; AppTest com rede de teste |
-| 5 | Tempo medido na rede real e complexidade justificada | complexidade concluída; medição real pendente |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | explicação/quiz/roteiro escritos; PNG e resultado real pendentes |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída; medição real registrada |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | PlantUML/PNG e resultados do benchmark registrados; figura de tela e gravação pendentes |
 
-## Resultados para o relatório
-Sem medição na rede real: `dados/brutos/` não está disponível. O AppTest usa `dados/rede-teste/`; seus resultados validam integração e corretude, mas não são apresentados como desempenho da rede real.
+## Resultados e evidências do benchmark
+
+- **Comando:** `$env:PYTHONPATH='src'; python benchmarks/medir_eficiencia.py dados/brutos/bhtrans.zip` (padrões: 100 origens, 100 pares, 3 repetições, semente 2026, faixa `pico_manha`).
+- **Feed:** `dados/brutos/bhtrans.zip`; SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`; serviço de 18/11/2026.
+- **Rede:** 9.660 paradas, 303 linhas, 698 padrões e 24.503 viagens; G_P: V=9.660, E=122.799; G_E (`pico_manha`): V=46.102, E=209.025.
+- **Máquina:** Windows 11 (10.0.26200), AMD Ryzen 7 7730U with Radeon Graphics, 15,4 GB RAM; Python 3.14.4.
+- **Tempo medido por `medir` (3 repetições):** eficiência global amostrada, 100 origens: média 8,696 s, desvio amostral 0,130 s; tempo médio de viagem, 100 pares: média 26,321 s, desvio amostral 0,125 s. A leitura do GTFS e a construção dos grafos/esperas ocorreram fora das chamadas cronometradas.
+- **Valor da eficiência previamente revisado:** `6,139 × 10⁻⁴ s⁻¹` para 100 origens, igual à medição do Caio. O benchmark desta etapa registra os tempos das chamadas; `medir` descarta os valores retornados.
+
+O benchmark usa a versão mais recente baixada em 18/11 e pode variar com o hardware, o Python, a amostra e a semente. O valor escalar confirmado pelo revisor é registrado como evidência fornecida, não como resultado do benchmark temporal desta etapa.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. **Problema (25 s):** explicar que a eficiência estrutural resume os caminhos entre paradas e que o tempo médio complementa a análise com caminhada, espera e ônibus.
 2. **Na interface (45 s):** abrir Eficiência, escolher quantidade de origens e pares, fixar a semente, calcular e apontar o erro padrão e os pares alcançáveis.
 3. **Algoritmo (45 s):** mostrar G_P e G_E; explicar uma busca Dijkstra por origem amostrada, sem busca por cada par, e por que G_E é restrito a vértices de paradas.
-4. **Resultado e limitação (25 s):** usar a rede de teste enquanto não houver GTFS real; explicar que a espera de G_E é provisoriamente 300 s e que os resultados reais ainda precisam ser medidos.
+4. **Resultado e limitação (25 s):** apresentar a medição registrada para o GTFS baixado, explicando que tempos dependem da máquina, da amostra e da semente; a espera de G_E vem da estimativa da F-ESPERA.
 
 ## Pendências
 - **F-RES (Caio):** trocar a função provisória pela API `transporte.algoritmos.eficiencia.eficiencia_global`; a assinatura e a compatibilidade matemática foram testadas, mas a integração de produção não foi feita porque arquivos da F-RES estão fora do escopo autorizado.
-- **F-ESPERA (Miguel):** `construir_ge` ainda usa a espera padrão de 300 s nesta execução; recalcular o tempo médio quando a tabela de esperas estiver disponível.
-- **Rede real:** executar `medir` e registrar V, E, máquina, média e desvio quando o feed estiver disponível.
-- **Fechamento:** gerar o PNG do diagrama, completar a seção do relatório com figura e resultados reais, validar na rede real, obter revisão cruzada e integrar por PR aprovado.
+- **F-ESPERA (Miguel):** integrada à página; padrões sem intervalo estimável continuam sujeitos ao fallback definido em `Parametros`.
+- **Interface/relatório:** validar visualmente a página com o GTFS real e adicionar a captura à seção do relatório.
+- **Fechamento:** obter revisão cruzada e aprovação do PR; a API da F-RES ainda é provisória e permanece fora do escopo desta alteração.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Arthur.
 ### Sessão 15/11/2026: implementados o contrato oficial e os algoritmos em `algoritmos/eficiencia.py`, página `render(rede)`, testes matemáticos/NetworkX/AppTest e documentação; suíte completa (660 testes, Python 3.14.4), Ruff, verificador de imports, hook manual e verificações de diff passaram. F-RES permanece sem alteração. Feed real indisponível; medição, PNG, fechamento do relatório e revisão cruzada continuam pendentes.
+### Sessão 18/11/2026: integração da página com as esperas calculadas pela F-ESPERA; AppTest confirma o peso derivado de H/2; benchmark no GTFS baixado (hash, V/E, máquina e tempos) e PNG de sequência gerados; relatório atualizado com o resultado e com a distinção entre G_P e G_E.

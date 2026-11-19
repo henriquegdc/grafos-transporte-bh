@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 from transporte.dados.modelo import Linha, Padrao, Parada, Rede
+from transporte.modelo.visoes import EMBARQUE
 
 
 def _rede() -> Rede:
@@ -17,8 +19,8 @@ def _rede() -> Rede:
         "P2": Padrao("P2", "L1", ("B", "C")),
     }
     viagens = {
-        "P1": [(7 * 3600, 7 * 3600 + 120)],
-        "P2": [(7 * 3600, 7 * 3600 + 180)],
+        "P1": [(7 * 3600, 7 * 3600 + 120), (7 * 3600 + 200, 7 * 3600 + 320)],
+        "P2": [(7 * 3600, 7 * 3600 + 180), (7 * 3600 + 300, 7 * 3600 + 480)],
     }
     return Rede(
         paradas=paradas,
@@ -46,6 +48,14 @@ def test_pagina_exibe_metricas_e_informacao_da_amostra() -> None:
     assert metricas["Eficiência global (G_P)"] != "—"
     assert "min" in metricas["Tempo médio de viagem (G_E)"]
     assert any("Amostra:" in legenda.value for legenda in teste.caption)
+    assert any("podem levar algum tempo" in legenda.value for legenda in teste.caption)
+    _, _, ge, _ = teste.session_state["visoes-f-efi"]
+    embarques = [
+        ge.grafo.aresta(a)
+        for _, _, a in ge.grafo.vizinhos(ge.vertice_da_parada["A"])
+        if ge.grafo.aresta(a)[3] == EMBARQUE
+    ]
+    assert any(aresta[2] == pytest.approx(100) for aresta in embarques)
 
 
 def test_pagina_rejeita_rede_com_menos_de_duas_paradas() -> None:
