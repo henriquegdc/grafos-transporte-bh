@@ -7,14 +7,19 @@ vértice ou da aresta.
 
 from __future__ import annotations
 
+import math
 import random
+from itertools import combinations
 
 import networkx as nx
 import pytest
 
 from transporte.algoritmos.centralidade import (
+    EstimativaIntermediacao,
     Graus,
+    _estimar_por_origens,
     distribuicao_graus,
+    estimar_intermediacao,
     graus,
     intermediacao,
     ranking,
@@ -310,3 +315,95 @@ def test_intermediacao_com_peso_zero_so_aceita_sem_pesos(semente):
     assert intermediacao(g, ponderado=False) == pytest.approx(
         como_lista(g, esperado, 0.0), abs=1e-9
     )
+
+
+# --- intermediação por amostragem (RNF-06) ---------------------------------------------
+
+
+def test_estimativa_por_origens_gabarito(g):
+    """Origens {0, 1} no grafo da fixture, N = 5, k = 2.
+
+    delta_0 = [0, 1, 1, 1, 0] (pares (0, 2) e (0, 4)); delta_1 = [0, 0, 1, 0, 0] (par (1, 4)).
+    Estimativa = 5/2 * (delta_0 + delta_1) = [0, 2.5, 5, 2.5, 0].
+    Vértice 1: amostras (1, 0), média 0.5, variância amostral 0.5;
+    erro = 5 * sqrt(0.5 / 2 * (5 - 2) / 5) = 5 * sqrt(0.15).
+    Vértice 2: amostras (1, 1), variância 0, erro 0.
+    """
+    r = _estimar_por_origens(g, [0, 1], 5, 0, ponderado=True, normalizar=False)
+    assert r.valores == pytest.approx([0, 2.5, 5, 2.5, 0])
+    assert r.erro_padrao == pytest.approx([0, 5 * math.sqrt(0.15), 0, 5 * math.sqrt(0.15), 0])
+    assert (r.tamanho_amostra, r.tamanho_populacao, r.exata) == (2, 5, False)
+
+
+@pytest.mark.parametrize("k", [None, 5, 50])
+def test_estimativa_com_todas_as_origens_e_exata(g, k):
+    r = estimar_intermediacao(g, k)
+    assert isinstance(r, EstimativaIntermediacao)
+    assert r.exata
+    assert r.valores == intermediacao(g)
+    assert r.erro_padrao == [0.0] * 5
+
+
+@pytest.mark.parametrize("k", [1, 2, 3, 4])
+def test_estimativa_nao_viesada_media_de_todas_as_amostras(g, k):
+    """A média da estimativa sobre todas as C(5, k) amostras é a intermediação exata."""
+    amostras = list(combinations(range(5), k))
+    soma = [0.0] * 5
+    for origens in amostras:
+        r = _estimar_por_origens(g, list(origens), 5, 0, ponderado=True, normalizar=False)
+        soma = [a + b for a, b in zip(soma, r.valores, strict=True)]
+    media = [x / len(amostras) for x in soma]
+    assert media == pytest.approx(intermediacao(g))
+
+
+@pytest.mark.parametrize("semente", range(5))
+@pytest.mark.parametrize("ponderado", [True, False])
+@pytest.mark.parametrize("normalizar", [False, True])
+def test_estimativa_nao_viesada_em_grafos_aleatorios(semente, ponderado, normalizar):
+    g, _ref = grafo_aleatorio(semente)
+    ativos = [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
+    amostras = list(combinations(ativos, 2))
+    soma = [0.0] * g.num_vertices()
+    for origens in amostras:
+        r = _estimar_por_origens(g, list(origens), len(ativos), 0, ponderado, normalizar)
+        soma = [a + b for a, b in zip(soma, r.valores, strict=True)]
+    media = [x / len(amostras) for x in soma]
+    exato = intermediacao(g, ponderado=ponderado, normalizar=normalizar)
+    assert media == pytest.approx(exato, abs=1e-9)
+
+
+def test_estimativa_reproduzivel_pela_semente():
+    g, _ref = grafo_aleatorio(7)
+    a = estimar_intermediacao(g, 3, semente=11)
+    b = estimar_intermediacao(g, 3, semente=11)
+    assert a == b
+    assert a.semente == 11 and a.tamanho_amostra == 3 and not a.exata
+    outras = {tuple(estimar_intermediacao(g, 3, semente=s).valores) for s in range(10)}
+    assert len(outras) > 1
+
+
+def test_estimativa_ignora_vertice_desativado(g):
+    g.desativar_vertice(1)
+    r = estimar_intermediacao(g, 2, semente=3)
+    assert r.tamanho_populacao == 4
+    assert r.valores[1] == 0 and r.erro_padrao[1] == 0
+    assert estimar_intermediacao(g).valores == intermediacao(g)
+
+
+def test_estimativa_com_uma_origem_tem_erro_infinito(g):
+    r = _estimar_por_origens(g, [0], 5, 0, ponderado=True, normalizar=False)
+    assert r.valores == pytest.approx([0, 5, 5, 5, 0])
+    assert r.erro_padrao == [0, math.inf, math.inf, math.inf, 0]
+
+
+@pytest.mark.parametrize("k", [0, -1])
+def test_estimativa_rejeita_amostra_nao_positiva(g, k):
+    with pytest.raises(ValueError):
+        estimar_intermediacao(g, k)
+
+
+def test_estimativa_normalizada_usa_mesma_escala_no_erro(g):
+    bruto = _estimar_por_origens(g, [0, 1], 5, 0, ponderado=True, normalizar=False)
+    norm = _estimar_por_origens(g, [0, 1], 5, 0, ponderado=True, normalizar=True)
+    assert norm.valores == pytest.approx([x / 12 for x in bruto.valores])
+    assert norm.erro_padrao == pytest.approx([x / 12 for x in bruto.erro_padrao])

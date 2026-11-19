@@ -1,0 +1,49 @@
+{
+  "comando": "python benchmarks/medir_nucleo.py dados/brutos/bhtrans.zip",
+  "feed": {
+    "caminho": "dados/brutos/bhtrans.zip",
+    "sha256": "241f0bb2dbb80ca59de9a9e59eb1135f359537b5dee6199ce6c47323140c01c0"
+  },
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26300-SP0",
+    "processador": "Intel64 Family 6 Model 186 Stepping 3, GenuineIntel",
+    "python": "3.12.14"
+  },
+  "rede": {
+    "dia": "2026-11-11",
+    "paradas": 9660
+  },
+  "semente": 2026,
+  "repeticoes": 5,
+  "heap_100k_inserir_e_extrair": "1.463 s ± 0.216 s (n=5)",
+  "visoes": [
+    {
+      "visao": "G_P",
+      "V": 9660,
+      "E": 122799,
+      "dijkstra_20_origens": "4.990 s ± 0.725 s (n=5)",
+      "dijkstra_por_busca_ms": 249.5,
+      "bfs_20_origens": "2.042 s ± 0.678 s (n=5)",
+      "bfs_por_busca_ms": 102.1,
+      "vertices_alcancados_min_max": [
+        9657,
+        9657
+      ],
+      "dijkstra_igual_ao_networkx": true
+    },
+    {
+      "visao": "G_E (pico_manha)",
+      "V": 46102,
+      "E": 209025,
+      "dijkstra_20_origens": "15.536 s ± 3.494 s (n=5)",
+      "dijkstra_por_busca_ms": 776.8,
+      "bfs_20_origens": "4.671 s ± 0.921 s (n=5)",
+      "bfs_por_busca_ms": 233.6,
+      "vertices_alcancados_min_max": [
+        36149,
+        36258
+      ],
+      "dijkstra_igual_ao_networkx": true
+    }
+  ]
+}

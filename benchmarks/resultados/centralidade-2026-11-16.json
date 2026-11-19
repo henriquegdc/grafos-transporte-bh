@@ -1,0 +1,164 @@
+{
+  "comando": "python benchmarks/medir_centralidade.py dados/brutos/bhtrans.zip --exato",
+  "feed": {
+    "caminho": "dados/brutos/bhtrans.zip",
+    "sha256": "241f0bb2dbb80ca59de9a9e59eb1135f359537b5dee6199ce6c47323140c01c0"
+  },
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26300-SP0",
+    "processador": "Intel64 Family 6 Model 186 Stepping 3, GenuineIntel",
+    "python": "3.12.14"
+  },
+  "rede": {
+    "dia": "2026-11-11",
+    "paradas": 9660,
+    "padroes": 698
+  },
+  "G_P": {
+    "V": 9660,
+    "E": 122799
+  },
+  "semente": 2026,
+  "repeticoes": 3,
+  "graus": {
+    "tempo_todas": "97.940 ms ± 10.277 ms (n=3)",
+    "tempo_so_viagem": "149.280 ms ± 16.738 ms (n=3)",
+    "saida_maxima_todas": 68,
+    "saida_maxima_viagem": 20,
+    "distribuicao_saida_viagem": {
+      "0": 201,
+      "1": 7271,
+      "2": 1642,
+      "3": 362,
+      "4": 104,
+      "5": 38,
+      "6": 20,
+      "7": 12,
+      "8": 4,
+      "9": 1,
+      "10": 2,
+      "11": 1,
+      "12": 1,
+      "20": 1
+    },
+    "top5_saida_viagem": [
+      [
+        "14784108",
+        20
+      ],
+      [
+        "14787688",
+        12
+      ],
+      [
+        "14784558",
+        11
+      ],
+      [
+        "14784866",
+        10
+      ],
+      [
+        "14790233",
+        10
+      ]
+    ]
+  },
+  "exato": {
+    "segundos_uma_execucao": 2632.4,
+    "top10": [
+      [
+        "14788322",
+        "Avenida Presidente Antonio Carlos 8271",
+        11309544.0
+      ],
+      [
+        "14786066",
+        "Avenida Presidente Antonio Carlos 3835",
+        11302786.0
+      ],
+      [
+        "14791501",
+        "Avenida Presidente Antonio Carlos 6519",
+        11294591.0
+      ],
+      [
+        "14790801",
+        "Avenida Presidente Antonio Carlos 4303",
+        11118891.0
+      ],
+      [
+        "14792706",
+        "Avenida Presidente Antonio Carlos 7645",
+        10881511.0
+      ],
+      [
+        "14791159",
+        "Rod Anel Rodoviario Celso Mello Azevedo 16099",
+        10289044.0
+      ],
+      [
+        "14789638",
+        "Rod Anel Rodoviario Celso Mello Azevedo 14849",
+        9912569.0
+      ],
+      [
+        "14793264",
+        "Rod Anel Rodoviario Celso Mello Azevedo 15111",
+        9911487.0
+      ],
+      [
+        "14786907",
+        "Rod Anel Rodoviario Celso Mello Azevedo 14315",
+        9907001.0
+      ],
+      [
+        "14789734",
+        "Rod Anel Rodoviario Celso Mello Azevedo 13549",
+        9886323.0
+      ]
+    ]
+  },
+  "amostras": {
+    "25": {
+      "tempo": "5.190 s ± 0.483 s (n=3)",
+      "top10_em_comum": 5,
+      "top50_em_comum": 35,
+      "erro_relativo_mediano_top100": 0.1861528875642271,
+      "erro_relativo_maximo_top100": 2.043290159509903,
+      "cobertura_2_erros_padrao_top100": 1.0,
+      "cobertura_2_erros_padrao_todas": 0.45117311350665823,
+      "erro_padrao_zero_todas": 0.21200591841048405
+    },
+    "50": {
+      "tempo": "15.778 s ± 7.870 s (n=3)",
+      "top10_em_comum": 9,
+      "top50_em_comum": 37,
+      "erro_relativo_mediano_top100": 0.12165562598717108,
+      "erro_relativo_maximo_top100": 0.5225164281263057,
+      "cobertura_2_erros_padrao_top100": 0.97,
+      "cobertura_2_erros_padrao_todas": 0.46459522299725214,
+      "erro_padrao_zero_todas": 0.16328471781864298
+    },
+    "100": {
+      "tempo": "23.017 s ± 2.134 s (n=3)",
+      "top10_em_comum": 8,
+      "top50_em_comum": 40,
+      "erro_relativo_mediano_top100": 0.08523676758350457,
+      "erro_relativo_maximo_top100": 0.6416828226226221,
+      "cobertura_2_erros_padrao_top100": 1.0,
+      "cobertura_2_erros_padrao_todas": 0.5096174170365674,
+      "erro_padrao_zero_todas": 0.11699429296131895
+    },
+    "200": {
+      "tempo": "45.646 s ± 1.964 s (n=3)",
+      "top10_em_comum": 8,
+      "top50_em_comum": 43,
+      "erro_relativo_mediano_top100": 0.06133531248636136,
+      "erro_relativo_maximo_top100": 0.3505065600341888,
+      "cobertura_2_erros_padrao_top100": 1.0,
+      "cobertura_2_erros_padrao_todas": 0.5584443035299091,
+      "erro_padrao_zero_todas": 0.08402029169308814
+    }
+  }
+}
