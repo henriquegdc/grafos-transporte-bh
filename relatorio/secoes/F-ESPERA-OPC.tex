@@ -1,9 +1,0 @@
-\subsection{Sensibilidade ao intervalo entre ônibus}\label{sec:F-ESPERA-OPC}
-O cenário multiplica o intervalo estimado dos padrões de uma linha na faixa escolhida.
-Duas visões $G_E$ representam o serviço original e o alterado. Dijkstra calcula o menor
-tempo para os mesmos pares nos dois cenários; a origem é sorteada entre as paradas da
-linha e o destino em toda a rede. Com $n$ pares, o custo adicional à montagem
-das visões é $O(n(V+E)\log V)$. No pico da manhã do GTFS de BH (feed de 18/11), dobrar o
-intervalo da linha de ID 561787 elevou a espera estimada do padrão de 9,44 para 18,89 minutos,
-mas só 3 de 100 pares ficaram mais lentos, em média 1,35 minuto; nos outros 97, o melhor trajeto não depende dessa linha.
-A aplicação mantém fixos a malha, os tempos de viagem e a oferta nas demais linhas.

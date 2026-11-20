@@ -131,7 +131,7 @@ python benchmarks/medir_falhas_extensoes.py dados/brutos/bhtrans.zip --paradas 1
 | 2.º | parada 36020150, Rua das Canárias, 1105: 1,071 % |
 | 3.º | parada 36020149, Rua das Canárias, 729: 0,895 % |
 | Linha mais crítica | 9550 (561853), 5.º lugar: 0,398 % |
-| Paradas desconectadas por algum candidato | nenhuma |
+| Paradas desconectadas por algum candidato | 1: a linha 5034 (600190, 22.º lugar, 0,019 %) isola uma parada; corrigido em 20/11 na F-AVAL, a versão anterior dizia "nenhuma", em desacordo com o JSON |
 
 Leitura: a parada de maior intermediação (14784615, Avenida Amazonas 322) causa só 0,139 %; ranking de criticidade e de centralidade não coincidem. Perdas com 30 origens; ver a variação amostral na F-RES.
 

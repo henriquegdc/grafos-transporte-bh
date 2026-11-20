@@ -106,7 +106,18 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 
 ## Resultados para o relatório
 
-Execução em 11/11/2026, Python 3.12.13, macOS 26.6.2 arm64, na máquina desta sessão. Feed local baixado em 05/11, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2`; dia 2026-11-04. Comando reproduzível com o ambiente do README:
+**Regerado em 20/11/2026 (vai para o relatório).** Feed oficial de 18/11, SHA-256
+`8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026
+(9.660 paradas, 303 linhas, 698 padrões, 24.503 viagens, 0 inconsistências); Intel Core
+i5-13600KF, Windows 11 (10.0.26200), Python 3.12.10. Comando:
+`PYTHONPATH=src python benchmarks/medir_espera.py dados/brutos/bhtrans.zip > benchmarks/resultados/espera-2026-11-20.json`.
+Cinco repetições com `medir`, médias e desvios amostrais em ms: `estimar_intervalos` 7,620 ±
+0,583; `calcular_esperas` 0,137 ± 0,004; `construir_ge` 345,310 ± 13,035; `consultar_ge_pronto`
+18,005 ± 0,599; `simular_trajeto_completo` 372,848 ± 1,888. G_E do pico da manhã: V=46.102,
+E=209.025. A consulta 14788851 → 14792190 às 08h e a cobertura por faixa são idênticas às da
+medição de 11/11 abaixo (40,24 min; 481 estimados e 20 provisórios no pico da manhã).
+
+Medição anterior, substituída no relatório: execução em 11/11/2026, Python 3.12.13, macOS 26.6.2 arm64, na máquina desta sessão. Feed local baixado em 05/11, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2`; dia 2026-11-04. Comando reproduzível com o ambiente do README:
 
 ```sh
 source .venv/bin/activate

@@ -263,7 +263,9 @@ Com duas ou mais partidas distintas, publica H e calcula H/2. Com uma partida, o
 
 Para N viagens, P padrões e F faixas: deduplicação e ordenação custam O(N log N), filtragem por faixa O(FN + PF); espaço O(N + PF). Simular acrescenta a construção de G_E e o Dijkstra O((V + E) log V), com espaço O(N + PF + V + E). A tabela da página custa O(PF + FN). O mapa recebe apenas as paradas do trajeto, sem alterar a rede original.
 
-Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. Não há consulta à próxima partida exata nem Monte Carlo. A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
+Resultado (feed de 18/11, i5-13600KF, 20/11, `benchmarks/resultados/espera-2026-11-20.json`): no pico da manhã, 481 padrões com estimativa e 20 com espera provisória; G_E com V = 46.102 e E = 209.025. Estimar os intervalos leva 7,6 ± 0,6 ms e a simulação completa da página, 372,8 ± 1,9 ms (cinco repetições). A consulta 14788851 → 14792190 às 08h dá 40,24 min: 9,72 de caminhada, 15,34 de espera e 15,18 de viagem.
+
+Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. No modo H/2 não há consulta à próxima partida exata nem Monte Carlo; os dois ficam no quadro de horários de G_T (F-ESPERA-2, abaixo). A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
 
 #### Quadro de horários e Monte Carlo (F-ESPERA-2)
 
@@ -284,6 +286,12 @@ Confira também quantos sorteios tiveram caminho. Uma mesma semente permite repe
 a comparação. As partidas representam o dia de serviço programado e podem passar
 da meia-noite. O leitor conserva um horário por parada e a simulação não estima
 atrasos ou permanência do veículo no ponto.
+
+Resultado (feed de 18/11, i5-13600KF, 20/11, `quadro-horarios-bhtrans.json`): G_T com
+V = 9.660 e E = 146.630, construído em 455 ± 13 ms; a chegada mais cedo leva 11,1 ± 1,1 ms e o
+Monte Carlo de 30 saídas, 383 ± 4 ms. Entre 14788851 e 14792190 às 08h, o quadro dá 23,67 min
+(1,87 min de espera, 4 baldeações), contra 40,24 min por H/2. G_T não tem tempo mínimo de
+transferência: uma troca do exemplo tem 0 s de espera, o que favorece o quadro na comparação.
 
 ### 5.3 Menos baldeações (F-BALD)
 
@@ -617,6 +625,11 @@ coincidentes e para pares sem trajeto. A tabela agrupa as origens pelos quadrant
 formados no centro do retângulo das paradas para oferecer uma leitura espacial
 reproduzível, sem depender de limites administrativos externos.
 
+Resultado (feed de 18/11, i5-13600KF, 20/11, `f-efi-2-bhtrans.json`): a partir da parada
+14788851 no pico da manhã, 68, 603, 1.912 e 4.121 paradas em 15, 30, 45 e 60 min (isócrona de
+60 min em 55,2 ± 0,6 ms). Em 12 pares (semente 2026), o maior desvio foi 1,55: 13,7 km
+percorridos para 8,9 km em linha reta (14792221 → 14786004); índices em 759 ± 9 ms.
+
 #### 5.5.2 Comparação por faixa (F-EFI-OPC)
 
 O modo **Comparar faixas** fixa os pares e a semente. Cada faixa reconstrói G_E
@@ -626,6 +639,12 @@ de tempo usa os pares alcançáveis; a eficiência amostrada divide a soma de 1/
 por todos os pares. A contagem de alcançáveis ajuda a interpretar mudanças na
 composição da média. O erro padrão da eficiência inclui a correção para população finita;
 o do tempo usa as durações alcançáveis, como na análise essencial. A comparação representa a programação do dia carregado.
+
+Resultado (feed de 18/11, i5-13600KF, 20/11, `f-efi-opc-bhtrans.json`, 12 pares, semente 2026,
+todos alcançáveis): tempo médio de 59,95, 62,96, 60,08 e 66,03 min (pico da manhã, entrepico,
+pico da tarde, noite), com erro padrão de 5,0 a 5,3 min; eficiência de 3,02, 2,90, 3,03 e
+2,72 × 10⁻⁴ s⁻¹, com erro padrão de 0,24 a 0,29. As diferenças entre faixas são da ordem de um
+erro padrão: com 12 pares, não distinguem as faixas. A comparação das quatro levou 4,25 ± 0,05 s.
 
 ### 5.6 Falhas e resiliência (F-RES)
 
@@ -673,7 +692,7 @@ ranking = ranking_criticidade(gp, candidatos, indice, amostra=30, semente=2026)
 
 **Na interface**, a aba Ranking da página Falhas deixa escolher N, quantas linhas sortear e as amostras; antes de rodar mostra o custo estimado (Dijkstras vezes o tempo de um Dijkstra medido na própria rede) e guarda os resultados na sessão por parâmetros.
 
-Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Nenhum candidato desconectou paradas, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
+Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Só a linha 5034 (22.º, 0,019 %) desconectou uma parada, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
 
 #### Falhas múltiplas e em sequência (F-RES-OPC)
 
@@ -939,6 +958,24 @@ coincidem com os do NetworkX. No G_P real (V = 9.660, E = 122.799), nosso tempo 
 que monta a adjacência simplificada uma vez, é mais rápido; nos outros, `Grafo.vizinhos`
 monta a lista de vizinhos ativos a cada visita. Inclinações nas sintéticas: BFS 1,01, Dijkstra
 1,06, Tarjan 1,10 e Brandes 2,04, todas com R² ≥ 0,999.
+
+### Tabela consolidada de desempenho (F-AVAL)
+
+`python benchmarks/consolidar.py` gera `relatorio/secoes/tabela-desempenho.tex` (RF-AVA-02):
+algoritmo, feature, visão, complexidade teórica (da docstring), V, E e tempo médio ± desvio de
+cada medição. Cada JSON de `benchmarks/resultados/` tem um formato, então há um extrator por
+arquivo; as medições que só existem na seção Resultados de um arquivo de feature (F-ROTA,
+F-ROTA-2, F-ROTA-OPC, F-BALD, F-BALD-2, F-EFI, F-RES) entram por uma lista no script, com †
+na tabela.
+
+Por que agrupar por máquina e feed: as medições vieram de máquinas diferentes (i5-13600KF, Core
+5 120U, i5-1235U e Ryzen 7 7730U) e de instantâneos diferentes do
+GTFS (11/11 e 18/11). As medições da F-ESPERA, F-ESPERA-2, F-EFI-2 e F-EFI-OPC, feitas antes num
+Apple M4 no serviço de 04/11, foram regeradas em 20/11 no feed de 18/11 (i5-13600KF). Tempo de parede só se compara dentro da mesma máquina e da mesma rede; misturar tudo numa
+coluna sugeriria comparações falsas. Alternativa descartada: remedir tudo numa só máquina no feed
+de 18/11, que não cabia no prazo. Quando o JSON não traz a máquina ou o SHA do feed, o script usa
+o que o arquivo da feature registra ou escreve "não registrado"; não há valor inventado. Média
+sem desvio aparece quando a fonte só traz média ou mediana por consulta.
 
 ## 8. Registro de decisões
 

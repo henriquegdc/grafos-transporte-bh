@@ -1,0 +1,48 @@
+% Gerado por benchmarks/consolidar.py a partir de benchmarks/resultados/*.json e da
+% seção Resultados dos arquivos de feature (marcados com \dag). Não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Complexidade teórica e tempo medido com \texttt{medir}, por máquina e feed: média $\pm$ desvio amostral de $n$ execuções, ou só a média (méd.) ou a mediana (med.) de $n$ consultas quando a fonte não traz o desvio. $\dag$: número registrado só no arquivo da feature, sem JSON. Tempos de grupos diferentes não são comparáveis entre si.}
+\label{tab:desempenho}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.7cm} l l >{\raggedright\arraybackslash}X r r r r@{}}
+\toprule
+Algoritmo e escopo & Feature & Visão & Complexidade & $|V|$ & $|E|$ & Tempo & $n$ \\
+\midrule
+\multicolumn{8}{@{}l}{\textit{Intel Core i5-13600KF (Windows 11); feed baixado em 18/11, serviço de 18/11}} \\
+Dijkstra, 200 consultas $\dag$ & F-ROTA & $G_E$ & $O((V + E)\log V)$ & 46{.}102 & 209{.}025 & 13,2 $\pm$ 0,1 s & 5 \\
+A*, por busca $\dag$ & F-ROTA-2 & $G_E$ & $O((V + E)\log V)$ & 46{.}102 & 209{.}025 & 81,0 ms (med.) & 200 \\
+Yen, $k = 5$, por consulta $\dag$ & F-ROTA-OPC & $G_E$ & $O(k\,n(V + E)\log V)$ & 46{.}102 & 209{.}025 & 4,30 s (med.) & 20 \\
+BFS, 20 origens & P0-GRAFO & $G_P$ & $O(V + E)$ por origem & 9{.}660 & 122{.}799 & 274 $\pm$ 2 ms & 3 \\
+Dijkstra, 20 origens & P0-GRAFO & $G_P$ & $O((V + E)\log V)$ por origem & 9{.}660 & 122{.}799 & 770 $\pm$ 3 ms & 3 \\
+Brandes, 20 origens & F-MET & $G_P$ & $O(k(V + E)\log V)$ & 9{.}660 & 122{.}799 & 864 $\pm$ 12 ms & 3 \\
+Tarjan iterativo & F-RES & $G_P$ & $O(V + E)$ & 9{.}660 & 122{.}799 & 47,6 $\pm$ 20,4 ms & 3 \\
+Simulação de trajeto completa & F-ESPERA & $G_E$ & $O(N\log N + PF + FN) + O((V + E)\log V)$ & 46{.}102 & 209{.}025 & 373 $\pm$ 2 ms & 5 \\
+Isócrona, 60 min & F-EFI-2 & $G_E$ & $O((V' + E')\log E')$ & 46{.}102 & 209{.}025 & 55,2 $\pm$ 0,6 ms & 5 \\
+Índice de desvio, 12 pares & F-EFI-2 & $G_E$ & $O(m(V + E)\log E)$ & 46{.}102 & 209{.}025 & 759 $\pm$ 9 ms & 5 \\
+Comparação de 4 faixas, 12 pares & F-EFI-OPC & $G_E$ & $O(F(k(V + E)\log E))$ & 46{.}102 & 209{.}025 & 4,25 $\pm$ 0,05 s & 5 \\
+Ranking, 30 candidatos & F-RES-2 & $G_P$ & $O((c + 1)s(V + E)\log V)$ & 9{.}660 & 122{.}799 & 38,9 s & 1 \\
+Falhas em sequência, 10 passos & F-RES-OPC & $G_P$ & $O((k + 1)s(V + E)\log V)$ & 9{.}660 & 122{.}799 & 13,7 s & 1 \\
+Proximidade, $k = 50$ & F-MET-2 & $G_P$ & $O(k(V + E)\log V)$ & 9{.}660 & 122{.}799 & 2,18 $\pm$ 0,01 s & 3 \\
+Propagação de rótulos (11 it.) & F-MET-OPC & $G_P$ & $O(V + E)$ por iteração & 9{.}660 & 122{.}799 & 140 $\pm$ 3 ms & 3 \\
+Fronteira de Pareto, por par & F-BALD-OPC & $G_E$ & $O(B^2(V + E)\log(BV))$ & 46{.}102 & 209{.}025 & 165 ms (méd.) & 200 \\
+Construção de $G_T$ & F-ESPERA-2 & $G_T$ & $O(V + L + K + N\log(k + 1))$ & 9{.}660 & 146{.}630 & 455 $\pm$ 13 ms & 5 \\
+Chegada mais cedo & F-ESPERA-2 & $G_T$ & $O((V + E)\log E + E\log(k + 1))$ & 9{.}660 & 146{.}630 & 11,1 $\pm$ 1,1 ms & 5 \\
+Monte Carlo, 30 saídas & F-ESPERA-2 & $G_T$ & $S$ consultas & 9{.}660 & 146{.}630 & 383 $\pm$ 4 ms & 5 \\
+Sensibilidade, 100 pares & F-ESPERA-OPC & $G_E$ & $O(n(V + E)\log V)$ & 46{.}102 & 209{.}025 & 13,2 $\pm$ 0,2 s & 5 \\
+\multicolumn{8}{@{}l}{\textit{Intel Core 5 120U (Windows 11); feed de 11/11 (SHA 241f0bb2), serviço de 11/11}} \\
+Graus de entrada e saída & F-MET & $G_P$ & $O(V + E)$ & 9{.}660 & 122{.}799 & 97,9 $\pm$ 10,3 ms & 3 \\
+Brandes exato & F-MET & $G_P$ & $O(V(V + E)\log V)$ & 9{.}660 & 122{.}799 & 2{.}632 s & 1 \\
+Heap: $10^5$ inserções e extrações & P0-GRAFO & -- & $O(n\log n)$ & -- & -- & 1,46 $\pm$ 0,22 s & 5 \\
+\multicolumn{8}{@{}l}{\textit{Intel Core i5-1235U (Windows 11); feed baixado em 11/11, serviço de 04/11}} \\
+Construção de $G_L$ (pico) $\dag$ & F-BALD & $G_L$ & $O(V + K\log K + L + C)$ & 501 & 85{.}606 & 3,09 $\pm$ 0,02 s & 5 \\
+BFS por camadas, 200 consultas $\dag$ & F-BALD & $G_L$ & $O(r(V + E + T))$ & 501 & 85{.}606 & 7,33 $\pm$ 0,17 s & 5 \\
+Comparação com limite, por par $\dag$ & F-BALD-2 & $G_E$ & $O((k + 2)(V + E)\log((k + 2)V))$ & 46{.}100 & 208{.}956 & 213 ms (méd.) & 200 \\
+Falha de uma linha, $s = 100$ $\dag$ & F-RES & $G_P$ & $O(s(V + E)\log V)$ & 9{.}659 & 122{.}732 & 38,0 $\pm$ 4,5 s & 3 \\
+\multicolumn{8}{@{}l}{\textit{AMD Ryzen 7 7730U (Windows 11); feed baixado em 18/11, serviço de 18/11}} \\
+Eficiência global, $s = 100$ $\dag$ & F-EFI & $G_P$ & $O(V + s(V + E)\log V)$ & 9{.}660 & 122{.}799 & 8,70 $\pm$ 0,13 s & 3 \\
+Tempo médio de viagem, 100 pares $\dag$ & F-EFI & $G_E$ & $O(V + k(V + E)\log V + m)$ & 46{.}102 & 209{.}025 & 26,3 $\pm$ 0,1 s & 3 \\
+\bottomrule
+\end{tabularx}
+\end{table}

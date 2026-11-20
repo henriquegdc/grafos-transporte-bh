@@ -1,41 +1,25 @@
 % Seção: Implementação
 % Dono: Thiago e Arthur · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: Núcleo de grafo e heap, organização do código e interface
+% Condensada em 20/11 para o orçamento de 15 páginas; o diagrama de sequência da página
+% Início (figuras/sequencia-p0-ui.png) segue em docs/diagramas/.
 \section{Implementação}\label{sec:impl}
 
-O núcleo (\texttt{src/transporte/grafo/}) não usa biblioteca de grafo nem o
-\texttt{heapq}. O grafo guarda os atributos de vértices e arestas em listas paralelas
-indexadas por identificadores estáveis, e a lista de adjacência de cada vértice contém os
-identificadores das arestas que saem dele, o que permite arestas paralelas (viagem e
-caminhada entre as mesmas paradas) e devolve, no caminho, o tipo de cada passo. Vértices e
-arestas são desativados por uma marcação em $O(1)$ e as buscas os ignoram, o que permite
-simular falhas sem reconstruir o grafo. A fila de prioridade é um heap binário de mínimo
-próprio, e o Dijkstra usa inserção preguiçosa, mantendo $O((V + E)\log V)$. No feed real,
-um Dijkstra completo leva 250~ms em $G_P$ ($V = 9{.}660$) e 777~ms em $G_E$ do pico da
-manhã ($V = 46{.}102$), com distâncias iguais às do NetworkX em 20 origens sorteadas; o
-heap faz 100 mil inserções e extrações em 1,5~s (Intel Core 5 120U, Python 3.12). Como
-limitação, o grafo só aceita pesos não negativos e nunca remove vértices ou arestas.
+O núcleo (\texttt{src/transporte/grafo/}) não usa biblioteca de grafo nem o \texttt{heapq}. O
+grafo guarda os atributos de vértices e arestas em listas paralelas indexadas por identificadores
+estáveis, e a lista de adjacência de cada vértice contém os identificadores das arestas que saem
+dele, o que permite arestas paralelas (viagem e caminhada entre as mesmas paradas) e devolve, no
+caminho, o tipo de cada passo. Vértices e arestas são desativados por uma marcação em $O(1)$ e
+as buscas os ignoram, o que permite simular falhas sem reconstruir o grafo. A fila de prioridade
+é um heap binário de mínimo próprio. No feed real, um Dijkstra completo leva 250~ms em $G_P$ e
+777~ms em $G_E$ do pico da manhã, com distâncias iguais às do NetworkX em 20 origens; o heap faz
+100 mil inserções e extrações em 1,5~s (Intel Core 5 120U, Python 3.12). O grafo só aceita pesos
+não negativos e nunca remove vértices ou arestas.
 
-O hook versionado em \texttt{.githooks/pre-commit} analisa a árvore sintática
-dos módulos de produção para detectar imports proibidos e executa o Ruff. Um
-erro identifica arquivo e linha e bloqueia o commit. A suíte de testes é
-executada antes do envio da branch para revisão.
-
-A página Início carrega a pasta ou ZIP GTFS, reutiliza o resultado do leitor
-pelo cache e copia a rede para cada sessão. A Figura~\ref{fig:inicio-sequencia}
-mostra a montagem do resumo. As demais páginas recebem a rede por
-\texttt{render(rede)} e desenham os resultados em camadas Folium.
-
-\begin{figure}[ht]
-  \centering
-  \includegraphics[height=0.20\textheight,keepaspectratio]{sequencia-p0-ui.png}
-  \caption{Preparação do resumo da rede na página Início.}
-  \label{fig:inicio-sequencia}
-\end{figure}
-
-No serviço de 04/11, em macOS arm64 e Python 3.12.13, três repetições deram
-$7{,}827\pm0{,}034$~s para a carga com cache vazio e $0{,}671\pm0{,}017$~s
-com cache preenchido, incluindo a cópia por sessão. Montar o resumo de $G_P$
-e $G_E$ no pico da manhã levou $0{,}440\pm0{,}001$~s. A medição cobre a
-preparação dos dados até os totais de vértices e arestas. Desenho e interação
-com o mapa no navegador ficam fora do intervalo medido.
+O gancho \texttt{.githooks/pre-commit} analisa a árvore sintática dos módulos de produção para
+detectar imports proibidos e executa o Ruff. A interface é uma aplicação Streamlit com uma
+página por pergunta: a página Início carrega a pasta ou ZIP do GTFS, reutiliza o resultado do
+leitor pelo cache e copia a rede para cada sessão; as demais recebem a rede e desenham os
+resultados em camadas Folium. No serviço de 04/11 (macOS arm64, Python 3.12.13, três
+repetições), a carga levou $7{,}827 \pm 0{,}034$~s com cache vazio e $0{,}671 \pm 0{,}017$~s com
+cache preenchido, e montar o resumo de $G_P$ e $G_E$, $0{,}440 \pm 0{,}001$~s.

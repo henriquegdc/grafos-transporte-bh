@@ -1,0 +1,95 @@
+% Subseção: extensões desejáveis (-2) e opcionais (-OPC), juntas para caber em 15 páginas.
+% Substitui as antigas secoes/F-*-2.tex e secoes/F-*-OPC.tex (20/11/2026), cujo texto está no
+% histórico do Git. Números: os mesmos daquelas seções, com o comando e o JSON registrados
+% nos arquivos de feature (docs/plano-de-desenvolvimento/features/feature-<ID>.md):
+% F-ROTA-2/OPC: medir_rota_extensoes.py e medir_alternativos_linhas.py (20/11);
+% F-ESPERA-2: quadro-horarios-bhtrans.json; F-ESPERA-OPC: sensibilidade-bhtrans.json;
+% (F-ESPERA-2, F-EFI-2 e F-EFI-OPC regeradas no feed de 18/11 no i5-13600KF em 20/11)
+% F-BALD-2: medir_comparacao_baldeacoes.py (17/11); F-BALD-OPC: nao-dominados-2026-11-20.json;
+% F-MET-2/OPC: metricas-extensoes-2026-11-20.json; F-EFI-2: f-efi-2-bhtrans.json;
+% F-EFI-OPC: f-efi-opc-bhtrans.json; F-RES-2/OPC: falhas-extensoes-2026-11-20.json.
+% Donos: F-BALD-2, Rafael; F-ESPERA-2/OPC e F-EFI-2/OPC, Miguel; as demais, Henrique.
+\subsection{Extensões desejáveis e opcionais}\label{sec:extensoes}
+
+Cada pergunta ganhou uma extensão desejável e uma opcional, sobre as mesmas visões e o mesmo
+núcleo (Tabela~\ref{tab:extensoes}; tempos na Tabela~\ref{tab:desempenho}). Todas foram
+medidas no feed de 18/11, exceto a F-BALD-2 (serviço de 04/11).
+
+\begin{table}[t]
+\centering
+\caption{Extensões: algoritmo, complexidade e um resultado medido no feed real.}
+\label{tab:extensoes}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\textwidth}{@{}l>{\raggedright\arraybackslash}p{3.6cm}%
+  >{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Feature & Algoritmo e visão & Complexidade & Resultado medido \\
+\midrule
+F-ROTA-2 & A*, $h$ = distância$/v_{\max}$; clique no mapa ligado à parada mais próxima;
+  $G_E$ & $O((V + E)\log V)$; parada mais próxima $O(V)$ & Mesmo custo do Dijkstra em 200
+  pares; expande 99,7\% dos vértices (mediana) \\
+F-ROTA-OPC & Yen com desvios em A*; $G_E$ & $O(k\,n(V + E)\log V)$ & $k = 5$, 8 pares: os 5
+  caminhos têm a mesma sequência de linhas em todos \\
+F-ESPERA-2 & Chegada mais cedo com busca binária nas partidas; Monte Carlo de saídas; $G_T$ &
+  $O((V + E)\log E + E\log(k + 1))$ por consulta & Espera de 1,87~min pelo quadro contra
+  15,34~min por $H/2$ no mesmo par \\
+F-ESPERA-OPC & Intervalo de uma linha multiplicado; dois $G_E$ e Dijkstra por par &
+  $O(n(V + E)\log V)$ & Dobrar a linha 561787 leva a espera de 9,44 a 18,89~min; 3 de 100
+  pares ficam mais lentos \\
+F-BALD-2 & Dijkstra com estado (vértice, embarques), até $k$ baldeações; $G_L$ e $G_E$ &
+  $O((k + 2)(V + E)\log((k + 2)V))$ & Em 40 de 200 pares, menos baldeações custam 1,5~min
+  (mediana; máximo 14,5) \\
+F-BALD-OPC & Fronteira de Pareto tempo $\times$ baldeações, $B + 1$ buscas com limite; $G_E$ &
+  $O(B^2(V + E)\log(BV))$ & 170 de 200 pares com mais de um trajeto não dominado \\
+F-MET-2 & Proximidade de Wasserman e Faust, $k$ origens; $G_P$ & $O(k(V + E)\log V)$ &
+  $k = 50$ em 2,2~s; top 5 na Av.\ Pres.\ Antônio Carlos \\
+F-MET-OPC & Propagação de rótulos e modularidade; $G_P$ não dirigido & $O(V + E)$ por
+  iteração & 604 comunidades, $Q = 0{,}806$, igual ao NetworkX \\
+F-EFI-2 & Isócrona (Dijkstra limitado a $T$) e índice de desvio; $G_E$ &
+  $O((V' + E')\log E')$ na parte visitada & 68, 603, 1.912 e 4.121 paradas em 15, 30, 45 e
+  60~min \\
+F-EFI-OPC & Eficiência e tempo médio por faixa, mesmos pares; $G_E$ por faixa &
+  $O(F\,k(V + E)\log E)$ & Tempo médio de 60,0~min no pico da manhã a 66,0~min à noite \\
+F-RES-2 & Ranking: $N$ paradas mais centrais e linhas, cada uma falhando sozinha; $G_P$ &
+  $O((c + 1)s(V + E)\log V)$ & 30 candidatos em 38,9~s; maior perda 1,11\% \\
+F-RES-OPC & Falhas em sequência; remoção dirigida contra aleatória; $G_P$ &
+  $O((k + 1)s(V + E)\log V)$ & 10 remoções: 1,73\% (dirigida) contra 0,24\% (aleatória) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Trajetos.} O A* devolveu o mesmo custo do Dijkstra, mas quase não poda: 181 trechos com
+horário repetido no GTFS ficam no piso de 1~s e levam $v_{\max}$ a 1.258~m/s, e $h$ ignora as
+esperas; a mediana foi de 81,0~ms contra 64,1~ms do Dijkstra. Como os alternativos do Yen
+diferiam só no ponto de troca ou no trecho a pé, a página mostra um trajeto por sequência de
+linhas, tirando até $2k$ caminhos; ainda assim só 1 dos 8 pares ganhou uma segunda sequência,
+com cerca de 2,2 vezes o tempo do Yen puro.
+
+\textbf{Espera.} Em $G_T$, entre as paradas 14788851 e 14792190 às 08h, o
+quadro de horários deu 23,67~min de porta a porta, contra 40,24~min por $H/2$; cada modelo
+escolhe seu trajeto. $G_T$ não tem tempo mínimo de transferência: o trajeto do exemplo tem uma troca
+com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade (feed de 18/11),
+com origens sorteadas entre as paradas da linha, só 3 de 100 pares ficaram mais lentos ao dobrar
+a linha 561787, em média 1,35~min; nos outros 97 o melhor trajeto não depende dela.
+
+\textbf{Baldeações.} O tempo comparado é o do mais rápido com até $k$ baldeações, não o do
+trajeto de $G_L$, cujo desempate não olha o tempo. A comparação levou 212,9~ms por par em média
+e 1.015,5~ms no pior caso, pouco acima do 1~s do RNF-05. A fronteira de Pareto é exata porque o
+tempo mínimo com até $k$ baldeações não cresce com $k$, e coincidiu com a força bruta do
+NetworkX em 20 redes aleatórias; a maior vai de 0 a 4 baldeações em 151,4 a 98,5~min.
+
+\textbf{Centralidades e eficiência.} A proximidade coincidiu com a do NetworkX em 15 grafos
+aleatórios, mas a amostrada não traz erro padrão. As comunidades dependem da semente (587 a 608
+com cinco sementes) e saem pequenas: a maior tem 1,5\% das paradas. O maior índice de desvio em
+12 pares foi 1,55 (13,7~km percorridos para 8,9~km em linha reta, sem as curvas das ruas). Entre
+as faixas, as diferenças de tempo médio (60,0 a 66,0~min) e de eficiência (2,72 a
+$3{,}03 \times 10^{-4}\,\mathrm{s}^{-1}$) são da ordem de um erro padrão (cerca de 5~min e
+$0{,}3 \times 10^{-4}$): com 12 pares, não distinguem as faixas.
+
+\textbf{Falhas.} O ranking simula só candidatos (10 paradas de maior intermediação e 20 linhas
+sorteadas) com as mesmas 30 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur e
+Rua das Canárias); a linha 9550 é a 5.ª (0,40\%), e a parada de maior intermediação causa só
+0,14\%: centralidade e criticidade não coincidem. Nas falhas em sequência, o estado final é igual
+ao de uma falha única com todos os itens, e a intermediação do ataque dirigido é calculada uma
+vez, na rede intacta.

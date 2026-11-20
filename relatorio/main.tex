@@ -36,8 +36,12 @@
 
 \author{Thiago\inst{1}, Miguel\inst{1}, Henrique\inst{1}, Arthur\inst{1}, Caio\inst{1}, Rafael\inst{1}}
 
-\address{\pendente{curso, instituição e cidade}
-  \email{\pendente{e-mails}}
+\address{Curso de Engenharia de Software\\
+  Pontifícia Universidade Católica de Minas Gerais (PUC Minas)\\
+  Belo Horizonte, MG, Brasil
+  \email{trigocs64@gmail.com, gmiguel858@gmail.com,}\\
+  {\footnotesize\texttt{henrique.carvalho1220@gmail.com, arthur.hls25@gmail.com,}}\\
+  {\footnotesize\texttt{caiosouzamresende@gmail.com, rafaellopessouzafonseca@gmail.com}}
 }
 
 \begin{document}
@@ -45,11 +49,28 @@
 \maketitle
 
 \begin{abstract}
-  \pendente{Abstract em inglês, até 10 linhas, escrito por último (Rafael, P3).}
+  We present a Python tool that reads the GTFS feed of the Belo Horizonte bus network
+  (9,660 stops, 698 route patterns) and answers six questions with graph structures and
+  algorithms written from scratch: fastest trip, waiting time, transfers, centrality,
+  efficiency and failures. The feed becomes a normalized model and four graph views, each
+  chosen for its question: stops ($G_P$), stops and platforms ($G_E$), route patterns
+  ($G_L$) and a time-dependent graph ($G_T$). A fastest-trip query on $G_E$ (46,102
+  vertices) took 66~ms on average. The network proved structurally redundant: removing
+  the worst single line disconnects 33 stops and costs 0.50\% of global efficiency.
+  Empirical slopes on synthetic networks (1.01 to 2.04) agree with the stated complexities.
 \end{abstract}
 
 \begin{resumo}
-  \pendente{Resumo em português, até 10 linhas, escrito por último (Rafael, P3).}
+  Apresentamos uma ferramenta em Python que lê o GTFS da rede de ônibus de Belo Horizonte
+  (9.660 paradas, 698 padrões de linha) e responde seis perguntas com estruturas e
+  algoritmos de grafo implementados pelo grupo: trajeto mais rápido, espera, baldeações,
+  centralidade, eficiência e falhas. O GTFS vira um modelo normalizado e quatro visões de
+  grafo, cada uma escolhida pela pergunta: paradas ($G_P$), paradas e plataformas ($G_E$),
+  padrões ($G_L$) e um grafo dependente do horário ($G_T$). A consulta de trajeto mais
+  rápido em $G_E$ (46.102 vértices) levou 66~ms em média. A rede mostrou-se muito
+  redundante: a pior falha de linha isolada desconecta 33 paradas e custa 0,50\% da
+  eficiência global. As inclinações empíricas em redes sintéticas (1,01 a 2,04) confirmam
+  as complexidades declaradas.
 \end{resumo}
 
 \input{secoes/introducao}

@@ -1,55 +1,55 @@
 % Seção: Fundamentação
 % Dono: Thiago e Henrique · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: GTFS, modelos de grafo para transporte, algoritmos usados
-% Thiago: subseção de algoritmos (núcleo e centralidades). Henrique: GTFS e modelos, e o
-% parágrafo final (A*, Yen, eficiência, Tarjan), rascunhado em 18/11 para o Thiago revisar.
+% Thiago: subseção de algoritmos (núcleo e centralidades). Henrique: GTFS e modelos e os
+% demais algoritmos (A*, Yen, eficiência, Tarjan, proximidade, rótulos, chegada mais cedo).
+% Condensada em 20/11 para o orçamento de 15 páginas.
 \section{Fundamentação}\label{sec:fund}
 
 \subsection{GTFS e modelos de grafo para transporte}
 
 O GTFS~\cite{gtfs-reference} descreve a programação de uma rede em arquivos CSV: paradas,
 linhas, viagens, o horário de cada viagem em cada parada (\texttt{stop\_times.txt}) e os
-dias de operação. O grafo é derivado das viagens, em duas famílias de
-modelo~\cite{pyrga2008}: no \emph{dependente do tempo}, cada aresta guarda a chegada em
-função da partida; no \emph{expandido no tempo}, cada partida ou chegada vira um vértice,
-com pesos fixos e um grafo muito maior. Este trabalho usa pesos fixos por faixa horária e
-separa a parada da plataforma (parada $\times$ linha), para que trocar de linha custe uma
-nova espera (Seção~\ref{sec:modelagem}).
+dias de operação. Há duas famílias de modelo~\cite{pyrga2008}: no \emph{dependente do tempo},
+cada aresta guarda a chegada em função da partida; no \emph{expandido no tempo}, cada partida
+vira um vértice, com pesos fixos e um grafo muito maior. Usamos pesos fixos por faixa horária
+(Seção~\ref{sec:modelagem}) e, na extensão $G_T$, o modelo dependente do tempo.
 
 A espera entra como valor esperado. Seja $H$ o intervalo entre veículos consecutivos de um
-padrão na faixa, com o passageiro chegando ao acaso, independentemente do serviço.
-Então~\cite[seção~2.2]{chen2012}
-$E[W] = E[H^2]/(2E[H]) = E[H]/2 + \mathrm{Var}(H)/(2E[H])$, que, para o mesmo intervalo
-médio, é estritamente maior que $E[H]/2$ quando $\mathrm{Var}(H) > 0$. A implementação
-adota a hipótese de regularidade ($\mathrm{Var}(H) = 0$) e usa $H/2$; a parcela
-$\mathrm{Var}(H)/(2E[H])$ fundamenta a correção para intervalos irregulares e mede quanto a
-aproximação atual subestima a espera.
+padrão na faixa, com o passageiro chegando ao acaso. Então~\cite[seção~2.2]{chen2012}
+$E[W] = E[H^2]/(2E[H]) = E[H]/2 + \mathrm{Var}(H)/(2E[H])$, estritamente maior que $E[H]/2$
+quando $\mathrm{Var}(H) > 0$. A implementação adota a hipótese de regularidade
+($\mathrm{Var}(H) = 0$) e usa $H/2$; a parcela $\mathrm{Var}(H)/(2E[H])$ mede quanto essa
+aproximação subestima a espera.
 
-\subsection{Algoritmos de caminho mínimo e centralidade}
+\subsection{Algoritmos}
 
-Um grafo dirigido e ponderado $G = (V, E, w)$ tem pesos $w(u, v) \ge 0$, aqui tempos em
-segundos. A \emph{busca em largura} (BFS) acha, em $O(V + E)$, os caminhos com menos
-arestas~\cite{cormen2009}. O algoritmo de Dijkstra~\cite{dijkstra1959} acha os caminhos de
-menor peso a partir de uma origem, com pesos não negativos: fecha a cada passo o vértice
-aberto de menor distância, já definitiva, e relaxa suas arestas; com \emph{heap} binário,
-custa $O((V + E)\log V)$. Usamos \emph{inserção preguiçosa} em vez de diminuir chave: o
-vértice que melhora entra de novo e a entrada antiga é descartada ao sair; o heap chega a
-$O(E)$ entradas, mas $\log E \le 2\log V$.
+Num grafo dirigido $G = (V, E, w)$ com pesos $w(u, v) \ge 0$ (tempos em segundos), a
+\emph{busca em largura} (BFS) acha os caminhos com menos arestas em $O(V + E)$~\cite{cormen2009}.
+O Dijkstra~\cite{dijkstra1959} fecha a cada passo o vértice aberto de menor distância e relaxa
+suas arestas; com \emph{heap} binário, custa $O((V + E)\log V)$. Usamos \emph{inserção
+preguiçosa} em vez de diminuir chave: o vértice que melhora entra de novo e a entrada antiga é
+descartada ao sair; o heap chega a $O(E)$ entradas, mas $\log E \le 2\log V$.
 
 A \emph{intermediação} de $v$ é $bc(v) = \sum_{s \ne v \ne t} \sigma_{st}(v)/\sigma_{st}$,
 em que $\sigma_{st}$ conta os caminhos mínimos de $s$ a $t$ e $\sigma_{st}(v)$ os que passam
-por $v$. O algoritmo de Brandes~\cite{brandes2001} faz, por origem $s$, um Dijkstra que
-conta $\sigma_{sv}$ e guarda predecessores, e acumula em ordem decrescente de distância
-$\delta_s(v) = \sum_{w} \frac{\sigma_{sv}}{\sigma_{sw}}(1 + \delta_s(w))$ sobre os
-sucessores $w$ de $v$, com $bc(v) = \sum_s \delta_s(v)$, em $O(V(V + E)\log V)$ com pesos.
-Brandes e Pich~\cite{brandes2007} sorteiam $k$ origens e multiplicam por $N/k$: estimativa
-não viesada a $k/N$ do custo. O \emph{grau} de entrada e de saída completa as centralidades.
+por $v$. O algoritmo de Brandes~\cite{brandes2001} faz, por origem $s$, um Dijkstra que conta
+$\sigma_{sv}$ e acumula, em ordem decrescente de distância,
+$\delta_s(v) = \sum_{w} \frac{\sigma_{sv}}{\sigma_{sw}}(1 + \delta_s(w))$ sobre os sucessores
+$w$ de $v$, em $O(V(V + E)\log V)$. Brandes e Pich~\cite{brandes2007} sorteiam $k$ origens e
+multiplicam por $N/k$: estimativa não viesada a $k/N$ do custo. A \emph{proximidade} de $v$,
+com a correção de Wasserman e Faust~\cite{wasserman1994} para grafos não fortemente conexos, é
+$C(v) = \frac{r}{D}\cdot\frac{r}{N - 1}$, com $r$ vértices alcançados e soma $D$ das distâncias
+até eles. A \emph{propagação de rótulos}~\cite{raghavan2007} acha comunidades fazendo cada
+vértice adotar o rótulo mais frequente entre os vizinhos, em $O(V + E)$ por iteração; a
+qualidade da partição é a modularidade $Q = \sum_c [L_c/m - (d_c/2m)^2]$~\cite{newman2004}.
 
 O A*~\cite{hart1968} ordena os vértices por $g(v) + h(v)$, em que $h$ estima o custo
 restante; com $h$ consistente, $h(u) \le w(u, v) + h(v)$, o caminho continua ótimo. O
-algoritmo de Yen~\cite{yen1971} lista os $k$ caminhos sem ciclo de menor custo, com uma
-busca a partir de cada vértice do caminho anterior. A eficiência global de um grafo com $N$
-vértices~\cite[eq.~1]{latora2001} é a soma de $1/d(u, v)$ sobre os pares ordenados
-distintos ($u \ne v$) dividida por $N(N-1)$, com contribuição 0 quando não há caminho de $u$
-a $v$. As componentes fortemente conexas saem do algoritmo de Tarjan~\cite{tarjan1972} em
-$O(V + E)$.
+algoritmo de Yen~\cite{yen1971} lista os $k$ caminhos sem ciclo de menor custo, com uma busca
+a partir de cada vértice do caminho anterior. Num grafo dependente do tempo FIFO (partir mais
+tarde nunca faz chegar mais cedo pela mesma aresta), o Dijkstra que rotula cada vértice pelo
+instante de \emph{chegada mais cedo} continua correto~\cite{pyrga2008}. A eficiência global de
+um grafo com $N$ vértices~\cite[eq.~1]{latora2001} é a soma de $1/d(u, v)$ sobre os pares
+ordenados distintos dividida por $N(N-1)$, com contribuição 0 quando não há caminho. As
+componentes fortemente conexas saem do algoritmo de Tarjan~\cite{tarjan1972} em $O(V + E)$.

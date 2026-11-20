@@ -1,13 +1,9 @@
 % Seção: Funcionalidades e resultados
 % Dono: cada dono de feature · Orçamento: 4 páginas no total · plano-de-projeto §14.1
-% Conteúdo: uma subseção por feature, com tela, resultado e complexidade.
-%
-% Como encaixar a sua feature: crie relatorio/secoes/<ID>.tex começando com
-% \subsection{<título>}\label{sec:<ID>}. Ela entra aqui sozinha, sem editar este arquivo.
-% Essenciais mostram um aviso enquanto o arquivo não existir; desejáveis e opcionais
-% só aparecem quando o arquivo existir.
-% Cada subseção traz: figura (tela), resultado com o número medido, complexidade e
-% uma limitação. Nenhum número sem execução real (AGENTS.md §5, regra 6).
+% Conteúdo: uma subseção por feature essencial, com tela, resultado e complexidade, e uma
+% subseção única para as extensões desejáveis e opcionais (secoes/extensoes.tex), que
+% substituiu as antigas secoes/F-*-2.tex e secoes/F-*-OPC.tex em 20/11 para caber em 15 páginas.
+% Nenhum número sem execução real (AGENTS.md §5, regra 6).
 \section{Funcionalidades e resultados}\label{sec:funcionalidades}
 
 % Essenciais (P1)
@@ -18,18 +14,5 @@
 \secaofeature{F-EFI}{Eficiência da rede}
 \secaofeature{F-RES}{Falhas e resiliência}
 
-% Desejáveis (P2)
-\secaofeatureopcional{F-ROTA-2}
-\secaofeatureopcional{F-ESPERA-2}
-\secaofeatureopcional{F-BALD-2}
-\secaofeatureopcional{F-MET-2}
-\secaofeatureopcional{F-EFI-2}
-\secaofeatureopcional{F-RES-2}
-
-% Opcionais
-\secaofeatureopcional{F-ROTA-OPC}
-\secaofeatureopcional{F-ESPERA-OPC}
-\secaofeatureopcional{F-BALD-OPC}
-\secaofeatureopcional{F-MET-OPC}
-\secaofeatureopcional{F-EFI-OPC}
-\secaofeatureopcional{F-RES-OPC}
+% Desejáveis (P2) e opcionais
+\input{secoes/extensoes}

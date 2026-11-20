@@ -21,7 +21,10 @@ Integrador: Rafael (P0-AVAL). Estrutura, donos e orçamento de páginas:
 
 - **Seção de feature:** crie `secoes/<ID>.tex` começando com `\subsection{Título}\label{sec:<ID>}`.
   Ela entra sozinha em `secoes/funcionalidades.tex`; não precisa editar outro arquivo. Traga uma
-  figura, o resultado medido, a complexidade e uma limitação.
+  figura, o resultado medido, a complexidade e uma limitação. As extensões (`-2` e `-OPC`) ficam
+  juntas em `secoes/extensoes.tex` (tabela e um parágrafo por pergunta), para caber em 15 páginas.
+- **Tabela de desempenho:** `secoes/tabela-desempenho.tex` é gerada por
+  `python benchmarks/consolidar.py`; não edite à mão.
 - **Figuras** em `figuras/`; referencie só pelo nome (`\includegraphics{rota-exemplo}`).
 - **Texto pendente:** `\pendente{...}` sai em cinza no PDF. A versão entregue não pode ter nenhum.
 - **Números:** só de execução real, com o comando registrado no arquivo da feature (AGENTS.md §5).
