@@ -443,6 +443,45 @@ Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda �
 
 **Na interface**, a página Falhas escolhe paradas, um trecho (origem e próxima parada de ônibus) ou linhas, roda `simular_falha` com 30 origens por padrão e mostra as componentes antes e depois, as paradas isoladas e fora da rede principal e a perda, com um mapa: preto para o que saiu, vermelho para as isoladas e laranja para as que saíram da rede principal.
 
+#### Ranking de criticidade (F-RES-2)
+
+Responde "quais falhas mais pioram a rede?" (RF-RES-04). Simular a falha de cada uma das V paradas custaria V simulações, então o ranking só simula candidatos: as N paradas de maior intermediação (F-MET, §5.4), por onde passam mais caminhos mínimos, e as linhas (todas ou uma amostra sorteada).
+
+```python
+from transporte.simulacao.falhas import candidatos_criticidade, ranking_criticidade
+
+candidatos = candidatos_criticidade(gp, 10, indice, n_linhas=20, amostra_intermediacao=100, semente=2026)
+ranking = ranking_criticidade(gp, candidatos, indice, amostra=30, semente=2026)
+[(r.falha, r.perda_eficiencia) for r in ranking[:3]]
+```
+
+**Como funciona.** Mede a linha de base (Tarjan e eficiência com as s origens sorteadas) uma vez; para cada candidato aplica a falha sobre a rede intacta, mede, desfaz e passa ao próximo. Todos usam as mesmas origens e o mesmo denominador, então as perdas são comparáveis, e cada uma é igual à de `simular_falha` com os mesmos parâmetros (testado). Ordena pela perda; empate pelo número de paradas desconectadas. Exemplo: triângulo A-B-C, com C-D e D-E em fila (tudo nos dois sentidos, 60 s). C e D são articulações: sem C sobram só A-B e D-E e a perda é 31/43; sem D, 25/43; sem A ou B, 17/43; sem E, 13/43. O ranking sai C, D, A, B, E.
+
+**Complexidade.** O((c + 1) s (V + E) log V) para c candidatos (uma eficiência por candidato e a de base), mais o Brandes amostrado da escolha das paradas. Medir a base uma vez, em vez de chamar `simular_falha` c vezes, corta quase metade dos Dijkstras.
+
+**Na interface**, a aba Ranking da página Falhas deixa escolher N, quantas linhas sortear e as amostras; antes de rodar mostra o custo estimado (Dijkstras vezes o tempo de um Dijkstra medido na própria rede) e guarda os resultados na sessão por parâmetros.
+
+Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. Números do feed real: pendentes (`benchmarks/medir_falhas_extensoes.py`).
+
+#### Falhas múltiplas e em sequência (F-RES-OPC)
+
+Responde "e se várias coisas falharem, uma depois da outra?" (RF-RES-05). `simular_falhas` aplica as falhas em ordem e mede a rede depois de cada passo, sempre contra a rede intacta e com as mesmas origens; no fim desfaz tudo na ordem inversa, inclusive se der erro.
+
+```python
+from transporte.simulacao.falhas import sequencia_aleatoria, sequencia_dirigida, simular_falhas
+
+passos = simular_falhas(gp, sequencia_dirigida(gp, 10, 100, 2026), indice, amostra=30, semente=2026)
+[p.perda_eficiencia for p in passos]  # perda acumulada após 1, 2, ..., 10 falhas
+```
+
+**Linhas se acumulam.** O trecho B -> C usado pelas linhas L1 e L2 continua quando L1 falha, mas cai quando L2 também falha. Por isso cada passo aplica as suas paradas e trechos junto com todas as linhas que já falharam, e o estado final é igual ao de uma falha única com tudo junto (testado em grafos aleatórios). A perda nunca diminui de um passo para o outro: tirar mais coisa não encurta caminho e o denominador é fixo.
+
+**Dirigida contra aleatória.** A dirigida remove as paradas de maior intermediação primeiro, calculada uma vez na rede intacta (recalcular a cada passo custaria k Brandes). A aleatória sorteia k paradas com um gerador derivado da semente: com `random.Random(semente)`, igual ao das origens, as paradas sorteadas seriam as próprias primeiras origens da eficiência, e a curva aleatória cairia a zero por artefato (visto num teste rápido no feed real e corrigido).
+
+**Complexidade.** O((k + 1) s (V + E) log V + k (V + E)) para k passos.
+
+**Na interface**, a aba Falhas múltiplas tem dois modos: escolher paradas e linhas (tabela por passo e gráfico da eficiência relativa) e comparar dirigida e aleatória num mesmo gráfico (`st.line_chart`). Números do feed real: pendentes.
+
 
 
 ## 6. Interface (Arthur)
@@ -712,6 +751,16 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
 3. **Qual a diferença entre parada isolada e desconectada?** Isolada ficou sozinha na componente (não vai e volta de nenhuma outra). Desconectada saiu da maior componente, mas pode estar num grupo pequeno com outras.
 4. **Por que a eficiência depois da falha usa o n de antes?** Para que remover parada nunca aumente a eficiência: os pares da parada removida contam 0 em vez de sumir da média.
 5. **Por que a simulação não estraga o G_P para a próxima consulta?** Ela só desativa, e no fim religa exatamente o que desligou, inclusive se der erro.
+
+#### Ranking de criticidade (F-RES-2)
+1. **Por que o ranking não simula todas as paradas?** Seriam V simulações (9.659 no feed real), cada uma com s Dijkstras; a intermediação escolhe as N paradas por onde passam mais caminhos mínimos.
+2. **Por que todos os candidatos usam as mesmas origens?** Para que as perdas sejam comparáveis: com origens diferentes, a diferença de amostra se misturaria com a diferença entre as falhas.
+3. **O que o ranking economiza em relação a chamar `simular_falha` para cada candidato?** A eficiência de antes é medida uma vez, não uma por candidato: c + 1 eficiências em vez de 2c.
+
+#### Falhas múltiplas (F-RES-OPC)
+1. **Tirar L1 e depois L2 é o mesmo que tirar as duas de uma vez?** Sim: as linhas se acumulam, e o trecho que só L1 e L2 usavam cai no segundo passo.
+2. **Por que a perda nunca diminui ao longo da sequência?** Remover mais vértices ou arestas não encurta nenhum caminho, e o denominador é o n da rede intacta.
+3. **Por que a remoção aleatória não usa `random.Random(semente)` direto?** Porque é o mesmo gerador das origens da eficiência: as paradas removidas seriam as próprias origens e a perda seria inflada por artefato (num teste rápido no feed real, com 2 origens e 2 remoções, deu 100 %).
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;

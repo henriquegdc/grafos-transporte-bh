@@ -1,0 +1,15 @@
+% Subseção da F-RES-2 (ranking de criticidade, RF-RES-04). Dono da sessão: Henrique.
+% Fontes: docs/plano-de-desenvolvimento/features/feature-F-RES-2.md (Como funciona e
+% Resultados). Números do feed real pendentes: python benchmarks/medir_falhas_extensoes.py.
+\subsection{Ranking de criticidade}\label{sec:F-RES-2}
+
+Simular a falha de todas as $V$ paradas custaria $V$ simulações; o ranking só simula
+candidatos: as $N$ paradas de maior intermediação (Seção~\ref{sec:F-MET}), que concentram
+caminhos mínimos, e as linhas (todas ou uma amostra sorteada). Cada candidato falha sozinho
+sobre a rede intacta, com as mesmas $s$ origens sorteadas e o mesmo denominador, e os
+candidatos são ordenados pela perda de eficiência. A linha de base é medida uma vez: o
+custo é $O((c + 1)\,s\,(V + E)\log V)$ para $c$ candidatos, mais o Brandes amostrado.
+Testes com gabarito à mão confirmam que articulações e pontes lideram e que cada perda é
+igual à de uma simulação isolada. No feed real, \pendente{top 3 do ranking e tempo com
+$N$, linhas e $s$ do comando final}. \textbf{Limitação:} a intermediação é um filtro, não
+uma garantia; uma parada pouco central que desconecta um ramal pode ficar fora do ranking.
