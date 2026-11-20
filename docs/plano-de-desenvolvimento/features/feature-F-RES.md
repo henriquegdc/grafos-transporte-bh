@@ -11,7 +11,7 @@
 ## Retomada
 - **Última sessão:** 19/11/2026.
 - **Onde parou:** núcleo, testes, medição, diagrama, seção do relatório, roteiro e GUIA na `main` (PRs #47 e #53). Em 19/11, na branch `feat/F-RES-pagina`: página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`, 8 testes) e troca da eficiência provisória pela `eficiencia_global` da F-EFI (#52), com os 89 testes da F-RES verdes e os mesmos números no feed real. Nova medição com a varredura de linhas (Resultados). A exceção ao congelamento para a página foi pedida pelo grupo (tabela de pendências de 19/11).
-- **Próximo passo:** (1) abrir o PR da branch `feat/F-RES-pagina` e pedir revisão. (2) Regenerar `docs/diagramas/sequencia-falhas.png` (o `.puml` mudou o rótulo da eficiência). (3) Captura da página com a falha da linha 832 em `relatorio/figuras/` e troca do `\pendente` da figura em `relatorio/secoes/F-RES.tex`. (4) Gravar o trecho do vídeo, se ainda não foi gravado.
+- **Próximo passo:** (1) abrir o PR da branch `feat/F-RES-pagina` e pedir revisão. (2) Gravar o trecho do vídeo, se ainda não foi gravado; a linha 832 é um bom exemplo.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `src/transporte/interface/paginas/falhas.py`, `tests/simulacao/test_falhas.py`, `tests/interface/test_pagina_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, `relatorio/secoes/conclusao.tex`, `docs/GUIA.md`, este arquivo.
 - **Como testar:** `pytest tests/simulacao tests/interface/test_pagina_falhas.py` (97 testes); `pytest` completo (862 verdes em 19/11; a única falha é o timeout conhecido do `test_integracao_dados.py` com o feed real na máquina); `streamlit run src/transporte/interface/app.py` e a página Falhas; `python benchmarks/medir_falhas.py`.
 - **Bloqueios:** nenhum.
@@ -133,9 +133,20 @@ _Todo número vem com o comando que o gerou._
 | Falha da parada `14784108` | perda de 0,0357 %, igual | `simular_falha`: 30,9 s ± 4,1 s |
 | Falha da linha `562003` | perda de 0,0709 %, igual | `simular_falha`: 38,0 s ± 4,5 s |
 | Cada uma das 291 linhas com trecho, uma por vez (só Tarjan) | 17 tiram alguma parada da maior componente; as que mais tiram: 832 (33), 9030 (21) e 3302A (12) | |
-| Falha da linha 832 (`562146`) | 0 isoladas; 33 fora da rede principal; perda de 0,9420 % | |
+| Falha da linha 832 (`562146`), 100 origens, semente 2026 | 0 isoladas; 33 fora da rede principal; perda de 0,9420 % (amostra de sorte: ver abaixo) | |
 
 Os tempos subiram de 20 % a 110 % em relação a 10/11 com o mesmo código de Dijkstra; a variação entre execuções no notebook já era alta (± 30 %).
+
+**Variação da amostra e valor exato da linha 832, 19/11/2026.** Comando: `python benchmarks/variancia_falhas.py --exata` (as execuções de 19/11 rodaram o mesmo código, chamando `construir_gp`, `indexar_linhas` e `simular_falha` direto; o script versiona essas chamadas). Mesmo feed e máquina.
+
+| Origens | Perda por semente (2026, 1, 2, 3, 4) |
+|---|---|
+| 30 | 0,2230 % · 2,9855 % · 0,2809 % · 0,2863 % · 0,2511 % |
+| 100 | 0,9420 % · 1,7565 % · 0,2594 % · 0,2551 % · 0,2371 % |
+| 300 (sementes 1 e 2) | 0,7652 % · 0,7444 % |
+| Todas (9.659), exata | **0,5040 %** (eficiência 6,208544 × 10⁻⁴ -> 6,177254 × 10⁻⁴ s⁻¹), em 1.330 s |
+
+**Leitura.** A perda amostrada de uma falha que desconecta poucas paradas tem cauda pesada. Sem nenhuma das 33 paradas desconectadas na amostra, ela fica perto de 0,25 %; quando uma delas é sorteada como origem, a contribuição dela despenca e a estimativa salta para 1 % a 3 %. O valor de 0,94 % de 10/11 era uma dessas amostras. Por isso o relatório usa o exato, e a página avisa quando a falha desconecta paradas e a perda é amostrada.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só depois de conferidos em Resultados._
@@ -150,7 +161,7 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 - ~~**Eficiência da F-EFI (Arthur)**~~ **resolvido em 19/11:** a F-RES importa a `eficiencia_global` de `transporte.algoritmos.eficiencia` (#52); a provisória foi apagada. Os 89 testes passam e o feed real dá as mesmas perdas (0,0357 % e 0,0709 %).
 - ~~**Página Falhas**~~ **feita em 19/11** (branch `feat/F-RES-pagina`).
 - ~~**Decisões a confirmar pelo Caio**~~ **resolvido em 17/11:** denominador fixo na eficiência, definições de isolada e desconectada e trecho em um sentido só, registrados no `docs/GUIA.md` §8.
-- **Etapa 6:** falta a figura da tela na seção do relatório (captura da página com a linha 832) e regenerar o PNG do diagrama.
+- ~~**Etapa 6**~~ **feita em 19/11:** figura da página (`relatorio/figuras/falhas-linha-832.png`, capturada da própria página no feed real com o Chrome headless) e PNG do diagrama regenerado.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -160,3 +171,4 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 ### Guia 16/11/2026: "Como funciona" e perguntas no `docs/GUIA.md` (§5.6 e §10). Página Falhas desbloqueada pela P0-UI (#45), mas sujeita à exceção ao congelamento.
 ### Revisão 17/11/2026: PR #53 rebaseado sobre a `main` com a F-BALD (#48 e #49); decisões no GUIA §8; pendências e DoD atualizados; prazo do vídeo corrigido para 18/11.
 ### Página 19/11/2026: página Falhas e troca pela eficiência da F-EFI na branch `feat/F-RES-pagina`; varredura das 291 linhas no feed real; conclusão do relatório (seção 9) escrita.
+### Exata 19/11/2026: perda exata da linha 832 (0,504 %), variação da amostra medida (`benchmarks/variancia_falhas.py`), aviso na página, figura no relatório e PNG do diagrama regenerado.
