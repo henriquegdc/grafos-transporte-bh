@@ -2,9 +2,11 @@
 
 Uso: python benchmarks/medir_falhas.py [dados/brutos/bhtrans.zip]
 
-Precisa do feed baixado por scripts/baixar_gtfs.py. Mede com `medir` (3 repetições; cada Dijkstra no G_P real leva cerca de 0,14 s):
-Tarjan em G_P, eficiência global amostrada e simulações de falha de uma parada (a de maior
-grau de saída em viagem) e de uma linha (a que tem mais trechos exclusivos). Confere as
+Precisa do feed baixado por scripts/baixar_gtfs.py. Mede com `medir` (3 repetições; cada
+Dijkstra no G_P real leva cerca de 0,14 s): Tarjan em G_P, eficiência global amostrada e
+simulações de falha de uma parada (a de maior grau de saída em viagem) e de uma linha (a que
+tem mais trechos exclusivos). Depois remove cada linha, uma por vez, e conta quantas paradas
+saem da maior componente (só Tarjan), e simula a linha que mais desconecta. Confere as
 componentes com o NetworkX no mesmo grafo (permitido em benchmarks/).
 """
 
@@ -21,7 +23,9 @@ from transporte.modelo.construtores import construir_gp
 from transporte.modelo.visoes import VIAGEM
 from transporte.simulacao.falhas import (
     Falha,
+    aplicar_falha,
     componentes_fortes,
+    desfazer_falha,
     eficiencia_global,
     indexar_linhas,
     simular_falha,
@@ -133,6 +137,28 @@ def main(caminho: str) -> None:
             repeticoes=REPETICOES,
         )
         print("  simular_falha:", t.formatar())
+
+    # Varredura: cada linha sozinha, só componentes (Tarjan), sem eficiência.
+    maior = max(len(c) for c in comps)
+    fora: list[tuple[int, str]] = []
+    for linha_id in sorted(set().union(*indice.values())):
+        vs, ars = aplicar_falha(visao, Falha(linhas=(linha_id,)), indice)
+        depois = componentes_fortes(g)
+        desfazer_falha(visao, vs, ars)
+        fora.append((maior - max(len(c) for c in depois), linha_id))
+    fora.sort(key=lambda x: (-x[0], x[1]))
+    print(
+        f"varredura de {len(fora)} linhas: {sum(1 for x, _ in fora if x > 0)} tiram alguma "
+        "parada da maior componente; as 3 que mais tiram: "
+        + ", ".join(f"{rede.linhas[i].nome} ({i}): {x}" for x, i in fora[:3])
+    )
+    pior = fora[0][1]
+    r = simular_falha(visao, Falha(linhas=(pior,)), indice, amostra=AMOSTRA, semente=SEMENTE)
+    print(
+        f"falha linha {rede.linhas[pior].nome} ({pior}): isoladas={len(r.paradas_isoladas)}; "
+        f"desconectadas={len(r.paradas_desconectadas)}; "
+        f"perda de eficiencia={r.perda_eficiencia:.4%}"
+    )
 
 
 if __name__ == "__main__":

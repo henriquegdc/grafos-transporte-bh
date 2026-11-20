@@ -282,6 +282,50 @@ até 300 m, uma por vez (B3); G_L do dia ou de uma faixa, com a regra D10 (B4).
 Limitações: conta trocas, não tempo; a G_L não vê horários, a não ser no filtro por faixa;
 caminhada em linha reta, uma por vez, só entre paradas; falha de parada exige reconstruir a G_L.
 
+#### Menos baldeações contra mais rápido (F-BALD-2)
+
+Quanto tempo custa fazer menos baldeações? `comparar_baldeacoes` responde para um par de
+paradas: o mais rápido (F-ROTA, no G_E), o mínimo k de baldeações (F-BALD, na G_L) e o mais
+rápido entre os trajetos com até k baldeações. A diferença de tempo entre os dois é o
+**tempo a mais**; a diferença de baldeações, as **baldeações evitadas**. Aparece na página
+Baldeações quando se escolhe uma faixa.
+
+```python
+from transporte.algoritmos.comparacao_baldeacoes import comparar_baldeacoes
+
+c = comparar_baldeacoes(ge, gl, "A", "D")   # G_E e G_L da mesma faixa; None sem trajeto
+c.tempo_a_mais_s, c.baldeacoes_evitadas, c.tempo_por_baldeacao_evitada_s
+c.mais_rapido, c.menos_baldeacoes, c.rapido_com_menos_baldeacoes
+```
+
+**Por que não cronometrar o trajeto da F-BALD.** A G_L não tem tempo, e entre os trajetos com k
+baldeações a F-BALD escolhe por caminhada e tamanho da última perna (B5). O custo honesto de
+evitar baldeações é o do **mais rápido** entre os de k baldeações (C1). Exemplo (teste
+`test_escolhe_o_mais_rapido_entre_os_de_menos_baldeacoes`): o mais rápido de A a D usa três
+ônibus em 1.080 s; com uma baldeação há Q1 + R3 em 1.360 s e R1 + Q3 em 1.660 s. O tempo a
+mais é 280 s, não 580 s.
+
+**O algoritmo** (`docs/diagramas/atividade-comparar-baldeacoes.png`). Se o mais rápido já faz
+até k baldeações, ele mesmo é a resposta e nada é evitado. Senão, um Dijkstra no G_E em que o
+estado é (vértice, embarques feitos): embarcar soma um, as outras arestas não, e estado com
+mais de k + 1 embarques não existe (C2). Um estado é descartado se o vértice já foi fechado com
+menos embarques: chegou antes, ou junto, e com menos ônibus.
+
+**Complexidade.** O((k + 2)(V + E) log((k + 2) V)) no pior caso, com V e E do G_E: são
+(k + 2) V estados. Na prática cada vértice fecha poucas vezes, pelo descarte dos dominados.
+No feed real (17/11, `feature-F-BALD-2.md`), no G_E do pico da manhã (V = 46.100, E = 208.956), a
+comparação leva 212,9 ms por par em média (máximo 1.015,5 ms). Em 200 pares, o mais rápido já
+tinha o mínimo de baldeações em 160; nos outros 40, evitar baldeação custou 1,5 min na mediana
+e 14,5 min no máximo, com 0 divergências contra o NetworkX num grafo em camadas.
+
+**Um caso curioso.** No G_E as caminhadas se encadeiam e na G_L é uma de até 300 m por vez
+(B3). Então o mais rápido pode fazer menos baldeações que o "mínimo" da G_L, andando mais. Nesse
+caso ele é a resposta e nada é evitado (C3).
+
+Limitações: herda as da F-ROTA (espera média H/2, faixa fixa pela saída) e as da F-BALD; só
+compara numa faixa, porque no dia inteiro não há G_E; mostra um ponto da troca (k
+baldeações), não todos os trajetos não dominados, que são a F-BALD-OPC.
+
 ### 5.4 Centralidades (F-MET)
 
 Quais paradas mais importam para a rede: as com mais ligações (grau) e as por onde passam mais
@@ -328,6 +372,49 @@ amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).
 Limitações: G_P não tem espera nem horário (rede estrutural); caminhada em linha reta até
 300 m; a estimativa é mais precisa nas paradas mais centrais do que nas de valor pequeno.
 
+### 5.5 Eficiência da rede (F-EFI)
+
+A eficiência estrutural usa G_P, um vértice por parada e pesos em segundos. Para cada origem,
+uma busca Dijkstra calcula as distâncias aos destinos; a contribuição é a soma de `1/d` para
+os outros vértices. A eficiência é a média das contribuições sobre os pares ordenados, sem
+pares de uma parada para ela mesma. Um destino inalcançável contribui zero.
+
+```python
+from transporte.algoritmos.eficiencia import (
+    eficiencia_global,
+    estimar_eficiencia_global,
+)
+
+valor_exato = eficiencia_global(gp.grafo)
+estimativa = estimar_eficiencia_global(gp.grafo, tamanho_amostra=100, semente=2026)
+estimativa.valor, estimativa.erro_padrao
+```
+
+`eficiencia_global(g, origens=None, n_referencia=None)` é a API compartilhada com a F-RES:
+aceita uma lista de origens e mantém uma população original fixa no denominador quando há
+vértices desativados. A amostra de origens é uniforme, sem reposição. O erro padrão da média
+amostrada usa a variância amostral das contribuições e a correção de população finita.
+
+O tempo médio de viagem usa G_E, mas apenas os vértices de paradas. Cada par ordenado distinto
+é amostrado sem reposição; para cada origem sorteada, um Dijkstra fornece os tempos aos destinos.
+O peso do caminho tem o significado usado em F-ROTA: caminhada, espera esperada da faixa e
+viagem de ônibus. Pares sem trajeto são contados separadamente e não entram como viagens de
+duração zero. O erro padrão é calculado sobre os tempos alcançáveis; em amostra incompleta com
+menos de duas viagens alcançáveis, ele não é estimável. Como o tamanho total da população
+alcançável não é conhecido sem avaliar todos os pares, a estimativa do erro não aplica correção
+para população finita. Com todos os pares OD avaliados e ao menos uma viagem alcançável, o erro
+é zero; sem viagem alcançável, valor e erro são `None`. Amostra e semente ficam visíveis na
+página para repetição.
+
+G_P foi escolhido para a eficiência estrutural, também para compartilhar a métrica com a F-RES.
+Não se aplica `1/d` a todos os vértices de G_E: as plataformas têm arestas de desembarque de
+peso zero, que tornariam a eficiência infinita. G_E é usado para os tempos entre paradas, sem
+incluir plataformas como origens ou destinos.
+
+Limitações: o tempo médio é condicional aos pares alcançáveis na amostra; a página
+utiliza a primeira faixa horária disponível, portanto os resultados
+de tempo dependem dessa faixa.
+
 ### 5.6 Falhas e resiliência (F-RES)
 
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
@@ -348,9 +435,15 @@ r.paradas_isoladas, r.perda_eficiencia
 
 **Isoladas, desconectadas e perda.** Isolada é a parada que ficou sozinha na componente depois da falha e não estava antes. Desconectada é a que saiu da maior componente (empate: a primeira na ordem do Tarjan). Eficiência global = média de 1/d sobre os pares ordenados, com par sem caminho somando 0; perda = (antes - depois) / antes. O denominador é o n de antes da falha: com o n de depois, remover uma parada mal conectada poderia aumentar a eficiência. Com amostra, as mesmas s origens sorteadas valem antes e depois. O(s (V + E) log V), um Dijkstra por origem.
 
-**No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência; cada simulação com 100 origens leva de 18 a 26 s.
+**No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência. Retirando cada uma das 291 linhas, uma por vez (19/11), só 17 tiram alguma parada da maior componente; a pior, a linha 832, deixa 33 paradas fora da rede principal e custa 0,50 % (exato, com todas as origens, em 22 min). Cada simulação com 100 origens leva de 18 a 38 s.
 
-Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A `eficiencia_global` daqui é provisória até a da F-EFI entrar, que tem a mesma assinatura.
+**Cuidado com a amostra.** Quando a falha desconecta poucas paradas, a perda amostrada salta sempre que uma delas é sorteada como origem. Na linha 832, com 100 origens, cinco sementes deram de 0,24 % a 1,76 % (`benchmarks/variancia_falhas.py`). A página mostra um aviso nesse caso; para um número de relatório, use todas as origens.
+
+Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A eficiência é a `eficiencia_global` da F-EFI (§5.5); até 19/11 a F-RES usava uma versão provisória própria, com a mesma assinatura e os mesmos resultados nos testes.
+
+**Na interface**, a página Falhas escolhe paradas, um trecho (origem e próxima parada de ônibus) ou linhas, roda `simular_falha` com 30 origens por padrão e mostra as componentes antes e depois, as paradas isoladas e fora da rede principal e a perda, com um mapa: preto para o que saiu, vermelho para as isoladas e laranja para as que saíram da rede principal.
+
+
 
 ## 6. Interface (Arthur)
 
@@ -479,6 +572,8 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Peso negativo, infinito ou NaN recusado na inserção; desativar é flag; empate no heap pelo menor item (G4 a G6, P0-GRAFO) | O Dijkstra só é correto com pesos ≥ 0; reativar volta exatamente ao estado anterior; caminhos de mesmo custo determinísticos para os gabaritos | Validar dentro do Dijkstra; remover vértices e arestas |
 | 05/11 | Dijkstra com inserção preguiçosa, sem "diminuir chave" (P0-GRAFO) | Mesmo O((V + E) log V) com código menor e sem o mapa vértice → posição no heap; custa espaço O(E) | Heap indexado com diminuir chave |
 | 05/11 | Grau conta arestas, com filtro por tipo; caminhos da intermediação como sequência de vértices (paralelas viram a de menor peso, laços ignorados); normalização opcional, ligada na página (M1, M3 e M4, F-MET) | Definições usuais, comparáveis ao NetworkX; viagem e caminhada entre o mesmo par são uma ligação só; o bruto é mais fácil de explicar e o normalizado compara redes de tamanhos diferentes | Vizinhos distintos; contar cada paralela como caminho distinto |
+| 15/11 | F-EFI usa G_P para eficiência global estrutural e G_E somente para o tempo médio entre paradas; pares ordenados, sem auto-pares; inalcançáveis somam zero na eficiência e são excluídos da média de tempo | G_P tem unidades de tempo sem as plataformas de custo zero de G_E; o custo total de G_E preserva a semântica de `Trajeto.tempo_total_s` da F-ROTA | Calcular eficiência sobre todos os nós de G_E; tratar viagem inexistente como duração zero |
+| 15/11 | Amostras de origem e de pares são uniformes sem reposição e têm semente explícita; o erro informado é erro padrão amostral | Evita duplicar observações por sorteio; permite repetição determinística e reporta dispersão da média sem inventar um nível de confiança | Amostragem não reproduzível ou intervalo de confiança com nível não especificado |
 | 16/11 | Intermediação por amostragem de k origens, com estimativa (N/k) · soma e erro padrão por parada com correção de população finita (M5, F-MET, RNF-06) | O exato faz um Dijkstra por parada (cerca de 40 min no G_P real); a amostra de origens é não viesada e informa o erro; mesmo formato de estimativa da F-EFI | Amostrar pares (s, t); exato na página |
 | 16/11 | F-MET-2 e F-MET-OPC cortadas pelo congelamento de 15/11; a intermediação amostrada com erro medido contra a exata (RF-MET-05) entrou pela F-MET, por causa do RNF-06 | Regra do calendário: depois de 15/11, só correção; a página essencial (RF-MET-03) ainda faltava | Fazer a proximidade (RF-MET-04) depois do congelamento |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
@@ -492,6 +587,11 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 17/11 | Perda de eficiência da F-RES com o denominador de antes da falha: as mesmas origens e o mesmo n antes e depois (R1) | Com o n de depois, remover uma parada mal conectada aumentaria a eficiência, porque os pares ruins dela sairiam da média; com o mesmo n, os pares da parada removida contam 0 e a perda nunca é negativa | Renormalizar pelo n de depois da falha |
 | 17/11 | Parada isolada = ficou sozinha na componente fortemente conexa depois da falha e não estava antes; desconectada = saiu da maior componente (R2, F-RES) | "Saiu da maior" fica ambíguo quando duas componentes empatam de tamanho; a isolada não depende de desempate. A desconectada continua útil para quem caiu num grupo pequeno | Um único critério, "fora da maior componente" |
 | 17/11 | Falha de trecho remove só a aresta de viagem a -> b, num sentido, e mantém a caminhada (R3, F-RES) | Interdição costuma ser de uma mão, e a volta é outro trecho de G_P; a caminhada entre as paradas continua possível | Remover os dois sentidos e a caminhada |
+| 17/11 | O tempo do trajeto de menos baldeações é o do mais rápido no G_E com no máximo k baldeações, com k o mínimo da F-BALD (C1, F-BALD-2) | A G_L não tem tempo, e o trajeto que a F-BALD devolve sai de um desempate (B5) que não olha o tempo: cronometrá-lo inflaria o custo de evitar baldeações | Cronometrar no G_E o trajeto da F-BALD; penalidade fixa por baldeação no Dijkstra (a modelagem não usa penalidade, e ela não garante o mínimo) |
+| 17/11 | Dijkstra com o número de embarques no estado, camadas implícitas e descarte de estado dominado (C2, F-BALD-2) | Exato, usa o HeapMin do núcleo e não copia o G_E: cada vértice fecha no máximo k + 2 vezes | Montar o G_E em k + 2 camadas a cada consulta; busca lexicográfica (baldeações, tempo), que acharia o mínimo do G_E, não o da G_L |
+| 17/11 | O limite k vem da G_L, mas a busca no G_E encadeia caminhadas como a F-ROTA; se o mais rápido já faz até k baldeações, ele é a resposta (C3, F-BALD-2) | Mantém o mesmo modelo de tempo nos dois trajetos comparados, e tempo a mais e baldeações evitadas nunca ficam negativos | Restringir a caminhada a uma por vez no G_E, que mudaria o modelo de tempo da F-ROTA |
+| 17/11 | Comparação só numa faixa, com o G_E montado com as esperas H/2 da F-ESPERA, num bloco da página Baldeações (C4, F-BALD-2) | O tempo depende das esperas e das linhas que circulam na faixa; as esperas são as mesmas da página Espera | Comparar também no dia inteiro; espera fixa de 300 s; página separada |
+| 19/11 | Exceção ao congelamento de 15/11 para a F-BALD-2 (RF-BAL-03, desejável), feita em 17/11 e aprovada pelo grupo | A feature ficou completa, com testes, medição e documentação, e só acrescenta um bloco à página Baldeações, sem mudar o que já estava na `main` | Deixar a F-BALD-2 fora do escopo e registrar o RF-BAL-03 como limitação no relatório (plano-de-projeto §7.3) |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
@@ -567,6 +667,19 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
 5. **O trajeto devolvido é o mais rápido entre os de menos baldeações?** Não. O critério é só o
    número de baldeações; o tempo a mais em relação ao mais rápido é a F-BALD-2.
 
+#### Menos baldeações contra mais rápido (F-BALD-2)
+1. **Por que o tempo do trajeto de menos baldeações não é o do trajeto da F-BALD?** Porque a
+   F-BALD escolhe entre os de k baldeações sem olhar o tempo. O custo de evitar baldeações é o do
+   mais rápido entre eles.
+2. **O que guarda o estado do Dijkstra da F-BALD-2?** O vértice do G_E e quantos embarques já
+   foram feitos. Embarcar soma um; acima de k + 1 embarques o estado não existe.
+3. **Quando um estado é descartado?** Quando o vértice já foi fechado com menos embarques: esse
+   outro chegou antes, ou junto, e tudo o que se faz a partir do descartado se faz a partir dele.
+4. **Por que as baldeações evitadas podem ser zero mesmo com o mais rápido fazendo baldeações?**
+   Porque ele pode já ter o mínimo k, ou até menos que k, encadeando caminhadas no G_E.
+5. **Por que a comparação só aparece numa faixa?** Porque o tempo depende das esperas e das
+   linhas que circulam na faixa, e o G_E existe só por faixa.
+
 ### 5.4 Centralidades (F-MET)
 1. **Por que não contar, para cada par, se o caminho mínimo passa por v?** São V² pares e pode
    haver vários caminhos por par; o Brandes acumula as dependências por origem, com um Dijkstra
@@ -580,6 +693,18 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    de uma amostra para outra.
 5. **Por que G_P e não G_E?** A pergunta é sobre a parada física; em G_E a parada vira várias
    plataformas.
+
+### 5.5 Eficiência da rede (F-EFI)
+1. **Por que a eficiência global usa G_P?** Para medir a estrutura entre paradas sem incluir
+   plataformas nem arestas de desembarque de peso zero; isso também alinha a API compartilhada com a F-RES.
+2. **Por que os pares são ordenados?** O grafo é dirigido, então A→B e B→A podem ter distâncias
+   diferentes.
+3. **Como o cálculo evita um Dijkstra para cada par?** Executa uma busca por origem e lê nela as
+   distâncias aos destinos necessários.
+4. **Como os pares inalcançáveis entram nas métricas?** Na eficiência contribuem zero; no tempo
+   médio são contados à parte, mas não viram viagens de duração zero.
+5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
+   amostra e a semente para reproduzir o cálculo.
 
 ### 5.6 Falhas e resiliência (F-RES)
 1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).

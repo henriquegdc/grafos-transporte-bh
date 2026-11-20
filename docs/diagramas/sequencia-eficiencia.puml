@@ -1,0 +1,32 @@
+@startuml
+title F-EFI - amostragem de eficiencia e tempo medio
+
+actor Usuario
+participant "Pagina eficiencia" as UI
+participant "Construtores G_P/G_E" as Modelo
+participant "algoritmos.eficiencia" as EFI
+participant "Dijkstra do nucleo" as Dijkstra
+
+Usuario -> UI: render(rede), amostras e semente
+UI -> UI: consultar cache da sessao
+alt visoes ausentes para esta rede
+  UI -> Modelo: construir_gp(rede)
+  Modelo --> UI: VisaoGP
+  UI -> Modelo: construir_ge(rede, faixa)
+  Modelo --> UI: VisaoGE
+  UI -> UI: guardar visoes na sessao
+end
+UI -> EFI: estimar_eficiencia_global(G_P, amostra, semente)
+loop cada origem amostrada
+  EFI -> Dijkstra: dijkstra(G_P, origem)
+  Dijkstra --> EFI: distancias
+end
+EFI --> UI: valor, erro padrao, amostra e populacao
+UI -> EFI: tempo_medio_viagem(G_E, pares, semente)
+loop cada origem distinta dos pares
+  EFI -> Dijkstra: dijkstra(G_E, origem)
+  Dijkstra --> EFI: distancias
+end
+EFI --> UI: media, erro padrao e pares alcancaveis
+UI --> Usuario: metricas e informacao da amostragem
+@enduml

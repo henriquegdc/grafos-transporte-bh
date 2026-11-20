@@ -9,7 +9,8 @@ Medidas:
     - componentes fortemente conexas (Tarjan iterativo) antes e depois (RF-RES-02);
     - paradas isoladas pela falha (ficaram sozinhas na componente) e desconectadas
       (saíram da maior componente);
-    - eficiência global antes e depois e a perda relativa (RF-RES-03).
+    - eficiência global antes e depois e a perda relativa (RF-RES-03), com a
+      `eficiencia_global` da F-EFI (transporte.algoritmos.eficiencia).
 
 Notação: V = número de vértices, E = número de arestas, s = número de origens da eficiência.
 
@@ -23,7 +24,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from transporte.grafo.buscas import INF, dijkstra
+from transporte.algoritmos.eficiencia import eficiencia_global
 from transporte.grafo.grafo import Grafo
 from transporte.modelo.visoes import VIAGEM, VisaoGP
 
@@ -108,61 +109,6 @@ def _maior(componentes: Sequence[list[int]]) -> set[int]:
     if not componentes:
         return set()
     return set(max(componentes, key=len))
-
-
-# --- RF-RES-03: eficiência global ------------------------------------------------------
-
-
-def eficiencia_global(
-    g: Grafo,
-    origens: Iterable[int] | None = None,
-    n_referencia: int | None = None,
-) -> float:
-    """Eficiência global: média de 1/d(i, j) sobre os pares ordenados i != j.
-
-    PROVISÓRIA: a eficiência global é da F-EFI (RF-EFI-01), que ainda não publicou a
-    assinatura. Esta versão segue a definição de docs/fontes/modelagem.md §3.5 e deve ser
-    trocada pela da F-EFI quando ela existir (pendência no arquivo da F-RES).
-
-    Entradas:
-        g: grafo ponderado (G_P na feature); d = soma dos pesos, em segundos.
-        origens: vértices de onde partem os Dijkstras. None = todos os vértices ativos
-            (exata). Uma amostra dá a estimativa O(s (V + E) log V). Origem desativada
-            soma 0, mas continua contando no denominador.
-        n_referencia: número de vértices do denominador. None = vértices ativos agora. A
-            simulação de falha passa o número de antes da falha, para que remover uma
-            parada nunca aumente a eficiência (ver simular_falha).
-    Saída: soma(1/d) / (s * (n_referencia - 1)), em 1/s. Par sem caminho soma 0, então o
-        valor está definido em grafo desconexo. Menos de 2 vértices: 0.0.
-    Casos de borda: par de vértices distintos a distância 0 levanta ValueError (1/0); em
-        G_P não acontece, porque todo peso tem o piso Parametros.peso_minimo_s.
-    Complexidade: tempo O(s (V + E) log V), um Dijkstra por origem; espaço O(V).
-    """
-    n_ativos = sum(1 for v in range(g.num_vertices()) if g.vertice_ativo(v))
-    n = n_ativos if n_referencia is None else n_referencia
-    lista = (
-        [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
-        if origens is None
-        else list(origens)
-    )
-    # Sem origens explícitas, as n_referencia origens incluem as desativadas, que somam 0.
-    s = n if origens is None else len(lista)
-    if n < 2 or s == 0:
-        return 0.0
-    soma = 0.0
-    for o in lista:
-        if not g.vertice_ativo(o):
-            continue
-        dist = dijkstra(g, o).dist
-        for v, d in enumerate(dist):
-            if v == o or d == INF:
-                continue
-            if d == 0:
-                raise ValueError(
-                    f"distância 0 entre vértices distintos {o} e {v}: eficiência infinita"
-                )
-            soma += 1.0 / d
-    return soma / (s * (n - 1))
 
 
 # --- RF-RES-01: a falha ----------------------------------------------------------------

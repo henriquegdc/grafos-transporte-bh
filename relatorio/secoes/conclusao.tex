@@ -1,6 +1,54 @@
 % Seção: Limitações e conclusão
 % Dono: Caio · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: O que o modelo não captura e o que fica para depois
+% Números: só os que já estão nas seções de origem ou em Resultados das features
+% (AGENTS.md §5, regra 6).
 \section{Limitações e conclusão}\label{sec:conclusao}
 
-\pendente{O que o modelo não captura e o que fica para depois. Dono: Caio.}
+A ferramenta responde às seis perguntas sobre a rede de ônibus de Belo Horizonte com
+estruturas e algoritmos próprios: lista de adjacência, heap binário, BFS, Dijkstra,
+Brandes e Tarjan, sem biblioteca de grafo no código da aplicação. A escolha central foi
+não forçar uma única visão: $G_E$ responde ao trajeto e à espera, $G_L$ às baldeações e
+$G_P$ às perguntas estruturais (centralidade, eficiência e falhas). Cada resposta, porém,
+herda as simplificações da visão que a sustenta.
+
+\textbf{O que o modelo não captura.}
+\begin{itemize}
+  \item \emph{Variação ao longo do dia.} O tempo de cada trecho é a mediana do dia típico
+  (quarta-feira, 04/11/2026), sem o trânsito do pico. A faixa horária só entra na espera,
+  e a faixa da saída vale para o percurso inteiro.
+  \item \emph{Espera esperada, não horário exato.} A espera de $H/2$ supõe chegadas ao
+  acaso e intervalos regulares; com intervalos irregulares, $E[H^2]/(2E[H])$ pode ser
+  maior. Não há consulta à próxima partida.
+  \item \emph{Caminhada em linha reta.} Até 300~m, sem as ruas, o que subestima o tempo a
+  pé e torna $G_P$ mais conexa do que a cidade é.
+  \item \emph{Rede estrutural.} Centralidade, eficiência e falhas usam $G_P$, sem espera.
+  Medem a forma da rede, não o serviço numa faixa horária.
+  \item \emph{Estimativas por amostragem.} Intermediação e eficiência usam origens
+  sorteadas com semente fixa. O erro padrão da intermediação só é confiável nas paradas
+  mais centrais (Seção~\ref{sec:F-MET}), e a perda de eficiência de uma falha que
+  desconecta poucas paradas varia muito com a amostra (Seção~\ref{sec:F-RES}).
+  \item \emph{Padrões com parada repetida.} Em 387 dos 698 padrões, a plataforma única por
+  (parada, padrão) permite seguir do fim para o início do padrão.
+\end{itemize}
+
+\textbf{Resultados que pedem cautela.} A rede pareceu muito redundante: retirar a parada
+com mais saídas ou a linha com mais trechos exclusivos não isolou nenhuma parada e custou
+menos de 0,1\% de eficiência, e só 17 das 291 linhas, retiradas uma por vez, tiram alguma
+parada da rede principal (Seção~\ref{sec:F-RES}). A hipótese é que a caminhada de até
+300~m contorna as falhas, o que, pela limitação acima, provavelmente superestima a robustez
+real. Medir sem caminhada e com a malha viária é o próximo passo natural.
+
+\textbf{O que fica para depois.} Das extensões desejáveis, só a comparação entre o trajeto
+de menos baldeações e o mais rápido (F-BALD-2) foi entregue. Ficaram para trabalhos
+futuros: o grafo dependente do horário $G_T$, com partidas exatas e Monte Carlo
+(F-ESPERA-2); o A* e a escolha de pontos no mapa (F-ROTA-2); a proximidade e a medição do
+erro da intermediação contra a exata (F-MET-2); isócronas e índice de desvio (F-EFI-2); e o
+ranking de criticidade das paradas e linhas (F-RES-2), que a simulação de falhas já
+permite, pois desfaz cada falha sem reconstruir o grafo.
+
+Em síntese, o trabalho mostra que um mesmo conjunto de dados GTFS rende perguntas
+diferentes conforme a visão de grafo escolhida, e que algoritmos clássicos implementados do
+zero respondem na rede real em tempo de uso interativo, desde que as métricas globais usem
+amostragem. As limitações acima indicam onde o modelo precisa de horário, ruas e
+recalibração para descrever o serviço que o passageiro de fato encontra.
