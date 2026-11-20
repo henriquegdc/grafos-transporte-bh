@@ -9,15 +9,18 @@ from transporte.dados.modelo import Rede
 from transporte.interface.mapa import render_mapa
 from transporte.modelo.horarios import construir_gt
 from transporte.modelo.parametros import Parametros
-from transporte.simulacao.espera import calcular_esperas, estimar_intervalos, simular_trajeto
+from transporte.simulacao.espera import (
+    calcular_esperas,
+    estimar_intervalos,
+    sensibilidade_intervalo,
+    simular_trajeto,
+)
 
 TITULO = "Espera"
 _RESULTADO = "espera-resultado"
 
 
 def _mostrar_sensibilidade(rede):
-    from transporte.simulacao.espera import sensibilidade_intervalo
-
     if not rede.linhas:
         st.info("A rede não contém linhas.")
         return
@@ -41,6 +44,8 @@ def _mostrar_sensibilidade(rede):
     resultado = st.session_state.get("sensibilidade-resultado")
     if resultado and resultado[0] is rede:
         r = resultado[1]
+        st.metric("Pares cujo tempo mudou", f"{r['mudaram']} de {len(r['pares'])}")
+        st.caption("Origens sorteadas entre as paradas da linha; destinos em toda a rede.")
         st.caption("Espera H/2 dos padrões com intervalo estimável (minutos).")
         st.dataframe(
             [{"Padrão": p, "Antes": a / 60, "Depois": b / 60} for p, a, b in r["esperas"]],
@@ -96,11 +101,10 @@ def render(rede: Rede) -> None:
     Estimativa/tabela: O(PF + FN + N log N); simulação: estimativa + construção
     de G_E + Dijkstra. O mapa só recebe as paradas do trajeto para manter a leitura.
     """
+    st.title(TITULO)
     if st.checkbox("Simular alteração do intervalo de uma linha"):
-        st.title(TITULO)
         _mostrar_sensibilidade(rede)
         return
-    st.title(TITULO)
     if not rede.paradas:
         st.info("A rede não contém paradas para simular um trajeto.")
         return

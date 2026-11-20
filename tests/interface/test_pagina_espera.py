@@ -92,6 +92,13 @@ def test_sensibilidade_l1_dobra_espera_e_preserva_pares(pagina):
     from math import isnan
     ca = pares[(pares.Origem == "C") & (pares.Destino == "A")].iloc[0]
     assert isnan(ca.Antes) and isnan(ca.Depois)
+    # Origens só nas paradas de L1 (A, B, C) e destino em qualquer outra: 3 x 3.
+    mudaram = sum(
+        a != b and not (isnan(a) and isnan(b)) for a, b in zip(pares.Antes, pares.Depois)
+    )
+    assert pagina.metric[0].value == f"{mudaram} de 9"
+    assert mudaram > 0
+    assert any(t.value == "Espera" for t in pagina.title)
 
 
 def test_pagina_horario_invalido_limpa_resultado(pagina):

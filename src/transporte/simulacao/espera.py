@@ -7,9 +7,11 @@ repetidas à mesma parada em linhas circulares. estado: implementado.
 
 from collections.abc import Mapping
 from math import isfinite
+from random import Random
 
 from transporte.algoritmos.trajeto import Trajeto, trajeto_mais_rapido
 from transporte.dados.modelo import Rede
+from transporte.grafo.buscas import INF, dijkstra
 from transporte.modelo.construtores import construir_ge
 from transporte.modelo.parametros import Parametros
 
@@ -89,15 +91,13 @@ def sensibilidade_intervalo(
 
     Multiplica o intervalo estimado dos padrões da linha na faixa pelo fator
     positivo. Padrões sem duas partidas mantêm a regra original. Amostra até
-    N pares distintos sem reposição; None indica ausência de caminho. Com uma
-    parada não há pares. Uma linha inexistente levanta KeyError.
+    N pares distintos sem reposição, com origem entre as paradas da linha e
+    destino em toda a rede, para que os trajetos que usam a linha apareçam;
+    None indica ausência de caminho e "mudaram" conta os pares com duração
+    diferente. Com uma parada não há pares. Linha inexistente: KeyError.
     Tempo de estimar os intervalos, montar duas visões e até 2N buscas
     O((V+E) log V). Espaço auxiliar O(V+E+N), além das tabelas de intervalos.
     """
-    from random import Random
-
-    from transporte.grafo.buscas import INF, dijkstra
-
     params = params or Parametros()
     params.faixa(faixa)
     if linha not in rede.linhas:
@@ -113,14 +113,21 @@ def sensibilidade_intervalo(
             esperas.append((pid, intervalo / 2, alterada[pid, nome] / 2))
     if not esperas:
         raise ValueError("A linha não tem intervalo estimável nesta faixa.")
+    # Origem entre as paradas da linha alterada e destino em toda a rede: pares
+    # sorteados na rede inteira quase nunca passam pela linha (revisão do PR #69).
+    origens = sorted(
+        {p for pd in rede.padroes.values() if pd.linha_id == linha for p in pd.paradas}
+        & rede.paradas.keys()
+    )
     ids = sorted(rede.paradas)
     tamanho = len(ids)
-    populacao = tamanho * (tamanho - 1)
+    populacao = len(origens) * (tamanho - 1)
     sorteados = Random(semente).sample(range(populacao), min(pares, populacao))
     od = []
     for i in sorteados:
         u, v = divmod(i, tamanho - 1)
-        od.append((ids[u], ids[v + (v >= u)]))
+        o = ids.index(origens[u])
+        od.append((origens[u], ids[v + (v >= o)]))
 
     def duracoes(intervalos):
         ge = construir_ge(rede, faixa, params, calcular_esperas(intervalos))
@@ -136,6 +143,7 @@ def sensibilidade_intervalo(
     return {
         "esperas": esperas,
         "pares": [(o, d, a, b) for (o, d), a, b in zip(od, antes, depois)],
+        "mudaram": sum(a != b for a, b in zip(antes, depois)),
         "V": v,
         "E": e,
     }

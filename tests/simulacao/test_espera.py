@@ -184,7 +184,9 @@ def test_simulacao_acima_de_24h_com_faixa_explicita(rede):
     assert t.tempo_total_s == 900
 
 
-def test_sensibilidade_mesmos_pares_contra_networkx():
+def test_sensibilidade_gabarito_rede_teste():
+    # Gabarito à mão: G_E esperado da rede de teste montado num DiGraph só para
+    # rodar Dijkstra; não é a comparação sorteada com NetworkX de modelagem §3.7.
     import networkx as nx
 
     from transporte.simulacao.espera import sensibilidade_intervalo
@@ -211,3 +213,28 @@ def test_sensibilidade_mesmos_pares_contra_networkx():
         sensibilidade_intervalo(rede, "L2", "pico_manha", 2, 1, 42)
     with pytest.raises(ValueError):
         sensibilidade_intervalo(rede, "L1", "pico_manha", 0, 1, 42)
+
+
+def test_sensibilidade_origem_na_linha_muda_e_outra_linha_nao():
+    from transporte.simulacao.espera import sensibilidade_intervalo
+
+    # A-B pela linha L e A-C pela linha M; paradas distantes, sem caminhada.
+    paradas = {p: Parada(p, p, -19.9 + i / 10, -43.9) for i, p in enumerate("ABC")}
+    r = Rede(
+        paradas,
+        {"L": Linha("L", "L", 3), "M": Linha("M", "M", 3)},
+        {"l": Padrao("l", "L", ("A", "B")), "m": Padrao("m", "M", ("A", "C"))},
+        {},
+        viagens={
+            "l": [(28800, 29100), (30000, 30300)],
+            "m": [(28800, 29400), (29400, 30000)],
+        },
+    )
+    resultado = sensibilidade_intervalo(r, "L", "pico_manha", 2, 10, 7, SEM_CAMINHADA)
+    pares = {(o, d): (a, b) for o, d, a, b in resultado["pares"]}
+    # Origens só em A e B (paradas de L): 2 x 2 pares possíveis.
+    assert set(pares) == {("A", "B"), ("A", "C"), ("B", "A"), ("B", "C")}
+    assert pares["A", "B"] == (600 + 300, 1200 + 300)
+    assert pares["A", "C"] == (300 + 600, 300 + 600)
+    assert pares["B", "A"] == pares["B", "C"] == (None, None)
+    assert resultado["mudaram"] == 1
