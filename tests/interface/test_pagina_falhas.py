@@ -219,3 +219,28 @@ def test_aba_falhas_multiplas(monkeypatch):
     botao.click().run(timeout=30)
     assert not at.exception
     assert len(at.get("vega_lite_chart")) == 1
+
+
+def test_falhas_em_rede_com_uma_parada():
+    at = AppTest.from_string(
+        "from dataclasses import replace\n"
+        "from pathlib import Path\n"
+        "from transporte.dados.leitor_gtfs import ler\n"
+        "from transporte.interface.paginas.falhas import render\n"
+        "rede = ler(Path('dados/rede-teste'))\n"
+        "render(replace(rede, paradas={'A': rede.paradas['A']}, padroes={}, viagens={}))\n"
+    ).run()
+    assert not at.exception
+    assert len(at.tabs) == 3
+
+    [botao] = [b for b in at.button if b.label == "Calcular ranking"]
+    botao.click().run()
+    assert not at.exception
+    assert len(at.dataframe[0].value) == 1
+
+    [modo] = [r for r in at.radio if r.label == "Modo"]
+    modo.set_value(pagina.MODO_COMPARACAO).run()
+    [botao] = [b for b in at.button if b.label == "Comparar remoções"]
+    botao.click().run()
+    assert not at.exception
+    assert len(at.get("vega_lite_chart")) == 1

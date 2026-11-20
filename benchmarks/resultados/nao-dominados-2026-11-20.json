@@ -1,0 +1,79 @@
+{
+  "comando": "python benchmarks/medir_nao_dominados.py C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip",
+  "feed": {
+    "caminho": "C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip",
+    "sha256": "8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6"
+  },
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "python": "3.12.10"
+  },
+  "rede": {
+    "dia": "2026-11-18",
+    "paradas": 9660
+  },
+  "ge": {
+    "faixa": "pico_manha",
+    "V": 46102,
+    "E": 209025
+  },
+  "semente": 2026,
+  "pares": 200,
+  "repeticoes": 3,
+  "pares_alcancaveis": 200,
+  "tamanho_da_fronteira": {
+    "1": 30,
+    "2": 89,
+    "3": 65,
+    "4": 15,
+    "5": 1
+  },
+  "baldeacoes_do_mais_rapido": {
+    "0": 30,
+    "1": 89,
+    "2": 65,
+    "3": 14,
+    "4": 2
+  },
+  "tempo_por_par_ms": {
+    "media": 164.6,
+    "mediana": 127.7,
+    "p95": 447.6,
+    "maximo": 892.7
+  },
+  "tempo_medio_por_tamanho_ms": {
+    "1": 28.3,
+    "2": 106.1,
+    "3": 231.8,
+    "4": 444.9,
+    "5": 892.7
+  },
+  "ultimo_ponto_diverge_do_mais_rapido": 0,
+  "maior_fronteira": {
+    "origem": "14791366",
+    "destino": "14793436",
+    "pontos": [
+      {
+        "baldeacoes": 0,
+        "tempo_min": 151.4
+      },
+      {
+        "baldeacoes": 1,
+        "tempo_min": 111.1
+      },
+      {
+        "baldeacoes": 2,
+        "tempo_min": 101.2
+      },
+      {
+        "baldeacoes": 3,
+        "tempo_min": 99.8
+      },
+      {
+        "baldeacoes": 4,
+        "tempo_min": 98.5
+      }
+    ]
+  }
+}
