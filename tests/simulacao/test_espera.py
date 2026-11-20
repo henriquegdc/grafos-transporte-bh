@@ -182,3 +182,32 @@ def test_simulacao_acima_de_24h_com_faixa_explicita(rede):
     params = Parametros(raio_caminhada_m=0, faixas=(FaixaHoraria("extra", 86400, 90000),))
     t = simular_trajeto(rede, "A", "C", 87000, params)
     assert t.tempo_total_s == 900
+
+
+def test_sensibilidade_mesmos_pares_contra_networkx():
+    import networkx as nx
+
+    from transporte.simulacao.espera import sensibilidade_intervalo
+
+    rede = ler(REDE_TESTE)
+    resultado = sensibilidade_intervalo(rede, "L1", "pico_manha", 2, 12, 42, SEM_CAMINHADA)
+    for fator, indice in [(1, 2), (2, 3)]:
+        g = nx.DiGraph()
+        g.add_nodes_from(rede.paradas)
+        # Padrão único A-B-C com um embarque e duas viagens de 300 s.
+        g.add_weighted_edges_from(
+            [
+                ("A", "busA", 600 * fator),
+                ("B", "busB", 600 * fator),
+                ("busA", "busB", 300),
+                ("busB", "B", 0),
+                ("busB", "C", 300),
+            ]
+        )
+        for par in resultado["pares"]:
+            dist = nx.single_source_dijkstra_path_length(g, par[0])
+            assert par[indice] == dist.get(par[1])
+    with pytest.raises(ValueError):
+        sensibilidade_intervalo(rede, "L2", "pico_manha", 2, 1, 42)
+    with pytest.raises(ValueError):
+        sensibilidade_intervalo(rede, "L1", "pico_manha", 0, 1, 42)

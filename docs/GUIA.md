@@ -220,6 +220,8 @@ caminhada em linha reta, só entre paradas.
 
 ### 5.2 Espera e simulação por faixa (F-ESPERA)
 
+**Sensibilidade ao intervalo (RF-ESP-06).** Na página Espera, selecione a alteração do intervalo, a linha, a faixa e o fator. A simulação multiplica o intervalo de cada padrão estimável da linha pelo fator, recalcula H/2 e reconstrói G_E. Os mesmos pares de paradas são consultados nos dois grafos. Uma troca de caminho pode amortecer o efeito na viagem. Padrões com espera provisória conservam esse valor. O quadro de horários programados permanece como referência do dia.
+
 A F-ESPERA usa o primeiro horário de cada viagem expandida em `Rede.viagens[padrão]`, como a D10 de P0-MODELO. Para cada padrão, ordena e deduplica partidas; em cada faixa `[início, fim)`, estima a média das diferenças consecutivas como `(última - primeira)/(n - 1)`. Não reúne sentidos ou variantes diferentes da mesma linha, nem conta de novo as frequências ou visitas de uma circular à mesma parada.
 
 Com duas ou mais partidas distintas, publica H e calcula H/2. Com uma partida, omite a chave e o construtor usa `Parametros.espera_padrao_s` (300 s por padrão); a página identifica o valor como provisório. Sem partida, o construtor não cria embarque. A tabela `esperas[(padrão, faixa)]` já contém segundos de espera: G_E não deve dividir de novo por dois.
@@ -648,6 +650,8 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    trajeto"; é normal com paradas ou linhas desativadas (F-RES).
 
 ### 5.2 Espera (F-ESPERA)
+
+**Sensibilidade.** Por que repetir os pares? Para comparar a mesma demanda nos dois cenários. O que muda ao dobrar o intervalo? A espera estimada em cada embarque afetado dobra. O tempo do trajeto também dobra? O passageiro pode caminhar ou escolher outra linha, e o tempo dentro do ônibus permanece igual.
 1. **Por que usar o primeiro horário da viagem?** Para respeitar a mesma regra D10 que decide se há embarque em G_E; visitas repetidas de uma circular não são novas saídas.
 2. **Por que o construtor recebe espera e não intervalo?** Porque H/2 é calculado por F-ESPERA e deve ser aplicado apenas uma vez.
 3. **Uma partida permite estimar H?** Não. Usa-se a espera provisória identificada na tela; sem partida não há embarque.

@@ -1,88 +1,64 @@
 # F-ESPERA-OPC · Sensibilidade ao intervalo
 
-**Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** opcional
-**Dono:** Miguel (@Miguelgdn1) · **Issue:** #20 · **Visões do grafo:** G_E
-**Depende de:** F-ESPERA · **Bloqueia:** nada
-**Prazo:** 15/11, só se sobrar tempo
+Miguel · issue #20 · RF-ESP-06 · G_E.
 
-> Fonte de verdade: docs/fontes/REQUISITOS.md (RF-ESP-06). Modelagem: docs/fontes/modelagem.md.
-> Em conflito, o REQUISITOS.md vence.
+## Retomada e status
 
-## Retomada
-- **Última sessão:** planejamento e corte de escopo em 11/11/2026; sem implementação.
-- **Onde parou:** não iniciado.
-- **Próximo passo:** Retirada deste ciclo para priorizar as entregas essenciais, conforme o corte do §7.3. Não iniciar implementação nesta entrega.
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de F-ESPERA.
+Em 20/11, o cenário de alteração de uma linha foi implementado na página Espera,
+validado pelo gabarito, por NetworkX e pelo AppTest. O benchmark em BH, o guia
+(§5.2 e §10), o relatório e o roteiro estão prontos para revisão. Faltam a aprovação
+de outro integrante, a integração e a gravação do grupo.
 
-## Objetivo
-Sensibilidade ao intervalo. Fecha:
+## Contrato e critérios de aceite
 
-- **RF-ESP-06** (O): Alterar o intervalo de uma linha e mostrar o efeito na espera e nos trajetos
+Contrato implementado em `src/transporte/simulacao/espera.py`:
+`sensibilidade_intervalo(rede, linha, faixa, fator, pares, semente, params=None)`.
+O retorno traz por padrão a espera original e alternativa em segundos, os pares sorteados
+com ambos os tempos e as dimensões de G_E.
 
-## Status
-| Camada | Status | Observação (data, evidência, o que falta) |
-|---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
-
-## Especificação
-Assinaturas públicas: a definir na etapa 1 do plano de implementação e publicadas com `estado: planejado` antes de qualquer consumidor depender delas.
+- [x] RF-ESP-06: alterar o intervalo de uma linha e apresentar efeitos tanto na espera como nos trajetos.
+- [x] Comparar os mesmos pares, conservar as esperas das outras linhas e distinguir pares inacessíveis.
+- [x] Interface, testes, complexidade, guia, relatório, resultados e roteiro.
+- [ ] Revisão e integração na main.
 
 ## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
+
+A tabela de intervalos ganha uma cópia. Só os valores estimáveis dos padrões da
+linha e faixa selecionadas recebem o fator; cada tabela é convertida em H/2.
+Os dois grafos permitem que a rota ótima mude. Uma linha sem estimativa na faixa
+gera aviso na página. Padrões com uma única partida conservam a espera provisória.
+Cada par ordenado distinto tem a mesma chance de entrar na amostra, sem reposição.
+A consulta custa duas construções de G_E mais até 2n Dijkstras para n pares.
+O espaço auxiliar é O(V+E+n) além das tabelas. Diagrama: `docs/diagramas/atividade-sensibilidade.puml`.
 
 ## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
-## Critérios de aceite
-- [ ] RF-ESP-06: Alterar o intervalo de uma linha e mostrar o efeito na espera e nos trajetos
+1. Por que usar os mesmos pares? Para isolar o efeito do intervalo.
+2. O que dobra com o fator dois? A espera H/2 dos padrões estimáveis selecionados.
+3. Quando o trajeto pode mudar de linha? Quando o novo custo de embarque faz outra rota chegar antes.
 
-## Definition of Done
-Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
+## Resultados e reprodução
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
-- [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
-- [ ] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+```sh
+PYTHONPATH=src .venv/bin/python benchmarks/medir_sensibilidade.py dados/brutos/bhtrans.zip
+sh .githooks/pre-commit
+.venv/bin/python -m pytest -q
+```
 
-## Plano de implementação
-| Etapa | Escopo | Situação |
-|---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+`benchmarks/resultados/sensibilidade-bhtrans.json` registra o serviço de 04/11,
+linha 561787, pico da manhã, dez pares e semente 42. A espera no padrão passou
+de 566,67 s a 1.133,33 s. Em macOS arm64 e Python 3.12.13, V=46.100 e E=208.956,
+a comparação completa levou 1,504 ± 0,085 s em cinco repetições.
 
-## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+## Vídeo · 30 s
 
-## Roteiro do vídeo (2 a 2,5 min)
-1. O problema que a feature resolve. 2. A feature funcionando na interface.
-3. Algoritmo e complexidade. 4. Resultado e limitação.
-
-## Pendências
-- Nenhuma.
+Selecionar **Simular alteração do intervalo de uma linha**, escolher a linha e a faixa,
+dobrar o intervalo e clicar em **Comparar cenários**. Ler os dois valores de espera.
+Na tabela seguinte, apontar um par e explicar por que mudar uma única linha pode
+preservar o melhor tempo entre aquelas duas paradas.
 
 ## Timeline
-### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
-### Dono 29/10/2026: feature atribuída a Miguel.
 
-### Planejamento 11/11/2026: Retirada deste ciclo para priorizar as entregas essenciais, conforme o corte do §7.3. Decisão confirmada por Miguel no plano aprovado; prazo de congelamento permanece 15/11 às 23:59.
+- 29/10: criação e atribuição a Miguel.
+- 11/11: adiamento para priorizar a entrega essencial.
+- 20/11: implementação, medição serial, testes e preparação para revisão e gravação.
