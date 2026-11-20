@@ -1,91 +1,96 @@
 # F-EFI-2 · Isócronas e índice de desvio
 
-**Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Arthur (@ArthurkkLS) · **Issue:** #17 · **Visões do grafo:** G_E
-**Depende de:** F-EFI · **Bloqueia:** nada
-**Prazo:** 15/11
-
-> Fonte de verdade: docs/fontes/REQUISITOS.md (RF-EFI-03, RF-EFI-04). Modelagem: docs/fontes/modelagem.md.
-> Em conflito, o REQUISITOS.md vence.
+**Dono original:** Arthur (@ArthurkkLS). **Implementação de 20/11:** Miguel (@Miguelgdn1).
+**Issue:** #17. **Classe:** desejável. **Visão:** G_E.
 
 ## Retomada
-- **Última sessão:** nenhuma (arquivo criado em 29/10).
-- **Onde parou:** não iniciado.
-- **Próximo passo:** aguardar F-EFI. Não iniciar antes disso; quando liberar, publicar as assinaturas (etapa 1 do plano de implementação).
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de F-EFI.
 
-## Objetivo
-Isócronas e índice de desvio. Fecha:
-
-- **RF-EFI-03** (D): Mostrar isócronas: paradas alcançáveis a partir de uma origem em até T minutos
-- **RF-EFI-04** (D): Calcular o índice de desvio de cada par (tempo ou distância na rede dividido pela distância em linha reta)
-
-## Status
-| Camada | Status | Observação (data, evidência, o que falta) |
-|---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
-
-## Especificação
-Assinaturas públicas: a definir na etapa 1 do plano de implementação e publicadas com `estado: planejado` antes de qualquer consumidor depender delas.
-
-Algoritmos previstos (docs/fontes/modelagem.md §3.5):
-- Isócronas · visão G_E · O((V' + E') log V') · Dijkstra com limite T; V' e E' são a parte alcançada
-
-## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
-
-## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
+Implementação, ensaios, interface, material do guia, relatório e medição final
+concluídos na branch de eficiência. Próximo passo: revisão de Henrique e
+integração do PR na main. A gravação do trecho segue o roteiro abaixo.
 
 ## Critérios de aceite
-- [ ] RF-EFI-03: Mostrar isócronas: paradas alcançáveis a partir de uma origem em até T minutos
-- [ ] RF-EFI-04: Calcular o índice de desvio de cada par (tempo ou distância na rede dividido pela distância em linha reta)
 
-## Definition of Done
-Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
+- [x] RF-EFI-03 · Mostrar paradas alcançáveis em até T minutos.
+- [x] RF-EFI-04 · Comparar comprimento e tempo na rede com a distância direta.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
-- [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
-- [ ] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+## Status
 
-## Plano de implementação
-| Etapa | Escopo | Situação |
-|---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| Camada | Evidência |
+|---|---|
+| Modelo e núcleo | `algoritmos/isocronas.py`, `algoritmos/eficiencia.py` |
+| Testes | `tests/algoritmos/test_extensoes_eficiencia.py`; gabarito manual, bordas e comparação das isócronas com NetworkX em dez grafos semeados |
+| Interface | Página Eficiência; fluxo AppTest com `dados/rede-teste` em `tests/interface/test_pagina_eficiencia.py` |
+| Desempenho | `benchmarks/resultados/f-efi-2-bhtrans.json` |
+| Guia e relatório | `docs/GUIA.md` §5.5 e §10; `relatorio/secoes/F-EFI-2.tex` |
+| Vídeo | Roteiro pronto; gravação pelo integrante |
+| Integração | Revisão e merge pendentes |
+
+Validação em 20/11: hook limpo e suíte completa com 878 testes aprovados.
+Os três modos da página também foram executados via AppTest com o ZIP de BH;
+o mapa, a tabela de desvios e os indicadores reproduziram os valores dos JSON.
+As seções de ambas as features compilaram no relatório com Tectonic.
+
+## Especificação
+
+Contrato implementado.
+
+- `isocrona(ge, origem, limite_s) -> dict[str, float]`. Os valores são tempos mínimos em segundos.
+- `indices_desvio(rede, ge, tamanho_amostra, semente=0) -> list[DesvioPar]`. Cada par registra metros em linha reta e no percurso, segundos do trajeto rápido e quadrante da origem. As propriedades `desvio` e `min_por_km` tratam divisões indefinidas.
+- `medias_por_quadrante(desvios) -> dict[str, float]`. Usa a média aritmética dos desvios definidos.
+
+## Como funciona e por quê
+
+A busca começa no vértice da parada, atravessa embarques, viagens, desembarques e
+caminhadas, e descarta relaxamentos acima do limite inclusivo. Um dicionário
+guarda apenas os vértices alcançados. Com V′ vértices e E′ arestas examinadas,
+o custo é O((V′+E′) log(E′+2)) e o espaço é O(V′+E′) devido às reinserções no heap.
+
+O Dijkstra de F-ROTA fornece o trajeto mais rápido do par. O índice divide a soma
+das distâncias haversine entre as paradas de cada trecho pela distância direta
+entre as pontas. A razão de tempo inclui caminhada e espera. Coordenadas
+coincidentes e pares sem caminho ficam fora das razões. Os quadrantes da origem
+são relativos ao centro da caixa das paradas ativas. Para m pares a busca custa
+O(V+m(V+E) log(E+2)), com espaço O(V+E+m). Curvas das vias podem alongar o
+percurso real além da aproximação por segmentos.
+
+Diagrama: [atividade](../../diagramas/atividade-extensoes-eficiencia.png) e
+[fonte PlantUML](../../diagramas/atividade-extensoes-eficiencia.puml).
+
+## Perguntas de verificação
+
+1. A origem entra na isócrona? Sim, quando ativa, com tempo zero.
+2. Embarques somam distância? A espera afeta o tempo e a escolha da rota. Distância vem dos deslocamentos entre coordenadas.
+3. Para quais pares o índice é indefinido? Pares sem caminho ou com distância direta zero.
 
 ## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
 
-## Roteiro do vídeo (2 a 2,5 min)
-1. O problema que a feature resolve. 2. A feature funcionando na interface.
-3. Algoritmo e complexidade. 4. Resultado e limitação.
+Feed BHTrans de serviço 04/11/2026 (SHA-256 e máquina completos no JSON).
+Máquina macOS 26.6.2 arm64, Python 3.12.13. A leitura do ZIP fica fora das medições.
 
-## Pendências
-- Nenhuma.
+Para a parada 14788851 no pico da manhã, G_E tinha V=46.100 e E=208.956.
+Em 15/30/45/60 min foram alcançadas 68/603/1.911/4.120 paradas. Com cinco
+repetições, a isócrona de 60 min levou 39,99 ± 0,58 ms e o cálculo dos desvios
+dos 12 pares levou 583,12 ± 11,40 ms (média e desvio amostral). O par de maior
+desvio na amostra foi 14793286 → 14785528, com razão 2,215 e 22,06 min/km.
+
+Comando sequencial que grava os JSON de ambas as features:
+
+```sh
+PYTHONPATH=src python benchmarks/medir_extensoes_eficiencia.py dados/brutos/bhtrans.zip --origem 14788851
+```
+
+## Roteiro do vídeo (30 s)
+
+**0–10 s:** escolher Isócronas, parada 14788851 e pico da manhã. **10–20 s:** comparar o alcance aos 15 e 60 min. **20–30 s:** abrir Índice de desvio e explicar o primeiro par da tabela e a aproximação por segmentos.
+
+## Definition of Done e pendências
+
+- [x] Contratos, código, testes de corretude, interface, medição em BH e artefatos de documentação.
+- [ ] Henrique revisa o PR e explica o resultado. Integração na main após aprovação.
+- [ ] Gravar o trecho do vídeo.
 
 ## Timeline
-### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
-### Dono 29/10/2026: feature atribuída a Arthur.
+
+- 29/10/2026: feature criada e atribuída a Arthur.
+- 20/11/2026: Miguel assumiu a implementação no plano de finalização. Contratos registrados antes do código; testes, guia, relatório e benchmarking do GTFS de BH concluídos.

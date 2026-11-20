@@ -1,0 +1,24 @@
+@startuml
+start
+:Selecionar análise na página Eficiência;
+if (Comparar faixas?) then (sim)
+  :Sortear pares de paradas uma vez;
+  :Estimar H/2 por padrão e faixa;
+  repeat
+    :Montar G_E da faixa;
+    :Calcular tempos para os mesmos pares;
+    :Resumir alcance, média e eficiência;
+  repeat while (Há outra faixa?) is (sim)
+else (não)
+  :Montar G_E da faixa escolhida;
+  if (Calcular isócrona?) then (sim)
+    :Dijkstra até T segundos;
+    :Colorir as paradas pelo tempo alcançado;
+  else (desvio)
+    :Sortear pares e recuperar trajetos rápidos;
+    :Somar distâncias dos segmentos;
+    :Ordenar desvios e agrupar por quadrante de origem;
+  endif
+endif
+stop
+@enduml

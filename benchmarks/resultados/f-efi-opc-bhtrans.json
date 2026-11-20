@@ -1,0 +1,63 @@
+{
+  "feed": "bhtrans.zip",
+  "sha256": "623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2",
+  "dia": "2026-11-04",
+  "maquina": "macOS-26.6.2-arm64-arm-64bit",
+  "processador": "arm",
+  "python": "3.12.13",
+  "pares": 12,
+  "semente": 2026,
+  "faixas": [
+    {
+      "faixa": "pico_manha",
+      "pares": 12,
+      "alcancaveis": 12,
+      "eficiencia_por_s": 0.00035659431859915786,
+      "tempo_medio_s": 3448.7535594304445,
+      "erro_eficiencia_por_s": 7.325525689962533e-05,
+      "erro_tempo_medio_s": 331.0658717450893,
+      "vertices": 46100,
+      "arestas": 208956
+    },
+    {
+      "faixa": "entrepico",
+      "pares": 12,
+      "alcancaveis": 12,
+      "eficiencia_por_s": 0.0003308398303325597,
+      "tempo_medio_s": 3639.3144386307326,
+      "erro_eficiencia_por_s": 6.088407849963407e-05,
+      "erro_tempo_medio_s": 348.697362803333,
+      "vertices": 46100,
+      "arestas": 207205
+    },
+    {
+      "faixa": "pico_tarde",
+      "pares": 12,
+      "alcancaveis": 12,
+      "eficiencia_por_s": 0.00034639594038780495,
+      "tempo_medio_s": 3510.1145129847555,
+      "erro_eficiencia_por_s": 6.746952978219195e-05,
+      "erro_tempo_medio_s": 334.6932360082585,
+      "vertices": 46100,
+      "arestas": 208550
+    },
+    {
+      "faixa": "noite",
+      "pares": 12,
+      "alcancaveis": 12,
+      "eficiencia_por_s": 0.00034313712841297885,
+      "tempo_medio_s": 3741.536852660002,
+      "erro_eficiencia_por_s": 8.164375329618466e-05,
+      "erro_tempo_medio_s": 377.1362803311894,
+      "vertices": 46100,
+      "arestas": 206868
+    }
+  ],
+  "medicoes": {
+    "comparar_faixas": {
+      "media_s": 3.2765066082007253,
+      "desvio_s": 0.06644244081157638,
+      "repeticoes": 5
+    }
+  }
+}
