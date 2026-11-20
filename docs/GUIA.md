@@ -796,6 +796,57 @@ memória. O custo fixo de uma medição é de cerca de 0,08 µs, desprezível pa
 Os testes trocam `medicao._relogio` por um relógio falso de leituras conhecidas, o que permite
 um gabarito exato para média e desvio sem depender da velocidade da máquina.
 
+### Comparação com o NetworkX, complexidade empírica e página Desempenho (F-AVAL-OPC)
+
+**Redes sintéticas (RF-DAD-05).** `transporte.dados.sinteticas.gerar_rede_sintetica(lado,
+semente)` monta uma grade `lado x lado` de paradas a 200 m umas das outras, com uma linha reta
+em cada fileira e em cada coluna (ida e volta, 4 viagens por padrão) e coordenadas perto de BH.
+Sai no formato da `Rede` de P0-DADOS, então passa por `construir_gp` e `construir_ge` sem
+adaptação. Com o raio de caminhada de 300 m, cada parada caminha até as 8 vizinhas (200 m nas
+retas, 283 m nas diagonais), e o G_P fica com cerca de 12 arestas por parada (lado 100 com semente 1:
+V = 10.000, E = 117.748), perto das 12,7 do G_P real. A semente controla um deslocamento de até
+10 m nas coordenadas, o tempo de cada trecho (60 a 180 s) e as partidas.
+
+Por que uma grade: o tamanho cresce de forma controlada e a forma local é a mesma em todos os
+tamanhos. Assim, a inclinação da regressão mede o algoritmo e não uma mudança de estrutura.
+Alternativa descartada: recortar o feed real em caixas crescentes. Daria redes "reais", mas a
+densidade muda entre o centro e a periferia, e o tamanho máximo é o próprio feed.
+
+**Comparação com o NetworkX (RF-AVA-03).** `benchmarks/comparar_networkx.py` converte o
+nosso `Grafo` num `nx.DiGraph` uma vez, fora da medição (arestas paralelas viram a de menor
+peso, como no nosso Brandes), e mede com `medir`, no mesmo grafo, BFS e Dijkstra a partir das
+mesmas origens, Brandes e Tarjan. Depois confere os resultados: distâncias iguais,
+intermediação igual com tolerância relativa de 1e-6 e o mesmo conjunto de componentes. Acima de
+1.000 vértices o Brandes exato levaria dezenas de minutos (o nosso exato no feed real levou
+2.632 s, `feature-F-MET.md`), então os dois lados partem das mesmas k origens: o nosso
+`estimar_intermediacao` (sem o fator N/k) contra `nx.betweenness_centrality_subset` com essas
+origens e todos os destinos, que somam exatamente as mesmas dependências. Para incluir a
+proximidade e a propagação de rótulos basta acrescentar uma `Comparacao` à lista
+`COMPARACOES` do script.
+
+**Complexidade empírica (RF-AVA-04).** `benchmarks/complexidade_empirica.py` mede cada
+algoritmo no G_P das redes sintéticas e ajusta, por mínimos quadrados, `log t = a + b log(V +
+E)`. Se t ~ (V + E)^b, dobrar o tamanho multiplica o tempo por 2^b; então b é o expoente
+empírico. Esperado: b ≈ 1 para BFS e Tarjan, um pouco acima de 1 para o Dijkstra (o log V) e
+b ≈ 2 para o Brandes, porque V (V + E) ~ (V + E)² quando E é proporcional a V. A figura vai para
+`relatorio/figuras/complexidade-empirica.png` (matplotlib, só em `benchmarks/`).
+
+**Página Desempenho (RF-AVA-05).** Não mede nada: lê o JSON mais recente de cada script em
+`benchmarks/resultados/` e mostra as tabelas, o gráfico log-log (`st.line_chart`) e os demais
+JSON da pasta. Medir dentro da interface misturaria o tempo do Streamlit com o do algoritmo e
+travaria a página. JSON ausente ou inválido vira aviso.
+
+Limitações: tempo de parede depende da máquina e da carga; a razão nosso/NetworkX é mais
+estável que os valores absolutos. Em grafos pequenos o custo fixo de cada chamada achata a
+inclinação.
+
+Resultado (20/11/2026, N = 3, detalhes em `feature-F-AVAL-OPC.md`): todos os resultados
+coincidem com os do NetworkX. No G_P real (V = 9.660, E = 122.799), nosso tempo / NetworkX deu
+2,09 na BFS, 1,34 no Dijkstra, 0,83 no Brandes (20 origens) e 1,91 no Tarjan: só o Brandes,
+que monta a adjacência simplificada uma vez, é mais rápido; nos outros, `Grafo.vizinhos`
+monta a lista de vizinhos ativos a cada visita. Inclinações nas sintéticas: BFS 1,01, Dijkstra
+1,06, Tarjan 1,10 e Brandes 2,04, todas com R² ≥ 0,999.
+
 ## 8. Registro de decisões
 
 Lugar canônico de toda decisão do grupo. Nova decisão: uma linha aqui e a mudança na fonte, no mesmo commit.
@@ -1080,6 +1131,17 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
    média 2 e desvio 1).
 5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
    `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.
+
+### 7. Comparação com o NetworkX e complexidade empírica (F-AVAL-OPC)
+1. **Por que o grafo do NetworkX é montado fora da medição?** Porque o nosso grafo também já
+   está pronto quando o cronômetro começa; medir a conversão compararia construção com
+   algoritmo.
+2. **Por que, no feed real, o Brandes é comparado a partir de k origens e não exato?** O exato
+   custa O(V (V + E) log V), dezenas de minutos dos dois lados. Com as mesmas k origens,
+   `betweenness_centrality_subset` soma exatamente as mesmas dependências que o nosso
+   `estimar_intermediacao` antes do fator N/k, então a conferência continua valendo.
+3. **O que a inclinação b do gráfico log-log diz?** Que o tempo cresce como (V + E)^b: b ≈ 1 é
+   linear (BFS, Tarjan), b ≈ 2 é quadrático (Brandes, V buscas de custo V + E).
 
 ### 6. Interface (P0-UI)
 1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
