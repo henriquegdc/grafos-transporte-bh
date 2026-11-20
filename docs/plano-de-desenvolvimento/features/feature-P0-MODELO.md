@@ -9,10 +9,10 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 18/11/2026, Henrique, branch `feat/P0-MODELO-fechamento`: fechamento. O PR #42 (P0-DADOS) e o #46 (pendências da P0-MODELO, aprovado) já estão na `main`; o teste de integração com a rede de teste roda e passa; construção medida de novo na máquina de referência com o feed de 18/11; relatório compilado com a Modelagem dentro do orçamento.
-- **Onde parou:** todas as etapas feitas (a 4, página, não se aplica). Falta só o PR de fechamento ser aprovado; com o merge, a feature fica concluída e a issue #4 é fechada.
-- **Próximo passo:** nenhum na P0-MODELO além do merge. A Fundamentação (dona dupla com o Thiago) está em rascunho no PR #58, à espera da revisão do Thiago.
-- **Arquivos tocados (18/11):** este arquivo.
+- **Última sessão:** 20/11/2026, Henrique, branch `feat/P0-MODELO-fechamento` (PR #59): ajustes da revisão do Miguel de 20/11. Branch atualizada com a `main` por merge; revisões dos construtores vinculadas no Definition of Done; bloco "Visões do grafo" da página Início conferido com o feed de 18/11 (G_P 9.660/122.799, G_E do pico da manhã 46.102/209.025); roteiro refeito com a página Início e a figura `ge-exemplo.png`, todo na edição de 18/11.
+- **Onde parou:** todas as etapas feitas (a 4, página, não se aplica). A Modelagem do relatório e o roteiro do vídeo estão entregues; a gravação é atividade do vídeo do grupo. A Fundamentação, compartilhada com o Thiago, está no PR #60, que substituiu o #58 e tem a `main` como base desde a integração do #54.
+- **Próximo passo:** Miguel (revisor do #59): conferir os ajustes da revisão do #38 (onde foram atendidos está no Definition of Done) e confirmar que consegue explicar os construtores; com isso, aprovar o #59. Henrique: depois do merge do #59, marcar a feature como concluída (Retomada, Status, último item do Definition of Done e Timeline) e fechar a issue #4.
+- **Arquivos tocados (20/11):** este arquivo.
 - **Como testar:** `pytest tests/modelo` (68 verdes em 18/11, inclusive os 5 de `test_integracao_rede_teste.py`); `ruff check`; `python scripts/verificar_imports.py`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip`.
 - **Bloqueios:** nenhum.
 
@@ -28,12 +28,12 @@ Modelagem, UML e construtores de G_P e G_E. Fecha:
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 05/11: construtores de G_P e G_E, grade espacial da caminhada, salvar e carregar, `baldeacoes` |
 | Modelo e dados | concluído | 18/11: com o #42 na `main`, `tests/modelo/test_integracao_rede_teste.py` deixa de ser pulado e passa (5 testes) |
-| Interface | não aplicável | A P0-MODELO não tem página própria; os totais de G_P e G_E aparecem na página inicial (P0-UI), e as páginas das features usam as visões |
+| Interface | não aplicável | A P0-MODELO não tem página própria; os totais de G_P e G_E aparecem na página inicial (P0-UI), e as páginas das features usam as visões. 20/11: bloco "Visões do grafo" da página Início conferido com o feed de 18/11 (ver Resultados) |
 | Testes | concluído | 18/11: 68 verdes em `tests/modelo`. 09/11: 46 verdes em `tests/modelo` (40 dos construtores, 6 das visões): gabarito à mão, bordas, grade contra busca ingênua em 10 sementes, pickle; teste de mutação à mão (05/11): filtro de negativos, piso, deduplicação de embarque e de desembarque e folga da grade derrubam testes. 10/11: mais 5 testes de integração com a rede de teste do Miguel, pulados até o #42 entrar |
 | Desempenho (tempo medido) | concluído | 05/11: G_P 312,8 ms, G_E 342 a 365 ms por faixa no feed real; 18/11: G_P 325,5 ms, G_E 366 a 384 ms por faixa no feed de 18/11; ver Resultados |
 | Guia (explicação e quiz) | concluído | 05/11: Como funciona e 5 perguntas no `docs/GUIA.md` §3 e §10 |
-| Relatório | em andamento | 05/11: Etapa 1 v1 das seções do Henrique, compiladas com MiKTeX 25.12 sem erro nem referência indefinida: Introdução (cerca de 1,1 página, com o diagrama de casos de uso), Modelagem (cerca de 2,5) e Plano (cerca de 0,4); Introdução e Plano somam 1,5, o orçamento das duas. 09/11: ajustes da revisão (Figura 3 na largura do texto e com `esperas`; Plano cita o `heapq` e a NetworkX nos scripts de medição), não compilados nesta sessão porque a máquina não tinha LaTeX; conferir no próximo `latexmk`. 10/11: Modelagem com o parágrafo de resultado e limitações e a regra do leitor para a D8; Figura 2 em duas fileiras a 0,7 da largura e Figura 3 mais estreita a 0,9; também não compilado, e o tamanho da seção precisa ser conferido contra o orçamento. 18/11: relatório compilado com MiKTeX 25.12 (com bibtex), sem erro nem referência indefinida; a Modelagem ocupa cerca de 2,3 páginas, dentro do orçamento de 2,5, e as figuras saem legíveis. Fundamentação em rascunho no PR #58 |
-| Vídeo | em andamento | 18/11: roteiro atualizado com a página inicial; falta gravar |
+| Relatório | concluído (Modelagem) | 20/11: Modelagem entregue. A Fundamentação, compartilhada com o Thiago, está no PR #60 (substituiu o #58; base `main` desde a integração do #54), em revisão. 05/11: Etapa 1 v1 das seções do Henrique, compiladas com MiKTeX 25.12 sem erro nem referência indefinida: Introdução (cerca de 1,1 página, com o diagrama de casos de uso), Modelagem (cerca de 2,5) e Plano (cerca de 0,4); Introdução e Plano somam 1,5, o orçamento das duas. 09/11: ajustes da revisão (Figura 3 na largura do texto e com `esperas`; Plano cita o `heapq` e a NetworkX nos scripts de medição), não compilados nesta sessão porque a máquina não tinha LaTeX; conferir no próximo `latexmk`. 10/11: Modelagem com o parágrafo de resultado e limitações e a regra do leitor para a D8; Figura 2 em duas fileiras a 0,7 da largura e Figura 3 mais estreita a 0,9; também não compilado, e o tamanho da seção precisa ser conferido contra o orçamento. 18/11: relatório compilado com MiKTeX 25.12 (com bibtex), sem erro nem referência indefinida; a Modelagem ocupa cerca de 2,3 páginas, dentro do orçamento de 2,5, e as figuras saem legíveis. Fundamentação em rascunho no PR #58 |
+| Vídeo | concluído (roteiro) | 20/11: roteiro com a página Início e a figura `ge-exemplo.png`, todo na edição de 18/11 do feed. A gravação é atividade do vídeo do grupo |
 
 ## Especificação
 Construtores de G_P e G_E a partir do modelo normalizado (`docs/fontes/modelagem.md` §3.4). Contrato publicado com `estado: planejado`; o diagrama de classes (`docs/diagramas/classes.png`) mostra as mesmas assinaturas.
@@ -112,18 +112,22 @@ Medido em 05/11 no feed real (ver Resultados): G_P com 9.659 vértices e 122.732
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante (09/11: #38, #40 e #41 integrados, mas sem aprovação formal no GitHub; a revisão do Rafael ficou em comentário. 12/11: #46 integrado com aprovação formal. O dono decide se a revisão em comentário do #38 basta)
+- [ ] Código integrado na `main` por PR aprovado por outro integrante. Evidências:
+  - [Revisão do Rafael no #38](https://github.com/henriquegdc/grafos-transporte-bh/pull/38#issuecomment-6748362738) (09/11, em comentário): código pronto, cinco ajustes e um opcional. O #38 foi integrado em 09/11 (`d4a696b`) sem aprovação formal no GitHub e sem revisor designado no PR.
+  - Onde os ajustes do #38 foram atendidos: (1) linha "Espera provisória" da `modelagem.md` em `e8b3eec` (#38); (2) este arquivo em `542dd0a` (#41, integrado em 09/11 como `7424315`), como a própria revisão do #41 pediu para não conflitar entre os três PRs; (3) branch atualizada com a `main` por merge, conflito do GUIA §8 resolvido, em `6c8eb7f` (#38); (4) descrição do #38, seção "Ajustes da revisão de 09/11 (Rafael)"; (5) revisor no #38 e no #39: não foi designado, o #38 entrou por decisão do Henrique (ver Timeline de 09/11); opcional: checagem de parada antes do padrão curto em `b7bcdf1` (#38), com teste novo.
+  - [Aprovação do Miguel no #46](https://github.com/henriquegdc/grafos-transporte-bh/pull/46#pullrequestreview-5867919862) (12/11): o incremento seguinte dos construtores (pendências, figuras, contagens e teste de integração) entrou com aprovação formal.
+  - Próximo passo, Miguel: conferir os ajustes acima e registrar na revisão do #59 se eles bastam para fechar este item.
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (09/11: 502 na suíte)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (não há equivalente no NetworkX para a construção; a grade é comparada com a busca ingênua)
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (05/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (05/11)
-- [x] Página ou bloco na interface funcionando com o dataset real: não aplicável, a P0-MODELO não tem página; os totais de G_P e G_E aparecem na página inicial do P0-UI, e as páginas das features usam as visões com o feed real (18/11)
+- [x] Página ou bloco na interface funcionando com o dataset real: não aplicável, a P0-MODELO não tem página; os totais de G_P e G_E aparecem na página inicial do P0-UI, e as páginas das features usam as visões com o feed real (18/11). 20/11: bloco "Visões do grafo" da página Início conferido no Streamlit AppTest com o feed de 18/11 (G_P 9.660/122.799; G_E do pico da manhã 46.102/209.025; ver Resultados)
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (05/11: `atividade-construir-ge`)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (05/11)
-- [ ] O revisor do PR consegue explicar o que o código faz
+- [ ] O revisor do PR consegue explicar o que o código faz (próximo passo, Miguel: confirmar na revisão do #59 que consegue explicar os construtores)
 - [x] Seção do relatório, com figura, resultado e limitação: a Modelagem (`relatorio/secoes/modelagem.tex`), com as Figuras 2 e 3, o resultado no feed real e as limitações; compilada em 18/11
-- [x] Roteiro do vídeo escrito no arquivo da feature (18/11)
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline (falta marcar "concluída" depois do merge)
+- [x] Roteiro do vídeo escrito no arquivo da feature (18/11; refeito em 20/11 com a página Início e a figura `ge-exemplo.png`). A gravação é atividade do vídeo do grupo
+- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline (próximo passo, Henrique: marcar "concluída" depois do merge do #59)
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
@@ -133,7 +137,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 18/11: teste de integração na rede de teste roda na `main` (5 verdes) |
 | 4 | Página na interface | não aplicável (sem página própria) |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 05/11 (tempo em Resultados; complexidade em Como funciona) |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 18/11 (relatório compilado; roteiro atualizado) |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 18/11 (relatório compilado; roteiro atualizado); roteiro refeito em 20/11 na edição de 18/11 |
 
 ## Resultados para o relatório
 _Todo número vem com o comando que o gerou._
@@ -170,23 +174,35 @@ Estes números substituem os da checagem avulsa de 05/11 (script não versionado
 
 Com uma parada a mais no feed novo, os tempos ficam no mesmo patamar de 05/11 (G_P de 312,8 para 325,5 ms; G_E de 342 a 365 para 366 a 384 ms, com desvios de até 43 ms). O relatório pode continuar com os de 05/11, que são os do texto da Modelagem.
 
+**Bloco "Visões do grafo" da página Início, 20/11/2026.** Streamlit AppTest sobre `src/transporte/interface/app.py`, na branch do #59 atualizada com a `main` (`1b4edcf`): selecionar `dados/brutos/bhtrans.zip` (o mesmo feed de 18/11, SHA-256 `8cb0a498…f6d6`), clicar em "Carregar rede" e ler as métricas exibidas. Conferência direta no mesmo feed: `ler`, `construir_gp(rede, Parametros())` e `construir_ge(rede, "pico_manha", params, esperas=calcular_esperas(estimar_intervalos(rede, params)))`, com as esperas da F-ESPERA, como a página Baldeações faz (a página Início usa a espera padrão; o peso não muda V nem E).
+
+| Visão | V | E | Fonte |
+|---|---|---|---|
+| G_P | 9.660 | 122.799 | métrica da página Início e chamada direta |
+| G_E, pico da manhã | 46.102 | 209.025 | métrica da página Início e chamada direta com as esperas da F-ESPERA |
+
+A página também mostrou 9.660 paradas, 303 linhas, 698 padrões, dia de serviço 18/11/2026 e a legenda "G_E exibido para a faixa pico_manha". Os quatro totais batem com a tabela de 18/11 acima.
+
 **Tempos em outra máquina, 10/11/2026 (não usar no relatório).** `benchmarks/medir_modelo_rota.py` no mesmo feed de 09/11, num notebook Intel Core i5-1334U, 15,7 GB, Python 3.14.7: G_P em 800,9 ms ± 34,0 ms; G_E entre 657 ms e 1,48 s por faixa, com desvio de até 0,75 s; 200 consultas de trajeto com mediana de 495 ms, p95 de 910 ms e máximo de 1.042 ms; 0 divergências com o NetworkX em 200. A máquina estava com outras tarefas e o desvio é grande, então os tempos de referência continuam os de 05/11. Atenção para a F-ROTA: o máximo passou do limite de 1 s do RNF-05 nesta máquina.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
-Atualizado em 18/11 (Henrique revisa):
+Atualizado em 20/11 (Henrique revisa). Todo o roteiro usa a edição de 18/11 do feed (`dados/brutos/bhtrans.zip`, serviço de 18/11/2026); os números são os de Resultados.
 
-1. **Problema (25 s):** o GTFS é tabela, os algoritmos precisam de grafo. Mostrar `stop_times.txt` ao lado do G_E de exemplo (`ge-exemplo.png`): as mesmas viagens viram vértices e arestas.
-2. **Na ferramenta (35 s):** carregar o feed na página inicial e mostrar o resumo com V e E de G_P e G_E (9.660 paradas viram 46.102 vértices no G_E); na página Trajetos, mostrar que trocar de linha aparece como espera no trajeto, porque passa por um novo embarque.
+1. **Problema (25 s):** o GTFS é tabela, os algoritmos precisam de grafo. Mostrar `stop_times.txt` ao lado da figura `docs/diagramas/ge-exemplo.png`: as mesmas viagens viram paradas, plataformas e arestas de embarque, viagem e desembarque.
+2. **Na ferramenta (35 s):** na página Início, escolher `dados/brutos/bhtrans.zip`, clicar em "Carregar rede" e mostrar o bloco "Visões do grafo": G_P com 9.660 vértices e 122.799 arestas; G_E do pico da manhã com 46.102 vértices e 209.025 arestas. Voltar à `ge-exemplo.png` para mostrar que trocar de linha obriga a desembarcar e embarcar de novo, pagando a espera da nova linha.
 3. **Como funciona (50 s):** plataforma por (parada, padrão) e por que baldear custa a espera; mediana das viagens com o piso de 1 s; grade espacial da caminhada em vez de comparar todos os pares. Complexidade: O(V + K + L + N log N).
-4. **Resultado e limitação (30 s):** feed real em cerca de 0,3 s por visão (V = 46.100 no G_E); limitações: um tempo de viagem para o dia todo e a regra de partida na faixa (D10).
+4. **Resultado e limitação (30 s):** no feed de 18/11, G_P em 325,5 ms e G_E de 366 a 384 ms por faixa na máquina de referência; limitações: um tempo de viagem para o dia todo e a regra de partida na faixa (D10).
 
 ## Pendências
 - ~~**Campos propostos no diagrama de classes que pertencem a contratos de outros donos:** `Linha(id, nome, tipo)` e `leitor_gtfs.ler/validar` (Miguel, P0-DADOS): confirmar quando ele publicar o contrato.~~ **feito em 09/11:** conferido contra o código do PR #42 (`d7f0c3e`): `Linha(id, nome, tipo)` bate; `classes.puml` corrigido para `ler(caminho, dia)`, `validar(caminho)` e `viagens: dict[padrão, list[tuple[int, ...]]]`, e o PNG regenerado. `Viagem`, `Frequencia`, `viagens_por_id` e `inconsistencias` do #42 não estão no diagrama; cabe ao Miguel decidir se entram. ~~`Resultado(dist, pred)` (Thiago)~~ **feito em 05/11:** diagrama com `Resultado(origem, dist, pred, pred_aresta)` e `caminho_arestas`, como na `main`.
 - ~~**Plano de desenvolvimento (relatório):** o texto diz que o gancho de pre-commit barra biblioteca de grafo em `src/`; o gancho é da P0-REPO (Caio) e ainda não existe. Conferir antes da versão final.~~ **feito em 09/11:** o hook do #43 existe e barra bibliotecas de grafo e o `heapq` em `src/`; o texto cita os dois.
-- **Fundamentação (Thiago e Henrique):** rascunho do Henrique no PR #58 (18/11), com cerca de 1 página; falta a revisão do Thiago na parte de algoritmos e centralidade.
+- **Fundamentação (Thiago e Henrique):** o PR #60 substituiu o #58 e reúne a Fundamentação compartilhada; foi aberto sobre o #54 (F-MET) e tem a `main` como base desde que o #54 entrou (18/11). Em 20/11 o Miguel pediu ajustes (espera com intervalo irregular, eficiência global e tamanho), tratados no próprio #60; o Thiago revisa o parágrafo compartilhado dos algoritmos.
+- **Revisão do #59 (Miguel):** conferir onde foram atendidos os ajustes da revisão do #38 (Definition of Done) e confirmar que consegue explicar os construtores.
+- **Conclusão (Henrique):** depois do merge do #59, marcar a feature como concluída e fechar a issue #4.
+- **Gravação do vídeo:** atividade do vídeo do grupo, com o roteiro deste arquivo.
 - ~~**Rede (Miguel):** mandar o protocolo `RedeConstrutores`~~ **feito em 05/11:** o PR #42 publica `Rede.viagens[padrão]` no formato do protocolo; conferido no feed real sem adaptador.
 - ~~**Frequências na Rede (PR #42, item 1 da revisão):** viagem com `frequencies.txt` entra em `Rede.viagens` só como a de referência, e a D10 perde embarques (na rede de teste, L2 fica sem embarque na faixa 09:30 a 10:00). O feed real não tem `frequencies.txt`. Pedida mudança ao Miguel em 05/11; correção publicada em 08/11 (`d7f0c3e`).~~ **conferido em 09/11:** com o `d7f0c3e` juntado à `main`, `viagens[f1]` tem as 6 sequências e a L2 tem embarque nas faixas 09:00 a 09:30 e 09:30 a 10:00; 514 testes verdes na junção. Os itens 2 a 4 da revisão também foram corrigidos.
 - ~~**PR #42, o que falta:** publicar a aprovação no GitHub e o Miguel resolver o conflito no `docs/GUIA.md` §10.~~ **sem efeito:** o #42 foi integrado na `main`.
@@ -248,3 +264,6 @@ Atualizado em 18/11 (Henrique revisa):
 ### Sessão 10/11/2026: pendências na branch `feat/P0-MODELO-pendencias`: `classes.puml` com o contrato do #42; Figura 2 em duas fileiras e Figura 3 mais estreita; `benchmarks/estatisticas_ge.py` e contagens refeitas no feed de 09/11 (39 arestas de viagem do G_P no piso, 1.106 diferenças de 0 s); Modelagem com resultado, limitações e a regra do leitor para a D8; teste de integração com a rede de teste, pulado até o #42 entrar; GUIA §3 com o número novo do piso.
 ### Merge 12/11/2026: PR #46 (pendências) integrado na `main`, com aprovação formal.
 ### Sessão 18/11/2026: fechamento na branch `feat/P0-MODELO-fechamento`: teste de integração com a rede de teste verde na `main`; construção medida de novo no feed de 18/11 (G_P 325,5 ms, G_E 366 a 384 ms); relatório compilado, Modelagem com cerca de 2,3 páginas; pendências antigas encerradas; roteiro atualizado.
+### Mudança 18/11/2026: PR #60 aberto com a Fundamentação compartilhada, sobre o #54; substitui o #58, fechado.
+### Revisão 20/11/2026: Miguel revisa o #59 no `fe7e4a9` com mudanças pedidas: vincular as revisões do #38 e do #46, atualizar o estado do relatório e do vídeo e conferir o bloco da página Início no feed de 18/11.
+### Sessão 20/11/2026: ajustes da revisão na branch `feat/P0-MODELO-fechamento`: `main` integrada por merge; Definition of Done com os links das revisões e o mapa dos ajustes do #38; página Início conferida no AppTest com o feed de 18/11 (G_P 9.660/122.799; G_E do pico da manhã 46.102/209.025); roteiro com a página Início e a `ge-exemplo.png`; próximos passos do Miguel e do Henrique.
