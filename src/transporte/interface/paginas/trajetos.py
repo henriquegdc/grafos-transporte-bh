@@ -7,8 +7,10 @@ carregada e faixa, com as esperas estimadas pela F-ESPERA (H/2 por padrão e fai
   (a pé, espera, linha usada), com os tempos.
 - RF-ROT-03 (F-ROTA-2): origem e destino por clique no mapa ou por coordenadas, cada ponto
   ligado à parada mais próxima; a caminhada até ela entra no tempo porta a porta.
-- RF-ROT-04 (F-ROTA-2): a mesma consulta com A* e Dijkstra, com vértices expandidos e tempo.
-- RF-ROT-05 (F-ROTA-OPC): k trajetos alternativos pelo Yen, sob demanda (é a consulta cara).
+- RF-ROT-04 (F-ROTA-2): a mesma consulta com A* e Dijkstra, com vértices expandidos e tempo,
+  guardada na sessão por consulta.
+- RF-ROT-05 (F-ROTA-OPC): até k trajetos alternativos pelo Yen, um por sequência de linhas,
+  sob demanda (é a consulta cara).
 
 estado: implementado
 """
@@ -31,7 +33,7 @@ from transporte.algoritmos.a_estrela import (
     parada_mais_proxima,
     velocidade_maxima,
 )
-from transporte.algoritmos.alternativos import trajetos_alternativos
+from transporte.algoritmos.alternativos import Alternativo, alternativos_por_linhas
 from transporte.algoritmos.trajeto import A_PE, ESPERA, ONIBUS, Trajeto, trajeto_mais_rapido
 from transporte.grafo.buscas import INF
 from transporte.interface.mapa import atualizar_controle_camadas, criar_mapa
@@ -44,6 +46,7 @@ from transporte.simulacao.espera import calcular_esperas, estimar_intervalos
 CHAVE_GE = "f-rota-ge"
 CHAVE_CLIQUE = "f-rota-ultimo-clique"
 CHAVE_ALTERNATIVOS = "f-rota-alternativos"
+CHAVE_COMPARACAO = "f-rota-comparacao"
 MODO_LISTA = "Lista de paradas"
 MODO_PONTO = "Mapa ou coordenadas"
 ORIGEM, DESTINO = "origem", "destino"
@@ -151,24 +154,39 @@ def resumo_linhas(rede: RedeUI, trajeto: Trajeto) -> str:
     return " → ".join(nomes) if nomes else "a pé"
 
 
-def tabela_alternativos(rede: RedeUI, trajetos: list[Trajeto]) -> list[dict[str, str]]:
-    """Uma linha por trajeto do Yen: posição, tempo, baldeações, linhas e tempo a pé. O(k·n)."""
-    return [
-        {
-            "Trajeto": str(i),
-            "Tempo total": minutos(t.tempo_total_s),
+def tabela_alternativos(
+    rede: RedeUI, alternativos: list[Alternativo], acesso_s: float | None = None
+) -> list[dict[str, str]]:
+    """Uma linha por sequência de linhas: posição, tempo, baldeações, linhas, a pé e variantes.
+
+    Com `acesso_s` (modo "Mapa ou coordenadas"), acrescenta o tempo porta a porta, que soma a
+    caminhada dos pontos às paradas; "Tempo total" é sempre entre as paradas. O(k·n).
+    """
+    linhas = []
+    for i, alt in enumerate(alternativos, start=1):
+        t = alt.trajeto
+        linha = {"Trajeto": str(i), "Tempo total": minutos(t.tempo_total_s)}
+        if acesso_s is not None:
+            linha["Tempo porta a porta"] = minutos(t.tempo_total_s + acesso_s)
+        linha |= {
             "Baldeações": str(t.baldeacoes),
             "Linhas": resumo_linhas(rede, t),
             "A pé": minutos(t.tempo_por_tipo()[A_PE]),
+            "Variantes": str(alt.variantes),
         }
-        for i, t in enumerate(trajetos, start=1)
-    ]
+        linhas.append(linha)
+    return linhas
 
 
 def ligar_ponto(rede: RedeUI, lat: float, lon: float, params: Parametros) -> Ponto:
     """Liga o ponto à parada mais próxima em linha reta (RF-ROT-03). Tempo O(V)."""
     parada, distancia = parada_mais_proxima(rede.paradas, lat, lon)
     return Ponto(lat, lon, parada, distancia, distancia / params.velocidade_caminhada_ms)
+
+
+def longe_da_rede(ponto: Ponto, params: Parametros) -> bool:
+    """True se o ponto está além do raio de caminhada da sua parada mais próxima. O(1)."""
+    return ponto.distancia_m > params.raio_caminhada_m
 
 
 def _chaves(alvo: str) -> tuple[str, str]:
@@ -317,41 +335,103 @@ def _escolher_pontos(rede: RedeUI, params: Parametros) -> tuple[Ponto, Ponto]:
             f"Parada mais próxima: {_nome(rede, ponto.parada)}, a {ponto.distancia_m:.0f} m "
             f"({minutos(ponto.caminhada_s)} a pé, em linha reta)."
         )
+        if longe_da_rede(ponto, params):
+            coluna.warning(
+                f"A {alvo_campo} está a {ponto.distancia_m:.0f} m da parada mais próxima, "
+                f"mais que o raio de caminhada ({params.raio_caminhada_m:.0f} m): o ponto "
+                "pode estar fora da rede, e a caminhada até a parada entra inteira no tempo "
+                "porta a porta."
+            )
         pontos.append(ponto)
     return pontos[0], pontos[1]
 
 
+def comparacao_em_cache(
+    rede: RedeUI,
+    preparado: GEPreparado,
+    faixa: str,
+    origem: str,
+    destino: str,
+    cache: MutableMapping,
+) -> Comparacao:
+    """Dijkstra × A* da consulta, calculado só quando a consulta muda (RF-ROT-04).
+
+    `cache` é o `st.session_state`; a chave (id(rede), faixa, origem, destino) evita refazer
+    as duas buscas a cada interação com a página (k, rádio, mapa). O(1) com a consulta
+    guardada; senão o das duas buscas.
+    """
+    consulta = (id(rede), faixa, origem, destino)
+    guardado = cache.get(CHAVE_COMPARACAO)
+    if guardado is None or guardado[0] != consulta:
+        guardado = (
+            consulta,
+            comparar(preparado.ge, preparado.coords, preparado.vmax, origem, destino),
+        )
+        cache[CHAVE_COMPARACAO] = guardado
+    return guardado[1]
+
+
 def _mostrar_alternativos(
-    rede: RedeUI, preparado: GEPreparado, faixa: str, origem: str, destino: str
+    rede: RedeUI,
+    preparado: GEPreparado,
+    faixa: str,
+    origem: str,
+    destino: str,
+    pontos: tuple[Ponto, ...] = (),
 ) -> None:
-    """Seção do Yen (RF-ROT-05): roda só no botão e guarda o resultado da consulta."""
+    """Seção do Yen (RF-ROT-05): roda só no botão e guarda o resultado da consulta.
+
+    Mostra um trajeto por sequência de linhas (`alternativos_por_linhas`, teto de 4 · k
+    caminhos do Yen), com quantas variantes de cada uma o Yen achou.
+    """
     st.subheader("Trajetos alternativos (Yen)")
     k = st.number_input(
         "Quantos trajetos (k)", min_value=2, max_value=K_MAXIMO, value=3, key="f-rota-k"
     )
     consulta = (id(rede), faixa, origem, destino, int(k))
     if st.button("Listar trajetos alternativos", key="f-rota-yen"):
+        linha_do_padrao = {pid: p.linha_id for pid, p in rede.padroes.items()}
         inicio = perf_counter()
         with st.spinner("Calculando os trajetos alternativos..."):
-            trajetos = trajetos_alternativos(
-                preparado.ge, origem, destino, int(k), preparado.coords, preparado.vmax
+            alternativos = alternativos_por_linhas(
+                preparado.ge,
+                origem,
+                destino,
+                int(k),
+                linha_do_padrao,
+                preparado.coords,
+                preparado.vmax,
             )
-        st.session_state[CHAVE_ALTERNATIVOS] = (consulta, trajetos, perf_counter() - inicio)
+        st.session_state[CHAVE_ALTERNATIVOS] = (consulta, alternativos, perf_counter() - inicio)
     guardado = st.session_state.get(CHAVE_ALTERNATIVOS)
     if guardado is None or guardado[0] != consulta:
         st.caption(
-            "Lista os k trajetos sem ciclo de menor tempo, do mais rápido ao mais lento. "
-            "Faz uma busca por vértice do trajeto anterior, por isso só roda no botão: na "
-            "rede inteira de BH, pode levar alguns segundos com k = 3 e dezenas de segundos "
-            "com k = 5 em trajetos longos."
+            "Lista até k trajetos com sequências de linhas distintas, do mais rápido ao mais "
+            "lento, pelo Yen. Faz uma busca por vértice do trajeto anterior, por isso só roda "
+            "no botão: na rede inteira de BH, pode levar dezenas de segundos em trajetos longos."
         )
         return
-    _consulta, trajetos, duracao = guardado
-    st.caption(
-        f"{len(trajetos)} trajeto(s) em {duracao:.2f} s. Trajetos distintos diferem em pelo "
-        "menos uma aresta do G_E: uma linha, uma parada ou um trecho a pé."
+    _consulta, alternativos, duracao = guardado
+    caminhos = sum(a.variantes for a in alternativos)
+    texto = (
+        f"{len(alternativos)} sequência(s) de linhas em {duracao:.2f} s, entre {caminhos} "
+        'caminho(s) do Yen. "Variantes" conta os caminhos com as mesmas linhas, que só '
+        "mudam onde trocar ou o trecho a pé; a tabela mostra o mais rápido de cada uma."
     )
-    st.dataframe(tabela_alternativos(rede, trajetos), hide_index=True, width="stretch")
+    if 0 < len(alternativos) < int(k):
+        texto += (
+            f" Não há {int(k)} sequências distintas entre os {caminhos} primeiros caminhos: "
+            f"os outros são variantes do mesmo trajeto."
+        )
+    acesso = sum(p.caminhada_s for p in pontos) if pontos else None
+    if acesso is not None:
+        texto += (
+            ' "Tempo total" é entre as paradas; "Tempo porta a porta" soma a caminhada '
+            "dos pontos escolhidos às paradas."
+        )
+    st.caption(texto)
+    st.dataframe(tabela_alternativos(rede, alternativos, acesso), hide_index=True, width="stretch")
+    trajetos = [a.trajeto for a in alternativos]
     if len(trajetos) > 1:
         escolhido = st.selectbox(
             "Trajeto no mapa",
@@ -360,7 +440,7 @@ def _mostrar_alternativos(
             key="f-rota-alternativo-mapa",
         )
         st_folium(
-            mapa_trajeto(rede, trajetos[escolhido]),
+            mapa_trajeto(rede, trajetos[escolhido], pontos),
             height=450,
             use_container_width=True,
             key="mapa-alternativos",
@@ -435,7 +515,7 @@ def render(rede: RedeUI) -> None:
     st.caption("Cada trecho é uma camada do mapa, com o tempo no nome e na dica do traço.")
 
     st.subheader("Dijkstra × A*")
-    c = comparar(ge, preparado.coords, preparado.vmax, origem, destino)
+    c = comparacao_em_cache(rede, preparado, faixa, origem, destino, st.session_state)
     st.dataframe(tabela_comparacao(c), hide_index=True, width="stretch")
     if preparado.vmax == INF:
         st.caption("O G_E não tem aresta que mude de lugar: a heurística é 0 e o A* é o Dijkstra.")
@@ -446,4 +526,4 @@ def render(rede: RedeUI) -> None:
             "velocidade entre as arestas do G_E. Por isso não superestima, e os dois acham o "
             "mesmo tempo."
         )
-    _mostrar_alternativos(rede, preparado, faixa, origem, destino)
+    _mostrar_alternativos(rede, preparado, faixa, origem, destino, pontos)

@@ -14,6 +14,7 @@ import folium
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from transporte.algoritmos.alternativos import Alternativo
 from transporte.algoritmos.trajeto import trajeto_mais_rapido
 from transporte.dados.leitor_gtfs import ler
 from transporte.dados.modelo import Parada
@@ -176,6 +177,8 @@ def test_render_lista_alternativos_no_botao(pagina) -> None:
     # Sem caminhada (paradas a 1,1 km), só a L1 liga A a C: um trajeto só.
     assert list(alternativos["Tempo total"]) == ["20 min 00 s"]
     assert list(alternativos["Linhas"]) == ["Linha 1"]
+    assert list(alternativos["Variantes"]) == ["1"]
+    assert "Tempo porta a porta" not in alternativos.columns
     # Mudar a consulta esconde o resultado antigo.
     pagina.selectbox(key="f-rota-destino").set_value("B")
     pagina.run(timeout=30)
@@ -224,16 +227,60 @@ def test_ligar_ponto_e_mapa_com_acesso(rede) -> None:
 
 
 def test_tabela_alternativos(rede) -> None:
-    linhas = trajetos.tabela_alternativos(rede, [_trajeto_a_c(rede)])
-    assert linhas == [
+    alt = Alternativo(_trajeto_a_c(rede), ("L1",), 3)
+    assert trajetos.tabela_alternativos(rede, [alt]) == [
         {
             "Trajeto": "1",
             "Tempo total": "20 min 00 s",
             "Baldeações": "0",
             "Linhas": "Linha 1",
             "A pé": "0 min 00 s",
+            "Variantes": "3",
         }
     ]
+    (com_acesso,) = trajetos.tabela_alternativos(rede, [alt], acesso_s=65)
+    assert com_acesso["Tempo total"] == "20 min 00 s"
+    assert com_acesso["Tempo porta a porta"] == "21 min 05 s"
+
+
+def test_comparacao_guardada_por_consulta(rede, monkeypatch) -> None:
+    preparado = trajetos.ge_da_faixa(rede, "pico_manha", Parametros(), {})
+    chamadas = []
+    original = trajetos.comparar
+
+    def contar(*args):
+        chamadas.append(args[-2:])
+        return original(*args)
+
+    monkeypatch.setattr(trajetos, "comparar", contar)
+    cache: dict = {}
+    c = trajetos.comparacao_em_cache(rede, preparado, "pico_manha", "A", "C", cache)
+    assert trajetos.comparacao_em_cache(rede, preparado, "pico_manha", "A", "C", cache) is c
+    trajetos.comparacao_em_cache(rede, preparado, "pico_manha", "A", "B", cache)
+    assert chamadas == [("A", "C"), ("A", "B")]
+
+
+def test_longe_da_rede(rede) -> None:
+    params = Parametros()
+    assert not trajetos.longe_da_rede(trajetos.ligar_ponto(rede, -19.901, -43.9, params), params)
+    # 0,01 grau a oeste de A: cerca de 1 km, além do raio de caminhada.
+    assert trajetos.longe_da_rede(trajetos.ligar_ponto(rede, -19.9, -43.91, params), params)
+
+
+def test_render_avisa_ponto_longe_e_alternativos_porta_a_porta(pagina) -> None:
+    pagina.radio(key="f-rota-modo").set_value(trajetos.MODO_PONTO).run(timeout=30)
+    pagina.number_input(key="f-rota-lat-origem").set_value(-19.9)
+    pagina.number_input(key="f-rota-lon-origem").set_value(-43.91)
+    pagina.number_input(key="f-rota-lat-destino").set_value(-19.879)
+    pagina.number_input(key="f-rota-lon-destino").set_value(-43.9)
+    pagina.run(timeout=30)
+    assert not pagina.exception
+    assert any("origem está a" in w.value for w in pagina.warning)
+    pagina.button(key="f-rota-yen").click().run(timeout=30)
+    assert not pagina.exception
+    alternativos = pagina.dataframe[2].value
+    assert list(alternativos["Tempo total"]) == ["20 min 00 s"]
+    assert "Tempo porta a porta" in alternativos.columns
 
 
 @pytest.mark.parametrize("zipado", [False, True])
