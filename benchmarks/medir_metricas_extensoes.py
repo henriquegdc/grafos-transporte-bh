@@ -134,7 +134,8 @@ def main() -> None:
     for v, r in enumerate(c.rotulos):
         if r != SEM_COMUNIDADE:
             conjuntos.setdefault(r, set()).add(v)
-    q_nx = nx.community.modularity(nao_dirigido, list(conjuntos.values()))
+    # weight=None: a nossa modularidade ignora os pesos (o Graph carrega o tempo em "weight").
+    q_nx = nx.community.modularity(nao_dirigido, list(conjuntos.values()), weight=None)
     tamanhos = sorted(c.tamanhos(), reverse=True)
     sementes = [propagar_rotulos(g, semente=s) for s in range(SEMENTE, SEMENTE + 5)]
     resultado["comunidades"] = {
