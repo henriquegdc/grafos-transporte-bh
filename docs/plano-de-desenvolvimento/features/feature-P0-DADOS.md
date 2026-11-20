@@ -24,10 +24,10 @@ Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | não aplicável | Esta feature fornece dados, não algoritmo de grafo |
-| Modelo e dados | implementado | 05/11: GTFS pasta/ZIP, calendário, frequências, validação e recorte; feed real lido |
-| Interface | implementado | 11/11: carregamento normal com ler; pasta/ZIP e mapa verificados; feed completo validado com AppTest |
-| Testes | implementado | 15/11: suíte da branch de integração validada; resultado final registrado abaixo |
-| Desempenho (tempo medido) | implementado | 05/11: leitura medida no feed real com `medir` |
+| Modelo e dados | concluído | 05/11: GTFS pasta/ZIP, calendário, frequências, validação e recorte; feed real lido |
+| Interface | concluído | 11/11: carregamento normal com ler; pasta/ZIP e mapa verificados; feed completo validado com AppTest |
+| Testes | concluído | 15/11: suíte da branch de integração validada; resultado final registrado abaixo |
+| Desempenho (tempo medido) | concluído | 05/11: leitura medida no feed real com `medir` |
 | Guia (explicação e quiz) | concluído | Guia §2, §8 e §10 conferidos com o leitor. A seleção da quarta considera a versão e as exceções do calendário. |
 | Relatório | concluído | Seção Dados com fluxo do leitor, medição e limitação ao serviço selecionado. |
 | Vídeo | roteiro concluído | Gravação pelo integrante no vídeo do grupo. |

@@ -24,10 +24,10 @@ Aplicação Streamlit e componente de mapa. Fecha:
 |---|---|---|
 | Núcleo (algoritmo) | não aplicável | P0-UI não implementa algoritmo de grafo. |
 | Modelo e dados | integrado | Usa a Rede normalizada e os construtores da main. |
-| Interface | implementado | Pasta/ZIP, preservação da rede em erro, resumo, dia, inconsistências, V/E, mapa real no Streamlit e contrato `render(rede)` validados com `dados/rede-teste`. |
-| Testes | validados | Casos de pasta e ZIP, erro preservando a sessão, mapa, navegação e resumo. |
+| Interface | concluído | Pasta/ZIP, preservação da rede em erro, resumo, dia, inconsistências, V/E, mapa real no Streamlit e contrato `render(rede)` validados com `dados/rede-teste`. |
+| Testes | concluído | Casos de pasta e ZIP, erro preservando a sessão, mapa, navegação e resumo. |
 | Desempenho (tempo medido) | concluído | Carga fria e quente e montagem de G_P/G_E pelo código da página. Ver JSON em Resultados. |
-| Guia (explicação e quiz) | implementado | Seção 6 e pergunta 5 atualizadas em `docs/GUIA.md`. |
+| Guia (explicação e quiz) | concluído | Seção 6 e pergunta 5 atualizadas em `docs/GUIA.md`. |
 | Relatório | concluído | Figura de sequência da página e números do feed real na seção Implementação. |
 | Vídeo | roteiro atualizado | Roteiro de demonstração incluído abaixo; gravação com feed real ainda pendente. |
 
