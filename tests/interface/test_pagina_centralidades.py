@@ -11,6 +11,7 @@ Gabarito à mão de G_P da rede de teste (paradas A, B, C, D; vértices 0 a 3):
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -239,3 +240,26 @@ def test_shell_detecta_comunidades(monkeypatch):
     assert valores["Comunidades"] == "1"
     assert valores["Modularidade"] == "0.000"
     assert at.dataframe[0].value["Paradas"].iloc[0] == 4
+
+def test_proximidade_e_comunidades_em_rede_com_uma_parada(monkeypatch):
+    monkeypatch.setattr(pagina, "st_folium", lambda *a, **kw: None)
+    at = AppTest.from_string(
+        "import streamlit as st\n"
+        "from transporte.interface.paginas.centralidades import render\n"
+        "render(st.session_state.rede)\n"
+    )
+    rede = ler(FONTE)
+    at.session_state["rede"] = replace(
+        rede, paradas={"A": rede.paradas["A"]}, padroes={}, viagens={}
+    )
+    at.run()
+    assert not at.exception
+
+    at.radio[0].set_value(pagina.PROXIMIDADE)
+    _botao(at, "Calcular").click().run()
+    assert not at.exception
+    assert at.dataframe[0].value["Valor"].tolist() == [0.0]
+
+    _botao(at, "Detectar comunidades").click().run()
+    assert not at.exception
+    assert at.dataframe[1].value["Paradas"].tolist() == [1]

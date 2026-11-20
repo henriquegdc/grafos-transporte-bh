@@ -11,6 +11,7 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
+from itertools import pairwise
 
 import networkx as nx
 import pytest
@@ -20,6 +21,7 @@ from transporte.algoritmos.comparacao_baldeacoes import (
     ComparacaoBaldeacoes,
     comparar_baldeacoes,
     mais_rapido_com_limite,
+    trajetos_nao_dominados,
 )
 from transporte.algoritmos.trajeto import A_PE, ESPERA, ONIBUS, Trecho, trajeto_mais_rapido
 from transporte.modelo.construtores import construir_ge
@@ -321,3 +323,132 @@ def test_comparacao_em_redes_aleatorias(semente):
         assert r.tempo_total_s >= c.mais_rapido.tempo_total_s - 1e-9
         if c.baldeacoes_evitadas:
             assert c.mais_rapido.baldeacoes > c.menos_baldeacoes.baldeacoes
+
+
+# --- F-BALD-OPC (RF-BAL-04): trajetos não dominados -------------------------------------
+
+ESCADA = [
+    ("Q1", "AB", [60]),
+    ("Q2", "BC", [60]),
+    ("Q3", "CD", [60]),
+    ("R1", "AC", [1000]),
+    ("R3", "BD", [700]),
+]
+
+
+def _pontos(fronteira):
+    return [(t.baldeacoes, t.tempo_total_s) for t in fronteira]
+
+
+def test_fronteira_com_tres_pontos():
+    # 0 baldeação: DIRETA = 300 + 3000 = 3300 s; 1: Q1 + R3 = 1360 s; 2: Q1 + Q2 + Q3 =
+    # 1080 s (os mesmos cálculos de test_escolhe_o_mais_rapido_entre_os_de_menos_baldeacoes).
+    ge, _ = visoes(LONGE4, [*ESCADA, ("DIRETA", "AD", [3000])])
+    f = trajetos_nao_dominados(ge, "A", "D")
+    assert _pontos(f) == [(0, 3300.0), (1, 1360.0), (2, 1080.0)]
+    assert [[t.padrao for t in x.trechos if t.tipo == ONIBUS] for x in f] == [
+        ["DIRETA"],
+        ["Q1", "R3"],
+        ["Q1", "Q2", "Q3"],
+    ]
+    assert f[-1].tempo_total_s == trajeto_mais_rapido(ge, "A", "D").tempo_total_s
+
+
+def test_fronteira_comeca_onde_ha_trajeto():
+    # Sem linha direta, k = 0 não acha nada e a fronteira começa em 1 baldeação.
+    ge, _ = visoes(LONGE4, ESCADA)
+    assert _pontos(trajetos_nao_dominados(ge, "A", "D")) == [(1, 1360.0), (2, 1080.0)]
+
+
+def test_direta_lenta_e_mais_rapida_dao_dois_pontos():
+    ge, _ = visoes(LONGE3, [("LENTA", "AC", [2000]), ("P2", "AB", [100]), ("P3", "BC", [100])])
+    assert _pontos(trajetos_nao_dominados(ge, "A", "C")) == [(0, 2300.0), (1, 800.0)]
+
+
+def test_empate_de_tempo_fica_com_menos_baldeacoes():
+    # DIRETA: 300 + 500 = 800 s, igual a P2 + P3: só ela fica.
+    ge, _ = visoes(LONGE3, [("DIRETA", "AC", [500]), ("P2", "AB", [100]), ("P3", "BC", [100])])
+    f = trajetos_nao_dominados(ge, "A", "C")
+    assert _pontos(f) == [(0, 800.0)]
+    assert [t.padrao for t in f[0].trechos if t.tipo == ONIBUS] == ["DIRETA"]
+
+
+def test_mais_rapido_sem_baldeacao_e_o_unico_ponto():
+    ge, _ = visoes(LONGE3, [("RAPIDA", "AC", [200]), ("P2", "AB", [100]), ("P3", "BC", [100])])
+    assert _pontos(trajetos_nao_dominados(ge, "A", "C")) == [(0, 500.0)]
+
+
+def test_nao_dominados_bordas():
+    ge, _ = visoes(LONGE3, [("P2", "AB", [100]), ("P3", "BC", [100])])
+    f = trajetos_nao_dominados(ge, "A", "A")
+    assert len(f) == 1 and (f[0].tempo_total_s, f[0].baldeacoes, f[0].trechos) == (0.0, 0, ())
+    assert trajetos_nao_dominados(ge, "C", "A") == []  # os padrões têm sentido
+    with pytest.raises(KeyError):
+        trajetos_nao_dominados(ge, "A", "Z")
+
+
+def test_nao_dominados_respeita_falhas():
+    ge, _ = visoes(LONGE3, [("LENTA", "AC", [2000]), ("P2", "AB", [100]), ("P3", "BC", [100])])
+    _desativar_viagem(ge, "A", "LENTA")
+    assert _pontos(trajetos_nao_dominados(ge, "A", "C")) == [(1, 800.0)]
+    ge.grafo.desativar_vertice(ge.vertice_da_parada["A"])
+    assert trajetos_nao_dominados(ge, "A", "C") == []
+
+
+def _pareto_forca_bruta(ge, origem, destino):
+    """Pontos (baldeações, tempo) não dominados entre todos os caminhos simples do G_E,
+    enumerados com o NetworkX. Basta caminho simples: tirar um ciclo não aumenta tempo nem
+    embarques. Entre u e v fica a aresta de menor peso; o tipo (embarque ou não) depende
+    só das pontas, porque a única aresta parada -> plataforma é o EMBARQUE."""
+    g = ge.grafo
+    h = nx.DiGraph()
+    for a in range(g.num_arestas()):
+        u, v, peso, tipo = g.aresta(a)
+        if not (g.aresta_ativa(a) and g.vertice_ativo(u) and g.vertice_ativo(v)):
+            continue
+        if not h.has_edge(u, v) or peso < h[u][v]["peso"]:
+            h.add_edge(u, v, peso=peso, embarque=tipo == EMBARQUE)
+    s, t = ge.vertice_da_parada[origem], ge.vertice_da_parada[destino]
+    if s == t:
+        return [(0, 0.0)]
+    if s not in h or t not in h:
+        return []
+    pontos = set()
+    for caminho in nx.all_simple_paths(h, s, t):
+        arestas = [h[u][v] for u, v in pairwise(caminho)]
+        embarques = sum(d["embarque"] for d in arestas)
+        pontos.add((max(0, embarques - 1), round(sum(d["peso"] for d in arestas), 6)))
+    return sorted(
+        (b, tempo)
+        for b, tempo in pontos
+        if not any(
+            (b2, t2) != (b, tempo) and b2 <= b and t2 <= tempo for b2, t2 in pontos
+        )
+    )
+
+
+def _rede_pequena(rnd):
+    paradas = [(f"S{i}", rnd.uniform(0, 25)) for i in range(7)]
+    nomes = [p for p, _ in paradas]
+    padroes = []
+    for k in range(8):
+        seq = rnd.sample(nomes, rnd.randint(2, 4))
+        padroes.append((f"L{k}", seq, [rnd.randint(1, 40) * 30 for _ in seq[1:]]))
+    # Esperas curtas tornam a baldeação barata: mais pares com fronteira de 2 ou 3 pontos.
+    esperas = {(f"L{k}", FAIXA): rnd.randint(1, 4) * 30.0 for k in range(8)}
+    ge, _ = visoes(paradas, padroes, esperas)
+    return ge, nomes
+
+
+@pytest.mark.parametrize("semente", range(20))
+def test_nao_dominados_igual_a_forca_bruta(semente):
+    rnd = random.Random(500 + semente)
+    ge, nomes = _rede_pequena(rnd)
+    for o in nomes:
+        for d in nomes:
+            f = trajetos_nao_dominados(ge, o, d)
+            assert [(b, round(tempo, 6)) for b, tempo in _pontos(f)] == _pareto_forca_bruta(
+                ge, o, d
+            )
+            for x in f:
+                assert sum(tr.tempo_s for tr in x.trechos) == pytest.approx(x.tempo_total_s)

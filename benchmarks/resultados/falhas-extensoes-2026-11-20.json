@@ -1,0 +1,383 @@
+{
+  "comando": "python benchmarks/medir_falhas_extensoes.py C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip --paradas 10 --linhas 20 --amostra 30 --amostra-intermediacao 100 --k 10 --repeticoes 1",
+  "feed": {
+    "caminho": "C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip",
+    "sha256": "8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6"
+  },
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "python": "3.12.10"
+  },
+  "rede": {
+    "dia": "2026-11-18",
+    "paradas": 9660,
+    "linhas": 303
+  },
+  "G_P": {
+    "V": 9660,
+    "E": 122799
+  },
+  "semente": 2026,
+  "parametros": {
+    "caminho": "C:\\Users\\GDC\\Documents\\Projetos\\grafos-transporte-bh\\dados\\brutos\\bhtrans.zip",
+    "paradas": 10,
+    "linhas": 20,
+    "amostra": 30,
+    "amostra_intermediacao": 100,
+    "k": 10,
+    "repeticoes": 1,
+    "saida": null
+  },
+  "ranking": {
+    "candidatos": 30,
+    "tempo_candidatos": "4.038 s ± 0.000 s (n=1)",
+    "tempo_ranking": "38.927 s ± 0.000 s (n=1)",
+    "itens": [
+      {
+        "tipo": "parada",
+        "id": "36020152",
+        "nome": "Rua Deputado Salim Nacur, 173",
+        "perda_eficiencia": 0.011072137221609503,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "36020150",
+        "nome": "Rua das Canárias, 1105",
+        "perda_eficiencia": 0.010710451465870864,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "36020149",
+        "nome": "Rua das Canárias, 729",
+        "perda_eficiencia": 0.00894865342815454,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "15276952",
+        "nome": "Estação Pampulha - Plataforma D1",
+        "perda_eficiencia": 0.0064054569204488555,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561853",
+        "nome": "9550",
+        "perda_eficiencia": 0.003979192703161841,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "14784408",
+        "nome": "Rua Farias Brito 193",
+        "perda_eficiencia": 0.0016367984062676988,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "14784615",
+        "nome": "Avenida Amazonas 322",
+        "perda_eficiencia": 0.0013875030878489993,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "14785077",
+        "nome": "Rua Alcobaca 170",
+        "perda_eficiencia": 0.0010374025520614894,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562349",
+        "nome": "205",
+        "perda_eficiencia": 0.000904952965570207,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "15252267",
+        "nome": "Estação Pampulha - Plataforma G1",
+        "perda_eficiencia": 0.0008439333943097402,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562023",
+        "nome": "4031",
+        "perda_eficiencia": 0.0008109645175130954,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562156",
+        "nome": "837",
+        "perda_eficiencia": 0.0007464856272838271,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561835",
+        "nome": "8107",
+        "perda_eficiencia": 0.0005275667411236592,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562178",
+        "nome": "321",
+        "perda_eficiencia": 0.0005017723937969793,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561847",
+        "nome": "103",
+        "perda_eficiencia": 0.00045070667352109663,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561939",
+        "nome": "318",
+        "perda_eficiencia": 0.00044742224023738153,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561849",
+        "nome": "717",
+        "perda_eficiencia": 0.00041893726966351193,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562327",
+        "nome": "735",
+        "perda_eficiencia": 0.00034152350058037824,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "14784840",
+        "nome": "Avenida Amazonas 478",
+        "perda_eficiencia": 0.00031089881782775603,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "parada",
+        "id": "14786443",
+        "nome": "Avenida Amazonas, 570",
+        "perda_eficiencia": 0.0003010374488192169,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561790",
+        "nome": "9106",
+        "perda_eficiencia": 0.00023046333107786988,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "600190",
+        "nome": "5034",
+        "perda_eficiencia": 0.00019360315360967203,
+        "desconectadas": 1,
+        "isoladas": 1
+      },
+      {
+        "tipo": "linha",
+        "id": "561949",
+        "nome": "616",
+        "perda_eficiencia": 0.000179873372541398,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561983",
+        "nome": "9034",
+        "perda_eficiencia": 0.0001042300911837383,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "1012780",
+        "nome": "8251",
+        "perda_eficiencia": 5.5635770163490665e-05,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562302",
+        "nome": "810",
+        "perda_eficiencia": 4.3872290754351845e-05,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "637902",
+        "nome": "3150",
+        "perda_eficiencia": 3.42965355372087e-05,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "561859",
+        "nome": "315",
+        "perda_eficiencia": 8.94781562743362e-06,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562016",
+        "nome": "32",
+        "perda_eficiencia": 0.0,
+        "desconectadas": 0,
+        "isoladas": 0
+      },
+      {
+        "tipo": "linha",
+        "id": "562193",
+        "nome": "65",
+        "perda_eficiencia": 0.0,
+        "desconectadas": 0,
+        "isoladas": 0
+      }
+    ]
+  },
+  "sequencias": {
+    "dirigida": {
+      "paradas": [
+        "14784615",
+        "15276952",
+        "14784840",
+        "14786443",
+        "36020149",
+        "15252267",
+        "36020152",
+        "36020150",
+        "14784408",
+        "14785077"
+      ],
+      "perda_por_passo": [
+        0.0013875030878489993,
+        0.007780810764354334,
+        0.008009596179350596,
+        0.008457732688386468,
+        0.01126766574988838,
+        0.0114591630301633,
+        0.014614829421846717,
+        0.014722739450530849,
+        0.01639132696656867,
+        0.01733803494464602
+      ],
+      "desconectadas_por_passo": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "componentes_por_passo": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "tempo": "13.729 s ± 0.000 s (n=1)"
+    },
+    "aleatoria": {
+      "paradas": [
+        "14785337",
+        "14789478",
+        "14785950",
+        "14789069",
+        "14785476",
+        "14791387",
+        "14792746",
+        "14790057",
+        "14787159",
+        "14791585"
+      ],
+      "perda_por_passo": [
+        0.0004044468457339012,
+        0.0005232214965959922,
+        0.0006625765490011045,
+        0.0007757558380231316,
+        0.0008588275924091532,
+        0.0009145535962609323,
+        0.0010500071603287747,
+        0.0011537932824287162,
+        0.0023872067685420974,
+        0.0024484702258897356
+      ],
+      "desconectadas_por_passo": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "componentes_por_passo": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "tempo": "13.734 s ± 0.000 s (n=1)"
+    }
+  }
+}

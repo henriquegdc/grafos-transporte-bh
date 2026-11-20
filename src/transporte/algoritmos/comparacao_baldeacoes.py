@@ -17,6 +17,11 @@ vezes, e quase sempre menos.
 mesma faixa (mesmo raio de caminhada e mesma regra D10 para os padrões que circulam), então
 o mais rápido com até k baldeações sempre existe quando a F-BALD acha um trajeto.
 
+**Trajetos não dominados (F-BALD-OPC, RF-BAL-04).** Repetindo a busca com limite para
+k = 0, 1, ..., baldeações do mais rápido, e guardando só quem reduz o tempo do anterior, sai
+a fronteira de Pareto (baldeações, tempo): nenhum trajeto dela tem outro com menos (ou
+iguais) baldeações e menos (ou igual) tempo.
+
 Notação: V e E de G_E, k = limite de baldeações (k + 2 camadas de embarques, de 0 a k + 1).
 
 estado: implementado
@@ -206,3 +211,55 @@ def comparar_baldeacoes(
             f"{menos.baldeacoes} baldeação(ões) e o G_E não: as visões não vêm da mesma rede"
         )
     return ComparacaoBaldeacoes(rapido, menos, restrito)
+
+
+# Diferença de tempo abaixo disto é arredondamento de float, não melhora (segundos).
+_TOLERANCIA_S = 1e-9
+
+
+def trajetos_nao_dominados(ge: VisaoGE, origem: str, destino: str) -> list[Trajeto]:
+    """Trajetos não dominados em tempo e baldeações de origem a destino (RF-BAL-04).
+
+    Roda a F-ROTA para achar o mais rápido, com B baldeações. Nenhum trajeto com mais de B
+    baldeações entra na fronteira, porque o mais rápido o domina. Para k = 0, 1, ..., B - 1
+    chama mais_rapido_com_limite(k) e guarda o resultado só se ele for mais rápido que o
+    último guardado; o mais rápido fecha a lista, se ainda reduzir o tempo. Como o tempo com
+    limite k não cresce com k, cada guardado tem mais baldeações e menos tempo que o
+    anterior, e todo trajeto com no máximo k baldeações é dominado (ou empatado) pelo
+    guardado da busca k: a lista é exatamente a fronteira de Pareto, um trajeto por ponto.
+
+    Começa em k = 0 e não no mínimo da G_L (F-BALD) porque, no G_E, caminhadas encadeadas
+    podem fazer menos baldeações que esse mínimo (decisão B3 da F-BALD): começar nele
+    perderia pontos da fronteira.
+
+    Entradas:
+        ge: G_E de uma faixa horária.
+        origem, destino: ids de paradas do GTFS.
+    Saída: lista de Trajeto (o mesmo tipo da F-ROTA) em ordem crescente de baldeações e
+        estritamente decrescente de tempo; o último é o mais rápido da F-ROTA (ou um
+        trajeto de mesmo tempo e menos baldeações). Lista vazia se o destino não é
+        alcançável.
+    Casos de borda: origem == destino devolve um só trajeto, de tempo 0 e sem trechos;
+        parada inexistente levanta KeyError; vértices e arestas desativados (F-RES) são
+        respeitados; empate de tempo fica com o de menos baldeações; diferença de até
+        1e-9 s conta como empate.
+    Complexidade: B + 1 buscas, B = baldeações do mais rápido. Tempo
+        O((V + E) log V + sum_{k<B} (k + 2)(V + E) log((k + 2) V)) =
+        O(B^2 (V + E) log(B V)) no pior caso; espaço O((B + 1)(V + E)) da maior busca, mais
+        os trechos dos até B + 1 trajetos devolvidos.
+    """
+    rapido = trajeto_mais_rapido(ge, origem, destino)
+    if rapido is None:
+        return []
+    fronteira: list[Trajeto] = []
+    for k in range(rapido.baldeacoes):
+        t = mais_rapido_com_limite(ge, origem, destino, k)
+        if t is None:
+            continue  # nem com k baldeações se chega
+        if fronteira and t.tempo_total_s >= fronteira[-1].tempo_total_s - _TOLERANCIA_S:
+            continue  # não reduz o tempo: dominado pelo anterior
+        fronteira.append(t)
+        if t.tempo_total_s <= rapido.tempo_total_s + _TOLERANCIA_S:
+            return fronteira  # já tem o tempo do mais rápido com menos baldeações
+    fronteira.append(rapido)
+    return fronteira
