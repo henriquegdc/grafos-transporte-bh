@@ -9,10 +9,61 @@ from transporte.dados.modelo import Rede
 from transporte.interface.mapa import render_mapa
 from transporte.modelo.horarios import construir_gt
 from transporte.modelo.parametros import Parametros
-from transporte.simulacao.espera import calcular_esperas, estimar_intervalos, simular_trajeto
+from transporte.simulacao.espera import (
+    calcular_esperas,
+    estimar_intervalos,
+    sensibilidade_intervalo,
+    simular_trajeto,
+)
 
 TITULO = "Espera"
 _RESULTADO = "espera-resultado"
+
+
+def _mostrar_sensibilidade(rede):
+    if not rede.linhas:
+        st.info("A rede não contém linhas.")
+        return
+    with st.form("sensibilidade"):
+        linha = st.selectbox(
+            "Linha", sorted(rede.linhas), format_func=lambda i: f"{rede.linhas[i].nome} ({i})"
+        )
+        faixa = st.selectbox("Faixa horária", [f.nome for f in Parametros().faixas])
+        fator = st.number_input("Multiplicador do intervalo", min_value=0.01, value=2.0)
+        pares = st.number_input("Pares origem–destino", min_value=1, max_value=100, value=10)
+        semente = st.number_input("Semente da amostra", value=42)
+        executar = st.form_submit_button("Comparar cenários")
+    if executar:
+        st.session_state.pop("sensibilidade-resultado", None)
+        try:
+            r = sensibilidade_intervalo(rede, linha, faixa, fator, pares, semente)
+        except ValueError as exc:
+            st.info(str(exc))
+            return
+        st.session_state["sensibilidade-resultado"] = (rede, r)
+    resultado = st.session_state.get("sensibilidade-resultado")
+    if resultado and resultado[0] is rede:
+        r = resultado[1]
+        st.metric("Pares cujo tempo mudou", f"{r['mudaram']} de {len(r['pares'])}")
+        st.caption("Origens sorteadas entre as paradas da linha; destinos em toda a rede.")
+        st.caption("Espera H/2 dos padrões com intervalo estimável (minutos).")
+        st.dataframe(
+            [{"Padrão": p, "Antes": a / 60, "Depois": b / 60} for p, a, b in r["esperas"]],
+            hide_index=True,
+        )
+        st.caption("Tempo total por par (minutos). Uma célula vazia indica destino inalcançável.")
+        st.dataframe(
+            [
+                {
+                    "Origem": o,
+                    "Destino": d,
+                    "Antes": a / 60 if a is not None else None,
+                    "Depois": b / 60 if b is not None else None,
+                }
+                for o, d, a, b in r["pares"]
+            ],
+            hide_index=True,
+        )
 
 
 def _tabela_intervalos(rede, params, intervalos):
@@ -51,6 +102,9 @@ def render(rede: Rede) -> None:
     de G_E + Dijkstra. O mapa só recebe as paradas do trajeto para manter a leitura.
     """
     st.title(TITULO)
+    if st.checkbox("Simular alteração do intervalo de uma linha"):
+        _mostrar_sensibilidade(rede)
+        return
     if not rede.paradas:
         st.info("A rede não contém paradas para simular um trajeto.")
         return

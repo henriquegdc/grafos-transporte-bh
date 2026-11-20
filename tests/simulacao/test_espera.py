@@ -182,3 +182,59 @@ def test_simulacao_acima_de_24h_com_faixa_explicita(rede):
     params = Parametros(raio_caminhada_m=0, faixas=(FaixaHoraria("extra", 86400, 90000),))
     t = simular_trajeto(rede, "A", "C", 87000, params)
     assert t.tempo_total_s == 900
+
+
+def test_sensibilidade_gabarito_rede_teste():
+    # Gabarito à mão: G_E esperado da rede de teste montado num DiGraph só para
+    # rodar Dijkstra; não é a comparação sorteada com NetworkX de modelagem §3.7.
+    import networkx as nx
+
+    from transporte.simulacao.espera import sensibilidade_intervalo
+
+    rede = ler(REDE_TESTE)
+    resultado = sensibilidade_intervalo(rede, "L1", "pico_manha", 2, 12, 42, SEM_CAMINHADA)
+    for fator, indice in [(1, 2), (2, 3)]:
+        g = nx.DiGraph()
+        g.add_nodes_from(rede.paradas)
+        # Padrão único A-B-C com um embarque e duas viagens de 300 s.
+        g.add_weighted_edges_from(
+            [
+                ("A", "busA", 600 * fator),
+                ("B", "busB", 600 * fator),
+                ("busA", "busB", 300),
+                ("busB", "B", 0),
+                ("busB", "C", 300),
+            ]
+        )
+        for par in resultado["pares"]:
+            dist = nx.single_source_dijkstra_path_length(g, par[0])
+            assert par[indice] == dist.get(par[1])
+    with pytest.raises(ValueError):
+        sensibilidade_intervalo(rede, "L2", "pico_manha", 2, 1, 42)
+    with pytest.raises(ValueError):
+        sensibilidade_intervalo(rede, "L1", "pico_manha", 0, 1, 42)
+
+
+def test_sensibilidade_origem_na_linha_muda_e_outra_linha_nao():
+    from transporte.simulacao.espera import sensibilidade_intervalo
+
+    # A-B pela linha L e A-C pela linha M; paradas distantes, sem caminhada.
+    paradas = {p: Parada(p, p, -19.9 + i / 10, -43.9) for i, p in enumerate("ABC")}
+    r = Rede(
+        paradas,
+        {"L": Linha("L", "L", 3), "M": Linha("M", "M", 3)},
+        {"l": Padrao("l", "L", ("A", "B")), "m": Padrao("m", "M", ("A", "C"))},
+        {},
+        viagens={
+            "l": [(28800, 29100), (30000, 30300)],
+            "m": [(28800, 29400), (29400, 30000)],
+        },
+    )
+    resultado = sensibilidade_intervalo(r, "L", "pico_manha", 2, 10, 7, SEM_CAMINHADA)
+    pares = {(o, d): (a, b) for o, d, a, b in resultado["pares"]}
+    # Origens só em A e B (paradas de L): 2 x 2 pares possíveis.
+    assert set(pares) == {("A", "B"), ("A", "C"), ("B", "A"), ("B", "C")}
+    assert pares["A", "B"] == (600 + 300, 1200 + 300)
+    assert pares["A", "C"] == (300 + 600, 300 + 600)
+    assert pares["B", "A"] == pares["B", "C"] == (None, None)
+    assert resultado["mudaram"] == 1

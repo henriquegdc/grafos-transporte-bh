@@ -7,9 +7,11 @@ repetidas à mesma parada em linhas circulares. estado: implementado.
 
 from collections.abc import Mapping
 from math import isfinite
+from random import Random
 
 from transporte.algoritmos.trajeto import Trajeto, trajeto_mais_rapido
 from transporte.dados.modelo import Rede
+from transporte.grafo.buscas import INF, dijkstra
 from transporte.modelo.construtores import construir_ge
 from transporte.modelo.parametros import Parametros
 
@@ -74,3 +76,74 @@ def simular_trajeto(
     esperas = calcular_esperas(estimar_intervalos(rede, params))
     ge = construir_ge(rede, faixa.nome, params=params, esperas=esperas)
     return trajeto_mais_rapido(ge, origem, destino)
+
+
+def sensibilidade_intervalo(
+    rede: Rede,
+    linha: str,
+    faixa: str,
+    fator: float,
+    pares: int,
+    semente: int,
+    params: Parametros | None = None,
+):
+    """Compara H/2 por padrão e durações dos mesmos pares OD em dois cenários.
+
+    Multiplica o intervalo estimado dos padrões da linha na faixa pelo fator
+    positivo. Padrões sem duas partidas mantêm a regra original. Amostra até
+    N pares distintos sem reposição, com origem entre as paradas da linha e
+    destino em toda a rede, para que os trajetos que usam a linha apareçam;
+    None indica ausência de caminho e "mudaram" conta os pares com duração
+    diferente. Com uma parada não há pares. Linha inexistente: KeyError.
+    Tempo de estimar os intervalos, montar duas visões e até 2N buscas
+    O((V+E) log V). Espaço auxiliar O(V+E+N), além das tabelas de intervalos.
+    """
+    params = params or Parametros()
+    params.faixa(faixa)
+    if linha not in rede.linhas:
+        raise KeyError(linha)
+    if not isfinite(fator) or fator <= 0 or pares < 1:
+        raise ValueError("Informe fator positivo e ao menos um par.")
+    base = estimar_intervalos(rede, params)
+    alterada = base.copy()
+    esperas = []
+    for (pid, nome), intervalo in base.items():
+        if rede.padroes[pid].linha_id == linha and nome == faixa:
+            alterada[pid, nome] = intervalo * fator
+            esperas.append((pid, intervalo / 2, alterada[pid, nome] / 2))
+    if not esperas:
+        raise ValueError("A linha não tem intervalo estimável nesta faixa.")
+    # Origem entre as paradas da linha alterada e destino em toda a rede: pares
+    # sorteados na rede inteira quase nunca passam pela linha (revisão do PR #69).
+    origens = sorted(
+        {p for pd in rede.padroes.values() if pd.linha_id == linha for p in pd.paradas}
+        & rede.paradas.keys()
+    )
+    ids = sorted(rede.paradas)
+    tamanho = len(ids)
+    populacao = len(origens) * (tamanho - 1)
+    sorteados = Random(semente).sample(range(populacao), min(pares, populacao))
+    od = []
+    for i in sorteados:
+        u, v = divmod(i, tamanho - 1)
+        o = ids.index(origens[u])
+        od.append((origens[u], ids[v + (v >= o)]))
+
+    def duracoes(intervalos):
+        ge = construir_ge(rede, faixa, params, calcular_esperas(intervalos))
+        tempos = []
+        for origem, destino in od:
+            s, t = ge.vertice_da_parada[origem], ge.vertice_da_parada[destino]
+            custo = dijkstra(ge.grafo, s, t).dist[t]
+            tempos.append(None if custo == INF else custo)
+        return tempos, ge.grafo.num_vertices(), ge.grafo.num_arestas()
+
+    antes, v, e = duracoes(base)
+    depois, _, _ = duracoes(alterada)
+    return {
+        "esperas": esperas,
+        "pares": [(o, d, a, b) for (o, d), a, b in zip(od, antes, depois)],
+        "mudaram": sum(a != b for a, b in zip(antes, depois)),
+        "V": v,
+        "E": e,
+    }
