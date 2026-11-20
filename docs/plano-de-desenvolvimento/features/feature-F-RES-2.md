@@ -10,8 +10,8 @@
 
 ## Retomada
 - **Última sessão:** 20/11/2026 (Henrique, com agente).
-- **Onde parou:** código, testes, aba Ranking da página Falhas, script de medição, seção do relatório e guia prontos no PR da branch `feat/F-RES-2-ranking` (junto com a F-RES-OPC). **Falta a medição final no feed real.**
-- **Próximo passo:** rodar a medição final (comando em Resultados), copiar o top 3 do ranking e o tempo para Resultados, `relatorio/secoes/F-RES-2.tex` (trocar o `\pendente`) e `docs/GUIA.md` §5.6; depois tirar a figura da aba Ranking.
+- **Onde parou:** código, testes, aba Ranking da página Falhas, script de medição, seção do relatório e guia prontos no PR da branch `feat/F-RES-2-ranking` (PR #63, junto com a F-RES-OPC). Medição final no feed real feita em 20/11 e números no relatório e no guia.
+- **Próximo passo:** aprovação do PR #63; tirar a figura da aba Ranking no feed real e o diagrama UML.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `src/transporte/interface/paginas/falhas.py`, `tests/simulacao/test_falhas_extensoes.py`, `tests/interface/test_pagina_falhas.py`, `benchmarks/medir_falhas_extensoes.py`, `relatorio/secoes/F-RES-2.tex`, `docs/GUIA.md`.
 - **Como testar:** `pytest tests/simulacao/test_falhas_extensoes.py tests/interface/test_pagina_falhas.py`.
 - **Bloqueios:** nenhum.
@@ -28,9 +28,9 @@ Ranking de criticidade. Fecha:
 | Modelo e dados | concluído | usa G_P e `indexar_linhas` da F-RES |
 | Interface | concluído | 20/11: aba Ranking da página Falhas, com AppTest |
 | Testes | concluído | 20/11: gabarito à mão (articulação e ponte lideram), consistência com `simular_falha` |
-| Desempenho (tempo medido) | pendente | script pronto e validado (rede de teste e feed real com parâmetros mínimos); medição final não rodada |
+| Desempenho (tempo medido) | concluído | 20/11: `benchmarks/resultados/falhas-extensoes-2026-11-20.json` (Resultados) |
 | Guia (explicação e quiz) | concluído | `docs/GUIA.md` §5.6 e §10, sem números do feed real |
-| Relatório | parcial | `relatorio/secoes/F-RES-2.tex` com `\pendente` do resultado real |
+| Relatório | parcial | `relatorio/secoes/F-RES-2.tex` com o resultado real de 20/11; falta a figura de tela |
 | Vídeo | roteiro | roteiro de 30 s abaixo |
 
 ## Especificação
@@ -96,12 +96,12 @@ com a amostra (ver F-RES).
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com o NetworkX: não aplicável (sem equivalente); consistência com `simular_falha`
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando (AppTest na rede de teste)
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (falta o resultado real)
+- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (falta a figura de tela)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado: retomada, status, pendências e timeline
 
@@ -112,23 +112,28 @@ com a amostra (ver F-RES).
 | 2 | Algoritmo com testes de corretude | concluída 20/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída 20/11 (teste na rede de teste; execução mínima no feed real) |
 | 4 | Página na interface | concluída 20/11 |
-| 5 | Tempo medido na rede real e complexidade justificada | complexidade justificada; medição final pendente |
-| 6 | Como funciona e por quê, perguntas, diagrama UML, seção do relatório e roteiro do vídeo | parcial: falta diagrama e número real |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída 20/11 |
+| 6 | Como funciona e por quê, perguntas, diagrama UML, seção do relatório e roteiro do vídeo | parcial: falta diagrama e figura |
 
 ## Resultados para o relatório
-**Medição final pendente.** Comando (na raiz do repositório, com o `.venv` ativo e
-`PYTHONPATH=src`; grava `benchmarks/resultados/falhas-extensoes-<data>.json`, que também
-serve à F-RES-OPC):
+Medição de 20/11/2026 (`benchmarks/resultados/falhas-extensoes-2026-11-20.json`), feed `dados/brutos/bhtrans.zip` com SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6` (dia 2026-11-18, 9.660 paradas, 303 linhas), G_P com V = 9.660 e E = 122.799. Máquina: Windows 11 (10.0.26200), Intel64 Family 6 Model 183 Stepping 1, Python 3.12.10; `medir` com 1 repetição, máquina livre. Comando (raiz do repositório, `.venv` ativo, `PYTHONPATH=src`):
 
 ```text
 python benchmarks/medir_falhas_extensoes.py dados/brutos/bhtrans.zip --paradas 10 --linhas 20 --amostra 30 --amostra-intermediacao 100 --k 10 --repeticoes 1
 ```
 
-Custo esperado: 31 eficiências de 30 Dijkstras no ranking e 22 nas curvas, cada uma rodada
-duas vezes (resultado e `medir`), mais três Brandes amostrados; com cerca de 0,14 s por
-Dijkstra, alguns minutos. Validação em 20/11: o script rodou na rede de teste e no feed real
-com `--paradas 1 --linhas 1 --amostra 2 --amostra-intermediacao 2 --k 2`; esses números não
-servem para o relatório (amostra de 2 origens).
+| Medida | Valor |
+|---|---|
+| Candidatos | 30 (10 paradas de maior intermediação, 100 origens do Brandes; 20 linhas sorteadas) |
+| Tempo dos candidatos (Brandes amostrado) | 4,038 s |
+| Tempo do ranking (31 eficiências de 30 origens) | 38,927 s |
+| 1.º | parada 36020152, Rua Deputado Salim Nacur, 173: perda 1,107 % |
+| 2.º | parada 36020150, Rua das Canárias, 1105: 1,071 % |
+| 3.º | parada 36020149, Rua das Canárias, 729: 0,895 % |
+| Linha mais crítica | 9550 (561853), 5.º lugar: 0,398 % |
+| Paradas desconectadas por algum candidato | nenhuma |
+
+Leitura: a parada de maior intermediação (14784615, Avenida Amazonas 322) causa só 0,139 %; ranking de criticidade e de centralidade não coincidem. Perdas com 30 origens; ver a variação amostral na F-RES.
 
 ## Roteiro do vídeo (30 s)
 1. (5 s) "Quais falhas mais pioram a rede?" Página Falhas, aba Ranking.
@@ -138,11 +143,12 @@ servem para o relatório (amostra de 2 origens).
 4. (5 s) Limitação: a intermediação é filtro; parada que corta um ramal pode ficar de fora.
 
 ## Pendências
-- Medição final no feed real e números no relatório e no guia.
+- Medição final no feed real: feita em 20/11 (Resultados).
 - Figura da aba Ranking para o relatório.
 - Diagrama UML (atividade) em `docs/diagramas/`.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Caio.
-### Implementação 20/11/2026: Henrique (plano de finalização, H4), com agente: núcleo, testes, aba Ranking, script de medição, relatório e guia. Medição final pendente.
+### Implementação 20/11/2026: Henrique (plano de finalização, H4), com agente: núcleo, testes, aba Ranking, script de medição, relatório e guia.
+### Medição 20/11/2026: medição final no feed real (Resultados); números no relatório e no guia.

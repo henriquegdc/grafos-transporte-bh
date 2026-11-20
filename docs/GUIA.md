@@ -461,7 +461,7 @@ ranking = ranking_criticidade(gp, candidatos, indice, amostra=30, semente=2026)
 
 **Na interface**, a aba Ranking da página Falhas deixa escolher N, quantas linhas sortear e as amostras; antes de rodar mostra o custo estimado (Dijkstras vezes o tempo de um Dijkstra medido na própria rede) e guarda os resultados na sessão por parâmetros.
 
-Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. Números do feed real: pendentes (`benchmarks/medir_falhas_extensoes.py`).
+Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Nenhum candidato desconectou paradas, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
 
 #### Falhas múltiplas e em sequência (F-RES-OPC)
 
@@ -480,7 +480,7 @@ passos = simular_falhas(gp, sequencia_dirigida(gp, 10, 100, 2026), indice, amost
 
 **Complexidade.** O((k + 1) s (V + E) log V + k (V + E)) para k passos.
 
-**Na interface**, a aba Falhas múltiplas tem dois modos: escolher paradas e linhas (tabela por passo e gráfico da eficiência relativa) e comparar dirigida e aleatória num mesmo gráfico (`st.line_chart`). Números do feed real: pendentes.
+**Na interface**, a aba Falhas múltiplas tem dois modos: escolher paradas e linhas (tabela por passo e gráfico da eficiência relativa) e comparar dirigida e aleatória num mesmo gráfico (`st.line_chart`). **No feed real** (20/11, mesmo script, 30 origens): 10 remoções dirigidas custam 1,73 % de eficiência, contra 0,24 % de 10 aleatórias, sem desconectar paradas; cada sequência levou 13,7 s.
 
 
 

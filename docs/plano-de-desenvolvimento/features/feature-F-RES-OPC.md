@@ -10,8 +10,8 @@
 
 ## Retomada
 - **Última sessão:** 20/11/2026 (Henrique, com agente).
-- **Onde parou:** código, testes, aba Falhas múltiplas, script de medição (o mesmo da F-RES-2), seção do relatório e guia prontos no PR da branch `feat/F-RES-2-ranking`. **Falta a medição final no feed real.**
-- **Próximo passo:** rodar o comando da F-RES-2 (Resultados) e copiar a perda após k remoções dirigidas e aleatórias para Resultados, `relatorio/secoes/F-RES-OPC.tex` e `docs/GUIA.md` §5.6; tirar a figura do gráfico.
+- **Onde parou:** código, testes, aba Falhas múltiplas, script de medição (o mesmo da F-RES-2), seção do relatório e guia prontos no PR da branch `feat/F-RES-2-ranking` (PR #63). Medição final no feed real feita em 20/11 e números no relatório e no guia.
+- **Próximo passo:** aprovação do PR #63; tirar a figura do gráfico dirigida x aleatória no feed real e o diagrama UML.
 - **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `src/transporte/interface/paginas/falhas.py`, `tests/simulacao/test_falhas_extensoes.py`, `tests/interface/test_pagina_falhas.py`, `benchmarks/medir_falhas_extensoes.py`, `relatorio/secoes/F-RES-OPC.tex`, `docs/GUIA.md`.
 - **Como testar:** `pytest tests/simulacao/test_falhas_extensoes.py tests/interface/test_pagina_falhas.py`.
 - **Bloqueios:** nenhum.
@@ -28,9 +28,9 @@ Falhas múltiplas. Fecha:
 | Modelo e dados | concluído | usa G_P e `indexar_linhas` da F-RES |
 | Interface | concluído | 20/11: aba Falhas múltiplas, com `st.line_chart` e AppTest |
 | Testes | concluído | 20/11: final igual a aplicar tudo de uma vez, desfazer restaura, linhas acumulam |
-| Desempenho (tempo medido) | pendente | script pronto e validado; medição final não rodada |
+| Desempenho (tempo medido) | concluído | 20/11: `benchmarks/resultados/falhas-extensoes-2026-11-20.json` (Resultados) |
 | Guia (explicação e quiz) | concluído | `docs/GUIA.md` §5.6 e §10, sem números do feed real |
-| Relatório | parcial | `relatorio/secoes/F-RES-OPC.tex` com `\pendente` do resultado real |
+| Relatório | parcial | `relatorio/secoes/F-RES-OPC.tex` com o resultado real de 20/11; falta a figura de tela |
 | Vídeo | roteiro | roteiro de 30 s abaixo |
 
 ## Especificação
@@ -96,12 +96,12 @@ dirigida não se adapta à rede já danificada.
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com o NetworkX: não aplicável (sem equivalente); consistência com `simular_falha`
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando (AppTest na rede de teste)
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (falta o resultado real)
+- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (falta a figura de tela)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado: retomada, status, pendências e timeline
 
@@ -112,16 +112,24 @@ dirigida não se adapta à rede já danificada.
 | 2 | Algoritmo com testes de corretude | concluída 20/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída 20/11 (rede de teste; execução mínima no feed real) |
 | 4 | Página na interface | concluída 20/11 |
-| 5 | Tempo medido na rede real e complexidade justificada | complexidade justificada; medição final pendente |
-| 6 | Como funciona e por quê, perguntas, diagrama UML, seção do relatório e roteiro do vídeo | parcial: falta diagrama e número real |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída 20/11 |
+| 6 | Como funciona e por quê, perguntas, diagrama UML, seção do relatório e roteiro do vídeo | parcial: falta diagrama e figura |
 
 ## Resultados para o relatório
-**Medição final pendente.** Mesmo comando da F-RES-2 (seção `sequencias` do JSON
-`benchmarks/resultados/falhas-extensoes-<data>.json`):
+Medição de 20/11/2026 (`benchmarks/resultados/falhas-extensoes-2026-11-20.json`), feed `dados/brutos/bhtrans.zip` com SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6` (dia 2026-11-18, 9.660 paradas, 303 linhas), G_P com V = 9.660 e E = 122.799. Máquina: Windows 11 (10.0.26200), Intel64 Family 6 Model 183 Stepping 1, Python 3.12.10; `medir` com 1 repetição, máquina livre. Comando (raiz do repositório, `.venv` ativo, `PYTHONPATH=src`):
 
 ```text
 python benchmarks/medir_falhas_extensoes.py dados/brutos/bhtrans.zip --paradas 10 --linhas 20 --amostra 30 --amostra-intermediacao 100 --k 10 --repeticoes 1
 ```
+
+| Medida (30 origens, semente 2026) | Dirigida | Aleatória |
+|---|---|---|
+| Perda após 1 remoção | 0,139 % | 0,040 % |
+| Perda após 5 remoções | 1,127 % | 0,086 % |
+| Perda após 10 remoções | 1,734 % | 0,245 % |
+| Paradas desconectadas | 0 em todos os passos | 0 em todos os passos |
+| Componentes fortemente conexas | 4 em todos os passos | 4 em todos os passos |
+| Tempo de `simular_falhas` (10 passos) | 13,729 s | 13,734 s |
 
 ## Roteiro do vídeo (30 s)
 1. (5 s) "E se várias paradas falharem em sequência?" Aba Falhas múltiplas.
@@ -131,11 +139,12 @@ python benchmarks/medir_falhas_extensoes.py dados/brutos/bhtrans.zip --paradas 1
 4. (5 s) Limitação: a dirigida usa a intermediação da rede intacta, sem recalcular.
 
 ## Pendências
-- Medição final no feed real e números no relatório e no guia.
+- Medição final no feed real: feita em 20/11 (Resultados).
 - Figura do gráfico dirigida x aleatória para o relatório.
 - Diagrama UML (atividade) em `docs/diagramas/`.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Caio.
-### Implementação 20/11/2026: Henrique (plano de finalização, H5), com agente: núcleo, testes, aba Falhas múltiplas, script de medição, relatório e guia. Corrigido o viés da remoção aleatória (mesmo gerador das origens). Medição final pendente.
+### Implementação 20/11/2026: Henrique (plano de finalização, H5), com agente: núcleo, testes, aba Falhas múltiplas, script de medição, relatório e guia. Corrigido o viés da remoção aleatória (mesmo gerador das origens). 
+### Medição 20/11/2026: medição final no feed real (Resultados); números no relatório e no guia.
