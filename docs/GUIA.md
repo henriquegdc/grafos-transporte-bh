@@ -529,8 +529,8 @@ consistente.
 **Filtro por sequência de linhas** (20/11, revisão do #57). Para o Yen, caminhos diferentes em uma
 aresta de G_E são distintos, e no feed real os k primeiros costumam ser o mesmo trajeto com a troca
 uma parada antes ou outro trecho a pé. A página usa `alternativos_por_linhas`, que consome o Yen
-como gerador e guarda o mais rápido de cada sequência de `linha_id`, até k sequências ou 4·k
-caminhos; a coluna "Variantes" conta os caminhos repetidos.
+como gerador e guarda o mais rápido de cada sequência de `linha_id`, até k sequências ou 2·k
+caminhos (teto padrão, decisão de 20/11 no §8); a coluna "Variantes" conta os caminhos repetidos.
 
 ```python
 from transporte.algoritmos.alternativos import alternativos_por_linhas
@@ -540,8 +540,9 @@ alts = alternativos_por_linhas(ge, origem, destino, 5, linha_do_padrao, coords, 
 ```
 
 Limitação medida (20/11, k = 5, 8 pares, `benchmarks/medir_alternativos_linhas.py`): o Yen puro deu
-uma só sequência de linhas nos 8 pares, e o filtro, com 20 caminhos por par, achou uma segunda em só
-2 deles, a um custo de 4,4 a 4,9 vezes o tempo do Yen puro. Enumerar em ordem de custo passa por
+uma só sequência de linhas nos 8 pares. Com teto de 20 caminhos (4·k), o filtro achou uma segunda em
+2 pares, a 4,4 a 4,9 vezes o tempo do Yen puro; com o teto atual de 10 (2·k), em 1 par, a 2,1 a 2,3
+vezes (pior par: 45,4 s contra 20,4 s). Enumerar em ordem de custo passa por
 muitas variantes antes da primeira linha diferente; proibir a linha já usada acharia outras opções
 mais rápido, mas é outro algoritmo (trabalho futuro).
 
@@ -694,6 +695,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 18/11 | A\* da F-ROTA-2 com h = distância em linha reta / vmax, vmax = maior velocidade entre as arestas de G_E, mesmo com ganho quase nulo no feed real (mediana de 99,7% dos vértices do Dijkstra expandidos; busca com mediana de 90,8 ms contra 72,3 ms do Dijkstra, porque o A\* paga uma haversine por vértice) | A RF-ROT-04 compara A\* e Dijkstra, e a comparação só vale se os dois devolvem o ótimo. O ganho baixo tem duas causas: 181 trechos com horário repetido no GTFS ficam no piso de 1 s e levam vmax a 1.258 m/s (sem eles, 43,4 m/s, ainda muito acima da mediana de 5,6 m/s das arestas de viagem); e a h não enxerga as esperas, que são boa parte do custo. É relatado como resultado | vmax realista (perde a garantia de ótimo); somar a espera mínima à h; interpolar os horários repetidos no P0-MODELO (muda M2 e os números das outras features depois do congelamento; fica como trabalho futuro); ALT |
 | 19/11 | Exceção ao congelamento de 15/11 para a F-BALD-2 (RF-BAL-03, desejável), feita em 17/11 e aprovada pelo grupo | A feature ficou completa, com testes, medição e documentação, e só acrescenta um bloco à página Baldeações, sem mudar o que já estava na `main` | Deixar a F-BALD-2 fora do escopo e registrar o RF-BAL-03 como limitação no relatório (plano-de-projeto §7.3) |
 | 20/11 | Congelamento suspenso; todas as desejáveis e opcionais entram, inclusive F-ROTA-2 (A\* e ponto no mapa) e F-ROTA-OPC (Yen), decisão do grupo | Decisão do grupo em 20/11, em vez de exceções uma a uma; para o PR #57, o voto do revisor citou código testado que não mexe em `src/` de outras features | Pedir exceção feature a feature, como na F-BALD-2; deixar as desejáveis e opcionais como limitação no relatório |
+| 20/11 | Teto padrão de 2·k caminhos do Yen no filtro por sequência de linhas da F-ROTA-OPC (decisão do Henrique) | Com 4·k, o filtro quase não achava sequências novas no feed real (segunda sequência em 2 de 8 pares) e custava 4 a 5 vezes o Yen puro; com 2·k, segunda sequência em 1 de 8 pares, a 2,1 a 2,3 vezes o Yen puro (pior par 45,4 s), k = 5 | 4·k, sugestão da revisão do #57 (pior par 100,8 s com a máquina carregada); sem filtro, só o Yen puro |
 
 ## 9. Glossário
 Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...

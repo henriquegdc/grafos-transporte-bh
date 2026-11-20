@@ -141,9 +141,18 @@ Por que o ganho é pequeno (diagnóstico com um script avulso sobre o mesmo G_E)
 - interpolar por distância os horários repetidos no GTFS, no P0-MODELO: é o conserto certo do dado, mas muda a decisão M2 e os números das outras features depois do congelamento de 15/11. O efeito no trajeto é pequeno (inferência pelo mecanismo, não medida): o tempo do trecho de 1 s fica somado ao trecho vizinho, então quem atravessa os dois no mesmo ônibus paga o tempo certo, e o erro só aparece para quem embarca ou desembarca entre eles (181 de 36.386 arestas de viagem). Fica registrado como trabalho futuro;
 - ALT (A* com pontos de referência e desigualdade triangular): enxergaria as esperas, mas é um algoritmo novo, fora do prazo.
 
-Nota sobre as estatísticas: "90,8 ms contra 72,3 ms" é a **mediana** do tempo da busca contada (A* e Dijkstra), desta medição; o "65,9 ms em média" do `F-ROTA.tex` é outra medição (`benchmarks/medir_modelo_rota.py`, 200 consultas seguidas do `trajeto_mais_rapido` com `medir`, ver feature-F-ROTA).
+**Reexecução final com o conjunto de fechados em `_buscar`, 20/11/2026, máquina livre (vai para o relatório).** Mesmo comando, no código de `2b92bc6`, mesmo feed e máquina.
 
-**Reexecução com o conjunto de fechados em `_buscar`, 20/11/2026.** Mesmo comando, no commit `3dab370`, mesmo feed e máquina. Contagens: expandidos do Dijkstra com mediana 17.010, p95 32.840 e máximo 35.543 (era 35.544: um vértice contado duas vezes, que o conjunto de fechados elimina); A* com mediana 16.949, p95 32.810, máximo 35.537; razão A*/Dijkstra 99,7 / 99,9 / 100,0%; 0 divergências de custo em 200; experimento sem o piso igual (90,1 / 97,4 / 99,5%, 0 de 200 piores). Tempos (mediana Dijkstra 65,8 ms, A* 83,0 ms) com outro benchmark rodando ao mesmo tempo: **medição final pendente**, os números do relatório continuam os de 18/11. Refazer com a máquina livre: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`.
+| Medida | Dijkstra | A* (vmax = 1.258,2 m/s) | A*, experimento sem o piso (vmax = 43,4 m/s) |
+|---|---|---|---|
+| Vértices expandidos (mediana / p95 / máximo) | 17.010 / 32.840 / 35.543 | 16.949 / 32.810 / 35.537 | |
+| Expandidos do A* em % do Dijkstra (mediana / p95 / máximo) | | 99,7 / 99,9 / 100,0 | 90,1 / 97,4 / 99,5 |
+| Tempo da busca, ms (mediana / p95 / máximo) | 64,1 / 122,1 / 133,4 | 81,0 / 149,1 / 164,7 | 73,5 / 144,1 / 155,6 |
+| Trajetos com custo diferente do Dijkstra | | 0 em 200 | 0 em 200 (sem garantia) |
+
+`parada_mais_proxima`: 4,72 ms por ponto (1.000 pontos; distâncias iguais às de 18/11). O máximo de expandidos do Dijkstra caiu de 35.544 para 35.543: um vértice contado duas vezes em 18/11, que o conjunto de fechados elimina; o resto das contagens é igual.
+
+Nota sobre as estatísticas: "81,0 ms contra 64,1 ms" (20/11; 90,8 contra 72,3 em 18/11) é a **mediana** do tempo da busca contada (A* e Dijkstra); o "65,9 ms em média" do `F-ROTA.tex` é outra medição (`benchmarks/medir_modelo_rota.py`, 200 consultas seguidas do `trajeto_mais_rapido` com `medir`, ver feature-F-ROTA).
 
 | Medida | Valor |
 |---|---|
@@ -174,3 +183,4 @@ Rascunho de 18/11 (Henrique revisa):
 ### Revisão 19/11/2026: Rafael revisa o #57: código correto; pede resolver o conflito do GUIA §8, registrar a exceção ao congelamento, encurtar o `F-ROTA.tex` e dizer qual estatística é "90,8 ms contra 72,3 ms" (mediana do tempo da busca contada, `medir_rota_extensoes.py`; o "65,9 ms em média" é outra medição, `medir_modelo_rota.py`).
 ### Decisão 20/11/2026: o grupo suspende o congelamento; todas as desejáveis e opcionais entram (GUIA §8).
 ### Sessão 20/11/2026: merge da `main`; fechados em `_buscar`; cache da comparação; aviso de ponto longe da rede; `F-ROTA.tex` encurtado.
+### Medição 20/11/2026: reexecução final com a máquina livre (A* 81,0 ms contra 64,1 ms do Dijkstra, medianas; 99,7% expandidos); relatório atualizado.
