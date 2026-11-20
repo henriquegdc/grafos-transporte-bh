@@ -10,12 +10,10 @@
 
 O GTFS~\cite{gtfs-reference} descreve a programação de uma rede em arquivos CSV: paradas,
 linhas, viagens, o horário de cada viagem em cada parada (\texttt{stop\_times.txt}) e os
-dias de operação. O grafo é derivado das viagens, em duas famílias de
-modelo~\cite{pyrga2008}: no \emph{dependente do tempo}, cada aresta guarda a chegada em
-função da partida; no \emph{expandido no tempo}, cada partida ou chegada vira um vértice,
-com pesos fixos e um grafo muito maior. Este trabalho usa pesos fixos por faixa horária e
-separa a parada da plataforma (parada $\times$ linha), para que trocar de linha custe uma
-nova espera (Seção~\ref{sec:modelagem}); a extensão $G_T$ é do tipo dependente do tempo.
+dias de operação. Há duas famílias de modelo~\cite{pyrga2008}: no \emph{dependente do tempo},
+cada aresta guarda a chegada em função da partida; no \emph{expandido no tempo}, cada partida
+vira um vértice, com pesos fixos e um grafo muito maior. Usamos pesos fixos por faixa horária
+(Seção~\ref{sec:modelagem}) e, na extensão $G_T$, o modelo dependente do tempo.
 
 A espera entra como valor esperado. Seja $H$ o intervalo entre veículos consecutivos de um
 padrão na faixa, com o passageiro chegando ao acaso. Então~\cite[seção~2.2]{chen2012}

@@ -6,10 +6,9 @@
 % Condensada em 20/11 para o orçamento de 15 páginas.
 \section{Modelagem}\label{sec:modelagem}
 
-A ferramenta não transforma o GTFS~\cite{gtfs-reference} diretamente em um grafo. Os arquivos
-viram um \emph{modelo normalizado} e, dele, saem várias \emph{visões} de grafo, cada uma
-escolhida pela pergunta que responde: não existe um grafo da rede de ônibus que sirva igualmente
-bem para o trajeto mais rápido, as baldeações e a importância de uma parada.
+O GTFS~\cite{gtfs-reference} vira um \emph{modelo normalizado} e, dele, saem várias
+\emph{visões} de grafo, cada uma escolhida pela pergunta que responde: nenhum grafo único serve
+igualmente bem ao trajeto, às baldeações e à importância de uma parada.
 
 \textbf{Modelo normalizado.} A \emph{parada} é um ponto de embarque, com identificador e
 coordenadas. O \emph{padrão} é uma linha com uma sequência exata de paradas: variantes de
@@ -77,8 +76,7 @@ caminhada têm piso de 1\,s: o GTFS arredonda horários, mas 0\,s entre paradas 
 artefato e quebraria a contagem de caminhos mínimos de Brandes. Uma grade espacial com células
 do tamanho do raio reduz a busca dos pares de caminhada de $O(V^2)$ para $O(V + K)$ esperado,
 com $K$ pares dentro do raio; construir $G_P$ custa $O(V + K + N \log N)$ e $G_E$,
-$O(V + K + L + N \log N)$, com $N$ horários e $L$ plataformas. As visões prontas são gravadas
-em disco para não reprocessar o GTFS.
+$O(V + K + L + N \log N)$, com $N$ horários e $L$ plataformas.
 
 No serviço de 04/11/2026, $G_P$ tem 9.659 vértices e 122.732 arestas (110.178 de caminhada) e
 $G_E$ do pico da manhã, 46.100 vértices e 208.956 arestas; cada visão é construída em menos de
