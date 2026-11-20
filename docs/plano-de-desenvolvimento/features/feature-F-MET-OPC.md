@@ -11,10 +11,10 @@
 ## Retomada
 - **Última sessão:** 20/11, Henrique (agente), item H2 do plano.md.
 - **Onde parou:** código, testes, aba Comunidades na página Centralidades, script de medição, guia e seção do relatório prontos no PR `feat(F-MET-2, F-MET-OPC)`. O corte de 16/11 deixou de valer: em 20/11 o grupo decidiu fazer todas as features.
-- **Próximo passo:** rodar a medição final no feed real com a CPU livre (comando em Resultados) e trocar o `\pendente{tempo}` de `relatorio/secoes/F-MET-OPC.tex`.
+- **Próximo passo:** revisão e merge do PR #65. Medição final feita em 20/11 (Resultados); relatório sem `\pendente`.
 - **Arquivos tocados:** `src/transporte/algoritmos/comunidades.py` (novo), `src/transporte/interface/paginas/centralidades.py` (aba Comunidades), `tests/algoritmos/test_comunidades.py` (novo), `tests/interface/test_pagina_centralidades.py`, `benchmarks/medir_metricas_extensoes.py`, `docs/GUIA.md` (§5.4 e §10), `relatorio/secoes/F-MET-OPC.tex`.
 - **Como testar:** `pytest tests/algoritmos/test_comunidades.py tests/interface/test_pagina_centralidades.py`; na interface, página Centralidades, aba Comunidades, Detectar comunidades.
-- **Bloqueios:** nenhum; só a medição final, que espera a CPU livre.
+- **Bloqueios:** nenhum.
 
 ## Objetivo
 Comunidades. Fecha:
@@ -28,9 +28,9 @@ Comunidades. Fecha:
 | Modelo e dados | não aplicável | usa o G_P da P0-MODELO sem mudança |
 | Interface | concluído | 20/11: aba Comunidades (número, modularidade, iterações, tabela das maiores, mapa por comunidade) |
 | Testes | concluído | 20/11: cliques disjuntos e ligados por ponte, bordas, determinismo, modularidade com gabarito e contra `nx.community.modularity` em 15 grafos aleatórios; AppTest na rede de teste |
-| Desempenho (tempo medido) | pendente | script pronto; medição final no feed real pendente (CPU ocupada por outros agentes em 20/11) |
+| Desempenho (tempo medido) | concluído | 20/11: `benchmarks/resultados/metricas-extensoes-2026-11-20.json`; propagação em 140 ms |
 | Guia (explicação e quiz) | concluído | 20/11: `docs/GUIA.md` §5.4 "Comunidades (F-MET-OPC)" e §10 |
-| Relatório | em andamento | 20/11: `relatorio/secoes/F-MET-OPC.tex`; falta o tempo (`\pendente`) |
+| Relatório | concluído | 20/11: `relatorio/secoes/F-MET-OPC.tex`, com o tempo real; sem figura |
 | Vídeo | concluído | roteiro de 30 s abaixo |
 
 ## Especificação
@@ -113,12 +113,12 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (a modularidade; a partição da propagação não tem equivalente determinístico no NetworkX)
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (medição final pendente)
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (não feito)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (sem figura; tempo pendente)
+- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (sem figura)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado: retomada, status, pendências e timeline
 
@@ -129,28 +129,26 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 2 | Algoritmo com testes de corretude | concluída 20/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída 20/11 |
 | 4 | Página na interface | concluída 20/11 |
-| 5 | Tempo medido na rede real e complexidade justificada | complexidade feita; medição final pendente |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída 20/11 |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | feita, sem diagrama |
 
 ## Resultados para o relatório
-**Medição final pendente** (a CPU estava ocupada por outros agentes em 20/11; os tempos sairiam
-distorcidos). Comando a rodar na raiz do repositório, com o `.venv` ativo e a máquina livre:
+**Medição final de 20/11/2026**, com a máquina livre:
 
 ```text
 python benchmarks/medir_metricas_extensoes.py dados/brutos/bhtrans.zip --repeticoes 3
 ```
 
-Grava `benchmarks/resultados/metricas-extensoes-<data>.json` (bloco `comunidades`: tempo da
-propagação e da modularidade com `medir`, número de comunidades, iterações, modularidade nossa e
-do NetworkX, 10 maiores e variação com 5 sementes).
+JSON: `benchmarks/resultados/metricas-extensoes-2026-11-20.json`. Feed `dados/brutos/bhtrans.zip`,
+SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026. Máquina: Windows-11-10.0.26200-SP0,
+Intel64 Family 6 Model 183 Stepping 1, Python 3.12.10. G_P: V = 9.660, E = 122.799.
 
-Validação do script em 20/11 no feed real (`--repeticoes 1`, CPU ocupada; tempos **não** valem
-e não foram copiados; JSON fora do Git). Os números abaixo são determinísticos dada a semente:
-G_P com V = 9.660 e E = 122.799 (serviço de 18/11/2026); semente 2026: convergiu em 11
-iterações, 604 comunidades, 3 unitárias, as 10 maiores com 141, 71, 67, 67, 63, 62, 62, 60, 59 e
-55 paradas; modularidade 0,8062, igual à do `nx.community.modularity(..., weight=None)` para a
-mesma partição. Sementes 2026 a 2030: 604, 602, 587, 608 e 607 comunidades; modularidade entre
-0,8062 e 0,8151.
+- Tempo (`medir`, n = 3): propagação de rótulos 140,139 ms ± 3,118 ms; modularidade
+  71,176 ms ± 23,068 ms.
+- Semente 2026: convergiu em 11 iterações; 604 comunidades, 3 unitárias; as 10 maiores com 141,
+  71, 67, 67, 63, 62, 62, 60, 59 e 55 paradas; modularidade 0,8062, igual à do
+  `nx.community.modularity(..., weight=None)` para a mesma partição.
+- Sementes 2026 a 2030: 604, 602, 587, 608 e 607 comunidades; modularidade entre 0,8062 e 0,8151.
 
 ## Roteiro do vídeo (30 s)
 1. (5 s) "Quais paradas formam grupos mais ligados entre si?"
@@ -160,7 +158,6 @@ mesma partição. Sementes 2026 a 2030: 604, 602, 587, 608 e 607 comunidades; mo
    mudar; a modularidade, nossa e conferida com o NetworkX, mede a qualidade."
 
 ## Pendências
-- Medição final no feed real (comando em Resultados) e troca do `\pendente{tempo}` no relatório.
 - Diagrama UML não feito.
 
 ## Timeline
@@ -169,3 +166,4 @@ mesma partição. Sementes 2026 a 2030: 604, 602, 587, 608 e 607 comunidades; mo
 ### Corte 16/11/2026: feature opcional cortada pelo congelamento de 15/11.
 ### Reabertura 20/11/2026: o grupo decide fazer todas as features (plano.md); corte sem efeito.
 ### Implementação 20/11/2026: propagação de rótulos, modularidade, aba Comunidades, testes, guia e relatório (Henrique, H2).
+### Medição 20/11/2026: medição final no feed real; tempos no relatório, no guia e em Resultados.

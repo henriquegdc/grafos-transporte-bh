@@ -407,6 +407,10 @@ D = 7, C(0) = (4/7)(4/4) = 4/7. 2 só alcança 4: C(2) = (1/1)(1/4) = 1/4.
 **Complexidade.** Exata O(V (V + E) log V); com k origens O(k (V + E) log V), mais O(V + E) do
 grafo reverso. Espaço O(V + E).
 
+**No feed real** (G_P com V = 9.660 e E = 122.799; `benchmarks/medir_metricas_extensoes.py`,
+20/11, média de 3): 1,1 s com k = 25, 2,2 s com 50 (o padrão da página), 4,2 s com 100 e 8,6 s
+com 200, linear em k. As cinco primeiras com k = 50 ficam na Avenida Presidente Antônio Carlos.
+
 Limitações: sem erro padrão na estimativa; peso 0 é aceito (diferente do Brandes), e uma parada
 que só alcança outras a distância 0 fica com 0, como no NetworkX.
 
@@ -440,6 +444,10 @@ L = 3 e d = 7, Q = 2 (3/7 − 1/4) = 6/7 − 1/2 ≈ 0,36.
 **Complexidade.** O(V + E log E) para montar a vizinhança não dirigida (listas ordenadas, para
 o resultado não depender da ordem das arestas) e O(V + E) por iteração. Modularidade
 O(V + E log E). Espaço O(V + E).
+
+**No feed real** (mesmo script, 20/11, média de 3): com a semente 2026, 11 iterações em 140 ms
+e modularidade em 71 ms; 604 comunidades, a maior com 141 paradas, Q = 0,806 (igual ao
+NetworkX). Com as sementes 2026 a 2030, de 587 a 608 comunidades e Q entre 0,806 e 0,815.
 
 Limitações: o resultado depende da semente (a ordem de visita muda quem "ganha"); ignora o tempo
 das ligações; a caminhada liga paradas vizinhas e pode fundir comunidades próximas.

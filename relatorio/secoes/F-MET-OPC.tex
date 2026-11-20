@@ -1,7 +1,8 @@
 % Subseção da F-MET-OPC (comunidades, RF-MET-06).
 % Fontes: docs/plano-de-desenvolvimento/features/feature-F-MET-OPC.md.
 % Números do feed real: python benchmarks/medir_metricas_extensoes.py
-% dados/brutos/bhtrans.zip --repeticoes 3 (medição final pendente).
+% dados/brutos/bhtrans.zip --repeticoes 3 (20/11/2026;
+% benchmarks/resultados/metricas-extensoes-2026-11-20.json).
 \subsection{Comunidades}\label{sec:F-MET-OPC}
 
 A aba Comunidades da página Centralidades agrupa as paradas mais ligadas entre si do que
@@ -12,7 +13,7 @@ empate com ele e, senão, o menor. Para quando nada muda. Cada iteração custa 
 qualidade da partição é a modularidade de Newman, $Q = \sum_c [L_c/m - (d_c/2m)^2]$,
 implementada por nós e conferida com a do NetworkX em 15 grafos aleatórios; nos testes, a
 propagação recupera cliques ligados por uma ponte. No feed real, com a semente 2026, a
-propagação convergiu em 11 iterações (\pendente{tempo}) para 604 comunidades, a maior com
+propagação convergiu em 11 iterações (140~ms, média de 3 execuções) para 604 comunidades, a maior com
 141 paradas, e modularidade $0{,}806$, igual à do NetworkX para a mesma partição.
 \emph{Limitação:} o resultado depende da semente (com cinco sementes, de 587 a 608
 comunidades e $Q$ entre $0{,}806$ e $0{,}815$) e ignora o tempo das ligações; as comunidades

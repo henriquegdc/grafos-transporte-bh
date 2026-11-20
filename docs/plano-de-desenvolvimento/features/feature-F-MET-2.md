@@ -11,10 +11,10 @@
 ## Retomada
 - **Última sessão:** 20/11, Henrique (agente), item H1 do plano.md.
 - **Onde parou:** código, testes, página, script de medição, guia e seção do relatório prontos no PR `feat(F-MET-2, F-MET-OPC)`. O corte de 16/11 deixou de valer: em 20/11 o grupo decidiu fazer todas as features. RF-MET-05 continua atendido pela F-MET (`estimar_intermediacao`).
-- **Próximo passo:** rodar a medição final no feed real com a CPU livre (comando em Resultados), copiar os números para Resultados e trocar o `\pendente` de `relatorio/secoes/F-MET-2.tex`.
+- **Próximo passo:** revisão e merge do PR #65. Medição final feita em 20/11 (Resultados); relatório sem `\pendente`.
 - **Arquivos tocados:** `src/transporte/algoritmos/centralidade.py` (`proximidade`), `src/transporte/interface/paginas/centralidades.py` (métrica Proximidade), `tests/algoritmos/test_centralidade.py`, `tests/interface/test_pagina_centralidades.py`, `benchmarks/medir_metricas_extensoes.py`, `docs/GUIA.md` (§5.4 e §10), `relatorio/secoes/F-MET-2.tex`.
 - **Como testar:** `pytest tests/algoritmos/test_centralidade.py -k proximidade` e `pytest tests/interface/test_pagina_centralidades.py`; na interface, página Centralidades, métrica "Proximidade (Wasserman-Faust)", Calcular.
-- **Bloqueios:** nenhum; só a medição final, que espera a CPU livre.
+- **Bloqueios:** nenhum.
 
 ## Objetivo
 Proximidade e intermediação amostrada. Fecha:
@@ -29,9 +29,9 @@ Proximidade e intermediação amostrada. Fecha:
 | Modelo e dados | não aplicável | usa o G_P da P0-MODELO sem mudança |
 | Interface | concluído | 20/11: métrica "Proximidade" na página Centralidades (ranking e mapa de calor), com o controle de origens sorteadas |
 | Testes | concluído | 20/11: gabaritos à mão, bordas, amostragem e comparação com `nx.closeness_centrality` em 15 grafos aleatórios nos dois sentidos; AppTest na rede de teste |
-| Desempenho (tempo medido) | pendente | script pronto; medição final no feed real pendente (CPU ocupada por outros agentes em 20/11) |
+| Desempenho (tempo medido) | concluído | 20/11: `benchmarks/resultados/metricas-extensoes-2026-11-20.json`; 2,2 s com k = 50 |
 | Guia (explicação e quiz) | concluído | 20/11: `docs/GUIA.md` §5.4 "Proximidade (F-MET-2)" e §10 |
-| Relatório | em andamento | 20/11: `relatorio/secoes/F-MET-2.tex`; falta o número do feed real (`\pendente`) |
+| Relatório | concluído | 20/11: `relatorio/secoes/F-MET-2.tex`, com o tempo real; sem figura |
 | Vídeo | concluído | roteiro de 30 s abaixo |
 
 ## Especificação
@@ -101,12 +101,12 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (medição final pendente)
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (não feito; o fluxo é o mesmo da F-MET)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (sem figura; número do feed real pendente)
+- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (sem figura)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado: retomada, status, pendências e timeline
 
@@ -117,28 +117,36 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 2 | Algoritmo com testes de corretude | concluída 20/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída 20/11 |
 | 4 | Página na interface | concluída 20/11 |
-| 5 | Tempo medido na rede real e complexidade justificada | complexidade feita; medição final pendente |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída 20/11 |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | feita, sem diagrama |
 
 ## Resultados para o relatório
-**Medição final pendente** (a CPU estava ocupada por outros agentes em 20/11; os tempos sairiam
-distorcidos). Comando a rodar na raiz do repositório, com o `.venv` ativo e a máquina livre:
+**Medição final de 20/11/2026**, com a máquina livre:
 
 ```text
 python benchmarks/medir_metricas_extensoes.py dados/brutos/bhtrans.zip --repeticoes 3
 ```
 
-Grava `benchmarks/resultados/metricas-extensoes-<data>.json` (bloco `proximidade_amostrada`:
-tempo com `medir` e top 5 para k = 25, 50, 100, 200). Opcional, se houver ~30 min: `--exato`
-acrescenta a proximidade exata, a diferença máxima contra o NetworkX e a concordância do top 10
-e do top 50 de cada amostra com o exato.
+JSON: `benchmarks/resultados/metricas-extensoes-2026-11-20.json`. Feed `dados/brutos/bhtrans.zip`,
+SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026. Máquina: Windows-11-10.0.26200-SP0,
+Intel64 Family 6 Model 183 Stepping 1, Python 3.12.10. G_P: V = 9.660, E = 122.799.
 
-Validação do script em 20/11 no feed real (`--repeticoes 1`, CPU ocupada; tempos **não** valem
-e não foram copiados; JSON fora do Git): G_P com V = 9.660 e E = 122.799; com k = 25, 50, 100
+| k (origens, semente 2026) | Tempo (`medir`, n = 3) |
+|---|---|
+| 25 | 1,149 s ± 0,039 s |
+| 50 (padrão da página) | 2,183 s ± 0,013 s |
+| 100 | 4,235 s ± 0,012 s |
+| 200 | 8,588 s ± 0,071 s |
+
+O tempo cresce linearmente com k, como O(k (V + E) log V). Com k = 50, as cinco primeiras ficam na
+Avenida Presidente Antônio Carlos (números 561, 583, 584, 582 e 955). A proximidade exata
+(`--exato`) não foi rodada.
+
+Na validação anterior (`--repeticoes 1`, tempos descartados), com k = 25, 50, 100
 e 200 origens (semente 2026), as quatro primeiras são sempre as mesmas paradas da Avenida
 Presidente Antônio Carlos (14791822, 14791788, 14791789, 14791783, nos números 561, 584, 583 e
 582), e com k = 50 as cinco primeiras ficam nessa avenida. Esses resultados são determinísticos
-dada a semente e se repetem na medição final.
+dada a semente e se repetiram na medição final.
 
 Execução real já feita: testes `pytest tests/algoritmos/test_centralidade.py -k proximidade`
 (20/11): proximidade igual à do NetworkX (`abs=1e-12`) em 15 grafos aleatórios com falhas, nos
@@ -151,7 +159,6 @@ dois sentidos, com e sem pesos 0.
    que pune quem alcança só parte da rede. Conferido com o NetworkX."
 
 ## Pendências
-- Medição final no feed real (comando em Resultados) e troca do `\pendente` no relatório.
 - Diagrama UML não feito (fluxo igual ao da F-MET).
 
 ## Timeline
@@ -160,3 +167,4 @@ dois sentidos, com e sem pesos 0.
 ### Corte 16/11/2026: feature cortada pelo congelamento de 15/11; RF-MET-05 entregue pela F-MET (amostragem com erro, RNF-06); RF-MET-04 (proximidade) não feito.
 ### Reabertura 20/11/2026: o grupo decide fazer todas as features (plano.md); corte sem efeito.
 ### Implementação 20/11/2026: `proximidade` (Wasserman e Faust, saída/entrada, amostragem), página, testes, guia e relatório (Henrique, H1).
+### Medição 20/11/2026: medição final no feed real; tempos no relatório, no guia e em Resultados.
