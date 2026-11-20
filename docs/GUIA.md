@@ -361,9 +361,11 @@ perderia esses pontos. Buscas com k abaixo do mínimo real só devolvem None.
 
 **Complexidade.** B + 1 buscas: O((V + E) log V) da F-ROTA mais, para cada k < B,
 O((k + 2)(V + E) log((k + 2) V)); somando, O(B² (V + E) log(B V)) no pior caso. Espaço da maior
-busca, O((B + 1)(V + E)). O custo cresce com B², e a distribuição de B no feed real sai da
-medição. Tempo no feed real: medição final pendente
-(`feature-F-BALD-OPC.md`).
+busca, O((B + 1)(V + E)). O custo cresce com B². No feed real (20/11,
+`benchmarks/resultados/nao-dominados-2026-11-20.json`), no G_E do pico da manhã (V = 46.102,
+E = 209.025), nos 200 pares sorteados: 164,6 ms por par em média, mediana 127,7 ms, p95
+447,6 ms e máximo 892,7 ms. B foi 0/1/2/3/4 em 30/89/65/14/2 pares; a fronteira teve 1/2/3/4/5
+pontos em 30/89/65/15/1 pares, e o último ponto coincidiu com o mais rápido em todos.
 
 **Testes.** Gabaritos à mão (três pontos, empate, sem linha direta, origem = destino,
 inalcançável, falhas) e comparação com força bruta: em 20 redes pequenas aleatórias, para todos
