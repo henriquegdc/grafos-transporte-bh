@@ -572,6 +572,33 @@ Limitações: o tempo médio é condicional aos pares alcançáveis na amostra; 
 utiliza a primeira faixa horária disponível, portanto os resultados
 de tempo dependem dessa faixa.
 
+#### 5.5.1 Alcance e desvio (F-EFI-2)
+
+Na página **Eficiência**, a isócrona responde quais paradas se atingem dentro do
+orçamento de tempo escolhido. Em G_E, a busca passa pelas plataformas e só insere
+no heap chegadas dentro do limite. O resultado inclui a origem ativa. As cores do
+mapa mostram em qual intervalo de minutos cada parada é alcançada. São pontos de
+embarque ou desembarque; a área entre eles pode conter barreiras físicas.
+
+No modo **Índice de desvio**, cada par sorteado usa o trajeto de menor tempo.
+O comprimento soma as distâncias em linha reta entre paradas sucessivas da caminhada
+e do ônibus. Dividir esse comprimento pela distância direta entre origem e destino
+mede o desvio geométrico; dividir a duração pela distância direta revela os minutos
+por quilômetro de deslocamento. Os índices ficam indefinidos para coordenadas
+coincidentes e para pares sem trajeto. A tabela agrupa as origens pelos quadrantes
+formados no centro do retângulo das paradas para oferecer uma leitura espacial
+reproduzível, sem depender de limites administrativos externos.
+
+#### 5.5.2 Comparação por faixa (F-EFI-OPC)
+
+O modo **Comparar faixas** fixa os pares e a semente. Cada faixa reconstrói G_E
+com os embarques disponíveis e a espera H/2 correspondente. Para uma origem
+sorteada, um Dijkstra fornece os tempos até os destinos consultados. A média
+de tempo usa os pares alcançáveis; a eficiência amostrada divide a soma de 1/t
+por todos os pares. A contagem de alcançáveis ajuda a interpretar mudanças na
+composição da média. O erro padrão da eficiência inclui a correção para população finita;
+o do tempo usa as durações alcançáveis, como na análise essencial. A comparação representa a programação do dia carregado.
+
 ### 5.6 Falhas e resiliência (F-RES)
 
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
@@ -1081,6 +1108,18 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    médio são contados à parte, mas não viram viagens de duração zero.
 5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
    amostra e a semente para reproduzir o cálculo.
+
+#### Isócronas e desvios
+
+1. **A parada no limite exato de tempo entra?** Sim. O relaxamento aceita custo menor ou igual ao orçamento.
+2. **Qual percurso define o desvio?** O trajeto de menor tempo. Somam-se distâncias entre paradas consecutivas, inclusive a pé.
+3. **E se os extremos têm coordenadas iguais?** A distância direta é zero, então ambas as razões ficam indefinidas.
+
+#### Comparação por faixa
+
+1. **Por que sorteamos apenas uma vez?** Para comparar os mesmos deslocamentos sob diferentes ofertas.
+2. **O que muda no grafo?** Os embarques com serviço e a espera por padrão na faixa; a caminhada usa os mesmos parâmetros.
+3. **O que acontece quando uma conexão deixa de existir?** Um par inalcançável contribui zero para a eficiência e sai da média de tempo. A tabela informa quantos pares tiveram caminho.
 
 ### 5.6 Falhas e resiliência (F-RES)
 1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).

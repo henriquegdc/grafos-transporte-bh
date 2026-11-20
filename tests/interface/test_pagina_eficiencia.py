@@ -74,3 +74,33 @@ def test_pagina_rejeita_rede_com_menos_de_duas_paradas() -> None:
 
     assert not teste.exception
     assert any("ao menos duas paradas" in item.value for item in teste.info)
+
+
+@pytest.mark.parametrize("modo", ["Isócronas", "Índice de desvio", "Comparar faixas"])
+def test_extensoes_pela_pagina_da_rede_teste(modo):
+    from pathlib import Path
+
+    from transporte.dados.leitor_gtfs import ler
+
+    rede = ler(Path(__file__).resolve().parents[2] / "dados/rede-teste")
+    teste = AppTest.from_string(
+        "import streamlit as st\nfrom transporte.interface.paginas.eficiencia import render\n"
+        "render(st.session_state['rede'])"
+    )
+    teste.session_state["rede"] = rede
+    teste.run().radio[0].set_value(modo).run()
+    teste.button[0].click().run()
+    assert not teste.exception
+    if modo == "Isócronas":
+        assert teste.metric[0].value == str(len(rede.paradas))
+        assert len(teste.dataframe[0].value) == len(rede.paradas)
+        assert teste.get("deck_gl_json_chart")
+    elif modo == "Índice de desvio":
+        df = teste.dataframe[0].value
+        assert df["Desvio (km/km)"].is_monotonic_decreasing
+        assert len(teste.dataframe[1].value)
+    else:
+        assert len(teste.dataframe[0].value) == 4
+        assert teste.get("vega_lite_chart")
+    teste.run()
+    assert teste.dataframe
