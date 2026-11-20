@@ -53,8 +53,10 @@ sh .githooks/pre-commit
 (SHA-256 8cb0a498...f6d6, dia de serviço 18/11), linha 561787, pico da manhã, fator 2,
 100 pares e semente 42, gerado em 20/11. A espera no padrão passou de 566,67 s a
 1.133,33 s. Só 3 dos 100 pares mudaram, com aumento médio de 81,3 s (máximo 122 s);
-com 10 pares, nenhum mudou, por isso o script usa 100. Em Windows 11 e Python 3.12.10,
-V=46.102 e E=209.025, a comparação completa levou 13,20 ± 0,15 s em cinco repetições.
+com 10 pares, nenhum mudou, por isso o script usa 100. Máquina: Intel Core i5-13600KF,
+Windows 11 (10.0.26200), Python 3.12.10, em 20/11 (o JSON grava só a plataforma, sem o
+processador; registro confirmado pelo grupo em 20/11). Com V=46.102 e E=209.025, a comparação
+completa levou 13,20 ± 0,15 s em cinco repetições.
 
 ## Vídeo · 30 s
 

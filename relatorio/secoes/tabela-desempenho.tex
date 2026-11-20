@@ -30,6 +30,7 @@ Fronteira de Pareto, por par & F-BALD-OPC & $G_E$ & $O(B^2(V + E)\log(BV))$ & 46
 Construção de $G_T$ & F-ESPERA-2 & $G_T$ & $O(V + L + K + N\log(k + 1))$ & 9{.}660 & 146{.}630 & 455 $\pm$ 13 ms & 5 \\
 Chegada mais cedo & F-ESPERA-2 & $G_T$ & $O((V + E)\log E + E\log(k + 1))$ & 9{.}660 & 146{.}630 & 11,1 $\pm$ 1,1 ms & 5 \\
 Monte Carlo, 30 saídas & F-ESPERA-2 & $G_T$ & $S$ consultas & 9{.}660 & 146{.}630 & 383 $\pm$ 4 ms & 5 \\
+Sensibilidade, 100 pares & F-ESPERA-OPC & $G_E$ & $O(n(V + E)\log V)$ & 46{.}102 & 209{.}025 & 13,2 $\pm$ 0,2 s & 5 \\
 \multicolumn{8}{@{}l}{\textit{Intel Core 5 120U (Windows 11); feed de 11/11 (SHA 241f0bb2), serviço de 11/11}} \\
 Graus de entrada e saída & F-MET & $G_P$ & $O(V + E)$ & 9{.}660 & 122{.}799 & 97,9 $\pm$ 10,3 ms & 3 \\
 Brandes exato & F-MET & $G_P$ & $O(V(V + E)\log V)$ & 9{.}660 & 122{.}799 & 2{.}632 s & 1 \\
@@ -42,8 +43,6 @@ Falha de uma linha, $s = 100$ $\dag$ & F-RES & $G_P$ & $O(s(V + E)\log V)$ & 9{.
 \multicolumn{8}{@{}l}{\textit{AMD Ryzen 7 7730U (Windows 11); feed baixado em 18/11, serviço de 18/11}} \\
 Eficiência global, $s = 100$ $\dag$ & F-EFI & $G_P$ & $O(V + s(V + E)\log V)$ & 9{.}660 & 122{.}799 & 8,70 $\pm$ 0,13 s & 3 \\
 Tempo médio de viagem, 100 pares $\dag$ & F-EFI & $G_E$ & $O(V + k(V + E)\log V + m)$ & 46{.}102 & 209{.}025 & 26,3 $\pm$ 0,1 s & 3 \\
-\multicolumn{8}{@{}l}{\textit{Windows-11-10.0.26200, processador não registrado; feed baixado em 18/11, serviço de 18/11}} \\
-Sensibilidade, 100 pares & F-ESPERA-OPC & $G_E$ & $O(n(V + E)\log V)$ & 46{.}102 & 209{.}025 & 13,2 $\pm$ 0,2 s & 5 \\
 \bottomrule
 \end{tabularx}
 \end{table}

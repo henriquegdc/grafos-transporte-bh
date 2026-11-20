@@ -969,7 +969,7 @@ F-ROTA-2, F-ROTA-OPC, F-BALD, F-BALD-2, F-EFI, F-RES) entram por uma lista no sc
 na tabela.
 
 Por que agrupar por máquina e feed: as medições vieram de máquinas diferentes (i5-13600KF, Core
-5 120U, i5-1235U, Ryzen 7 7730U e uma sem processador registrado) e de instantâneos diferentes do
+5 120U, i5-1235U e Ryzen 7 7730U) e de instantâneos diferentes do
 GTFS (11/11 e 18/11). As medições da F-ESPERA, F-ESPERA-2, F-EFI-2 e F-EFI-OPC, feitas antes num
 Apple M4 no serviço de 04/11, foram regeradas em 20/11 no feed de 18/11 (i5-13600KF). Tempo de parede só se compara dentro da mesma máquina e da mesma rede; misturar tudo numa
 coluna sugeriria comparações falsas. Alternativa descartada: remedir tudo numa só máquina no feed

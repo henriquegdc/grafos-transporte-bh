@@ -90,9 +90,18 @@ def de_dict(d: dict) -> tuple[float, float, int]:
     return d["media_s"], d["desvio_s"], d["repeticoes"]
 
 
+# JSON sem processador cujo arquivo de feature registra a máquina usada.
+MAQUINA_NA_FEATURE = {
+    "sensibilidade-": "Intel Core i5-13600KF (Windows 11)",  # feature-F-ESPERA-OPC.md
+}
+
+
 def maquina(dados: dict) -> str:
     m = dados.get("maquina")
     texto = json.dumps([m, dados.get("processador")])
+    for prefixo, nome in MAQUINA_NA_FEATURE.items():
+        if dados.get("_arquivo", "").startswith(prefixo):
+            return nome
     for chave, nome in MAQUINAS.items():
         if chave in texto:
             return nome
