@@ -335,6 +335,14 @@ def _estimativa(dijkstras: int, segundos: float) -> None:
     )
 
 
+def _slider_positivo(ui, rotulo: str, limite: int, padrao: int, **opcoes) -> int:
+    """Mostra o valor fixo quando a rede tem uma única parada."""
+    if limite == 1:
+        ui.caption(f"{rotulo}: 1")
+        return 1
+    return ui.slider(rotulo, 1, limite, min(padrao, limite), **opcoes)
+
+
 def _aba_ranking(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]]) -> None:
     """Aba Ranking (F-RES-2, RF-RES-04)."""
     n = visao.grafo.num_vertices()
@@ -349,11 +357,14 @@ def _aba_ranking(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]]) -
     n_linhas = colunas[1].slider("Linhas candidatas (sorteadas)", 0, max(1, len(linhas)),
                                  min(RANKING_LINHAS, len(linhas)))
     colunas = st.columns(2)
-    amostra = colunas[0].slider("Eficiência: origens sorteadas", 1, max(1, min(n, 200)),
-                                min(RANKING_AMOSTRA, n), key="ranking-amostra")
-    amostra_int = colunas[1].slider("Intermediação: origens sorteadas", 1,
-                                    max(1, min(n, 500)), min(AMOSTRA_INTERMEDIACAO, n),
-                                    key="ranking-amostra-int")
+    amostra = _slider_positivo(
+        colunas[0], "Eficiência: origens sorteadas", min(n, 200), RANKING_AMOSTRA,
+        key="ranking-amostra",
+    )
+    amostra_int = _slider_positivo(
+        colunas[1], "Intermediação: origens sorteadas", min(n, 500), AMOSTRA_INTERMEDIACAO,
+        key="ranking-amostra-int",
+    )
     total = n_paradas + n_linhas
     _estimativa(dijkstras_ranking(total, amostra, amostra_int, n_paradas),
                 segundos_por_dijkstra(rede, visao, st.session_state))
@@ -389,8 +400,10 @@ def _aba_multiplas(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]])
         "remoção aleatória."
     )
     modo = st.radio("Modo", [MODO_ESCOLHA, MODO_COMPARACAO], horizontal=True)
-    amostra = st.slider("Eficiência: origens sorteadas", 1, max(1, min(n, 200)),
-                        min(RANKING_AMOSTRA, n), key="multiplas-amostra")
+    amostra = _slider_positivo(
+        st, "Eficiência: origens sorteadas", min(n, 200), RANKING_AMOSTRA,
+        key="multiplas-amostra",
+    )
     segundos = segundos_por_dijkstra(rede, visao, st.session_state)
     resultados = _guardado(CHAVE_MULTIPLAS, rede)
     if modo == MODO_ESCOLHA:
@@ -423,10 +436,11 @@ def _aba_multiplas(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]])
         return
 
     colunas = st.columns(2)
-    k = colunas[0].slider("Paradas removidas", 1, max(1, min(n, 30)), min(COMPARACAO_K, n))
-    amostra_int = colunas[1].slider("Intermediação: origens sorteadas", 1,
-                                    max(1, min(n, 500)), min(AMOSTRA_INTERMEDIACAO, n),
-                                    key="multiplas-amostra-int")
+    k = _slider_positivo(colunas[0], "Paradas removidas", min(n, 30), COMPARACAO_K)
+    amostra_int = _slider_positivo(
+        colunas[1], "Intermediação: origens sorteadas", min(n, 500), AMOSTRA_INTERMEDIACAO,
+        key="multiplas-amostra-int",
+    )
     _estimativa(amostra_int + 2 * (k + 1) * amostra, segundos)
     parametros = ("comparacao", k, amostra, amostra_int)
     if st.button("Comparar remoções", type="primary") and parametros not in resultados:
@@ -483,11 +497,11 @@ def _aba_falha_unica(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]
     """Aba Falha única (F-RES, RF-RES-01 a 03)."""
     n = visao.grafo.num_vertices()
     falha = _escolher_falha(rede, visao, indice, proximas)
-    amostra = st.slider(
+    amostra = _slider_positivo(
+        st,
         "Eficiência: origens sorteadas",
-        min_value=1,
-        max_value=max(1, min(n, 200)),
-        value=min(AMOSTRA_PADRAO, n),
+        min(n, 200),
+        AMOSTRA_PADRAO,
         help=(
             "A eficiência roda um Dijkstra por origem, antes e depois da falha. No feed real "
             "cada um leva cerca de 0,14 s. As mesmas origens (semente fixa) valem nos dois."

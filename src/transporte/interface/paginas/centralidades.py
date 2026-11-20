@@ -452,18 +452,21 @@ def _render_metricas(rede: RedeUI, visao: VisaoGP) -> None:
             "Intermediação: caminhos mínimos por tempo", value=True,
             help="Desmarcado, conta o número de trechos.",
         )
-        amostra = st.slider(
-            "Intermediação e proximidade: origens sorteadas",
-            min_value=1,
-            max_value=max(1, min(n, 500)),
-            value=min(AMOSTRA_PADRAO, n),
-            help=(
-                "O exato roda um Dijkstra a partir de cada parada. Com k origens custa k/N do "
-                "exato, e a tabela mostra o erro padrão de cada estimativa."
-            ),
-        )
-        k = st.slider("Paradas no ranking", min_value=1, max_value=max(1, min(n, 50)),
-                      value=min(10, n))
+        if n == 1:
+            amostra = k = 1
+        else:
+            amostra = st.slider(
+                "Intermediação e proximidade: origens sorteadas",
+                min_value=1,
+                max_value=min(n, 500),
+                value=min(AMOSTRA_PADRAO, n),
+                help=(
+                    "O cálculo exato roda um Dijkstra por parada. Na intermediação "
+                    "amostrada, a tabela mostra o erro padrão da estimativa."
+                ),
+            )
+            k = st.slider("Paradas no ranking", min_value=1, max_value=min(n, 50),
+                          value=min(10, n))
         enviado = st.form_submit_button("Calcular", type="primary")
 
     if enviado:

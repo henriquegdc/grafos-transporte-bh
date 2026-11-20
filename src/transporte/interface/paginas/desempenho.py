@@ -37,6 +37,30 @@ def _ler(caminho: Path) -> dict | None:
     return dados if isinstance(dados, dict) else None
 
 
+def _lista_de_objetos(valor: object) -> bool:
+    return isinstance(valor, list) and all(isinstance(item, dict) for item in valor)
+
+
+def _estrutura_valida(dados: dict, prefixo: str) -> bool:
+    if not isinstance(dados.get("maquina", {}), dict):
+        return False
+    if prefixo == PREFIXO_COMPARACAO:
+        grafos = dados.get("grafos")
+        return _lista_de_objetos(grafos) and all(
+            _lista_de_objetos(grafo.get("algoritmos")) for grafo in grafos
+        )
+    if prefixo == PREFIXO_COMPLEXIDADE:
+        algoritmos = dados.get("algoritmos")
+        return _lista_de_objetos(algoritmos) and all(
+            _lista_de_objetos(alg.get("pontos", [])) for alg in algoritmos
+        )
+    return True
+
+
+def _arredondar(valor: object, casas: int) -> float | None:
+    return round(valor, casas) if isinstance(valor, int | float) and math.isfinite(valor) else None
+
+
 def ultimo_json(diretorio: Path, prefixo: str) -> tuple[Path, dict] | None:
     """O JSON válido mais recente com o prefixo (ordem do nome, que termina em AAAA-MM-DD).
 
@@ -47,7 +71,7 @@ def ultimo_json(diretorio: Path, prefixo: str) -> tuple[Path, dict] | None:
         return None
     for caminho in sorted(diretorio.glob(f"{prefixo}*.json"), reverse=True):
         dados = _ler(caminho)
-        if dados is not None:
+        if dados is not None and _estrutura_valida(dados, prefixo):
             return caminho, dados
     return None
 
@@ -66,7 +90,7 @@ def tabela_comparacao(dados: dict) -> list[dict]:
                 "Escopo": alg.get("escopo"),
                 "Nosso": alg.get("nosso"),
                 "NetworkX": alg.get("networkx"),
-                "Nosso / NetworkX": round(razao, 2) if isinstance(razao, int | float) else None,
+                "Nosso / NetworkX": _arredondar(razao, 2),
                 "Resultados iguais": "sim" if alg.get("resultados_iguais") else "não",
             })
     return linhas
@@ -82,8 +106,8 @@ def tabela_inclinacoes(dados: dict) -> list[dict]:
             "Algoritmo": alg.get("algoritmo"),
             "Complexidade teórica": alg.get("complexidade_teorica"),
             "Inclinação teórica": alg.get("inclinacao_teorica"),
-            "Inclinação medida": round(medida, 2) if medida is not None else None,
-            "R²": round(r2, 3) if r2 is not None else None,
+            "Inclinação medida": _arredondar(medida, 2),
+            "R²": _arredondar(r2, 3),
             "Tamanhos": len(alg.get("pontos", [])),
         })
     return linhas
@@ -98,7 +122,10 @@ def pontos_loglog(dados: dict) -> list[dict]:
     for alg in dados.get("algoritmos", []):
         for p in alg.get("pontos", []):
             x, t = p.get("V_mais_E"), p.get("media_s")
-            if isinstance(x, int | float) and isinstance(t, int | float) and x > 0 and t > 0:
+            if (
+                isinstance(x, int | float) and 0 < x < math.inf
+                and isinstance(t, int | float) and 0 < t < math.inf
+            ):
                 pontos.append({
                     "log10(V + E)": math.log10(x),
                     "log10(tempo em s)": math.log10(t),
@@ -136,7 +163,8 @@ def render(rede: object = None, diretorio: Path | None = None) -> None:
     if comparacao is None:
         st.info(
             "Nenhum resultado de comparação encontrado. Rode "
-            "`python benchmarks/comparar_networkx.py --feed dados/brutos/bhtrans.zip`."
+            "`PYTHONPATH=src python benchmarks/comparar_networkx.py "
+            "--feed dados/brutos/bhtrans.zip`."
         )
     else:
         caminho, dados = comparacao
@@ -152,7 +180,7 @@ def render(rede: object = None, diretorio: Path | None = None) -> None:
     if complexidade is None:
         st.info(
             "Nenhum resultado de complexidade encontrado. Rode "
-            "`python benchmarks/complexidade_empirica.py`."
+            "`PYTHONPATH=src python benchmarks/complexidade_empirica.py`."
         )
     else:
         caminho, dados = complexidade
