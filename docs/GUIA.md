@@ -435,9 +435,11 @@ r.paradas_isoladas, r.perda_eficiencia
 
 **Isoladas, desconectadas e perda.** Isolada é a parada que ficou sozinha na componente depois da falha e não estava antes. Desconectada é a que saiu da maior componente (empate: a primeira na ordem do Tarjan). Eficiência global = média de 1/d sobre os pares ordenados, com par sem caminho somando 0; perda = (antes - depois) / antes. O denominador é o n de antes da falha: com o n de depois, remover uma parada mal conectada poderia aumentar a eficiência. Com amostra, as mesmas s origens sorteadas valem antes e depois. O(s (V + E) log V), um Dijkstra por origem.
 
-**No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência; cada simulação com 100 origens leva de 18 a 26 s.
+**No feed real** (10/11, `benchmarks/medir_falhas.py`): G_P com V = 9.659 e E = 122.732 tem 4 componentes, uma com 9.656 paradas e 3 unitárias, iguais às do NetworkX; o Tarjan leva cerca de 150 ms. Tirar a parada com mais saídas ou a linha com mais trechos exclusivos não isola ninguém e custa menos de 0,1 % de eficiência. Retirando cada uma das 291 linhas, uma por vez (19/11), só 17 tiram alguma parada da maior componente; a pior, a linha 832, deixa 33 paradas fora da rede principal e custa 0,94 %. Cada simulação com 100 origens leva de 18 a 38 s.
 
-Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A `eficiencia_global` daqui é provisória até a da F-EFI entrar, que tem a mesma assinatura.
+Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A hipótese para as perdas pequenas é que a caminhada de 300 m contorna as falhas, mas isso não foi medido. A eficiência é a `eficiencia_global` da F-EFI (§5.5); até 19/11 a F-RES usava uma versão provisória própria, com a mesma assinatura e os mesmos resultados nos testes.
+
+**Na interface**, a página Falhas escolhe paradas, um trecho (origem e próxima parada de ônibus) ou linhas, roda `simular_falha` com 30 origens por padrão e mostra as componentes antes e depois, as paradas isoladas e fora da rede principal e a perda, com um mapa: preto para o que saiu, vermelho para as isoladas e laranja para as que saíram da rede principal.
 
 
 
