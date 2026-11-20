@@ -101,3 +101,19 @@ def test_pagina_origem_igual_destino(pagina):
     pagina.button[0].click().run()
     assert not pagina.exception
     assert [m.value for m in pagina.metric] == ["0.00 min"] * 4
+
+
+def test_quadro_mostra_gabarito_distribuicao_e_comparacao(pagina):
+    pagina.radio[0].set_value("Quadro de horários").run()
+    pagina.selectbox[1].set_value("C")
+    pagina.time_input[0].set_value(time(8, 1))
+    pagina.button[0].click().run()
+    assert not pagina.exception
+    assert [m.value for m in pagina.metric] == ["29.00 min", "0.00 min", "19.00 min", "10.00 min"]
+    assert any("30 de 30" in c.value for c in pagina.caption)
+    assert any("10.00 min de espera" in c.value for c in pagina.caption)
+    assert pagina.get("vega_lite_chart")
+    pagina.run()
+    assert len(pagina.metric) == 4
+    pagina.radio[0].set_value("Estimativa H/2").run()
+    assert not pagina.metric

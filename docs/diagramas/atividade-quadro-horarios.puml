@@ -1,0 +1,16 @@
+@startuml
+start
+:Indexar partidas e chegadas por segmento do padrão;
+:Rotular a origem com o horário de saída;
+while (Há parada pendente?) is (sim)
+  :Extrair a menor chegada válida do heap;
+  if (É o destino?) then (sim)
+    :Reconstruir caminhadas, esperas e viagens;
+    stop
+  endif
+  :Para cada vizinho, somar a caminhada ou\nbuscar a primeira partida viável no quadro filtrado;
+  :Inserir no heap cada chegada melhorada;
+endwhile (não)
+:Registrar saída sem trajeto;
+stop
+@enduml
