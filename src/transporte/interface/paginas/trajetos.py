@@ -381,7 +381,7 @@ def _mostrar_alternativos(
 ) -> None:
     """Seção do Yen (RF-ROT-05): roda só no botão e guarda o resultado da consulta.
 
-    Mostra um trajeto por sequência de linhas (`alternativos_por_linhas`, teto de 4 · k
+    Mostra um trajeto por sequência de linhas (`alternativos_por_linhas`, teto de 2 · k
     caminhos do Yen), com quantas variantes de cada uma o Yen achou.
     """
     st.subheader("Trajetos alternativos (Yen)")

@@ -7,7 +7,7 @@ pares de paradas com semente fixa (só os que têm trajeto) e, em cada par:
 
 - Yen puro (`trajetos_alternativos`, k caminhos): quantas sequências de `linha_id` distintas
   há entre os k e a diferença de tempo entre o 1º e o último;
-- filtro por linhas (`alternativos_por_linhas`, teto 4 · k caminhos): quantas sequências
+- filtro por linhas (`alternativos_por_linhas`, teto 2 · k caminhos): quantas sequências
   distintas achou, quantos caminhos do Yen aceitou e a diferença de tempo entre a 1ª e a
   última sequência.
 
@@ -90,7 +90,7 @@ def main(caminho: str, n_pares: int, k: int) -> None:
     print(
         f"total k={k} x{n_pares}: puro {tot_puro} sequencias distintas em {k * n_pares} "
         f"caminhos ({pares_uma_seq} pares com uma so); filtro {tot_filtro} sequencias em "
-        f"{tot_aceitos} caminhos aceitos (teto {4 * k} por par)"
+        f"{tot_aceitos} caminhos aceitos (teto {2 * k} por par)"
     )
 
 

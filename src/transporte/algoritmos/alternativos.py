@@ -191,7 +191,7 @@ def alternativos_por_linhas(
     que a pessoa reconhece como diferentes.
     Entradas: as de `trajetos_alternativos`, mais `linha_do_padrao` (id do padrão ->
         `linha_id`, como em `rede.padroes`) e `teto` (caminhos do Yen aceitos no máximo;
-        padrão 4 · k).
+        padrão 2 · k).
     Saída: lista de Alternativo em ordem crescente de tempo; menos que k se o teto ou os
         caminhos sem ciclo acabarem antes; vazia se o destino é inalcançável.
     Casos de borda: k < 1 ou teto < k levanta ValueError; o estado do grafo é restaurado.
@@ -200,7 +200,7 @@ def alternativos_por_linhas(
     """
     if k < 1:
         raise ValueError(f"k deve ser >= 1, recebeu {k}")
-    teto = 4 * k if teto is None else teto
+    teto = 2 * k if teto is None else teto
     if teto < k:
         raise ValueError(f"teto deve ser >= k, recebeu {teto} com k = {k}")
     s = ge.vertice_da_parada[origem]
