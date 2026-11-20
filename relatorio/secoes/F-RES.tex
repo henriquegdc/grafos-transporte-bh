@@ -1,6 +1,7 @@
 % Seção: F-RES · Falhas e resiliência (RF-RES-01 a RF-RES-03)
 % Dono: Caio · Números: docs/plano-de-desenvolvimento/features/feature-F-RES.md, Resultados
-% (comando: python benchmarks/medir_falhas.py; execução de 10/11/2026).
+% (comandos: python benchmarks/medir_falhas.py, execuções de 10/11 e 19/11/2026;
+% python benchmarks/variancia_falhas.py --exata, 19/11/2026).
 \subsection{Falhas e resiliência}\label{sec:F-RES}
 
 A ferramenta simula a saída de operação de uma parada, de um trecho ou de uma linha sobre
@@ -20,18 +21,31 @@ sobre os pares ordenados. O denominador de antes da falha é mantido, para que r
 parada nunca aumente a eficiência. Com $s$ origens sorteadas com semente fixa, o custo é
 $O(s\,(V + E)\log V)$.
 
-\pendente{Figura: tela da página Falhas com as paradas isoladas no mapa (depende da P0-UI).}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{figuras/falhas-linha-832.png}
+  \caption{Página Falhas no feed real: retirada da linha 832, com 30 origens e semente 2026.
+  As 33 paradas em laranja saem da rede principal; os trechos tracejados são os removidos.
+  A perda exibida (0,22\%) é amostrada; a exata é 0,50\%.}
+  \label{fig:falhas}
+\end{figure}
 
 No feed da BHTrans ($V = 9{.}659$, $E = 122{.}732$), $G_P$ tem 4 componentes fortemente
 conexas: uma com 9.656 paradas e 3 unitárias. O resultado coincide com o do NetworkX. O
-Tarjan levou 148,6~ms. Com 100 origens, retirar a parada com mais saídas de viagem não
-isolou nenhuma parada e reduziu a eficiência em 0,036\%; retirar a linha com mais trechos
-exclusivos (92) reduziu-a em 0,071\%, também sem isolar paradas. Cada simulação levou
-de 18 a 26~s, quase todo o tempo nos 200 Dijkstras da eficiência. Medições em um Intel
-Core i5-1235U, com Python 3.14.
+Tarjan levou de 149 a 224~ms. Com 100 origens, retirar a parada com mais saídas de viagem
+não isolou nenhuma parada e reduziu a eficiência em 0,036\%; retirar a linha com mais
+trechos exclusivos (92) reduziu-a em 0,071\%, também sem isolar paradas. Retirando cada uma
+das 291 linhas, uma por vez, só 17 tiram alguma parada da maior componente; a pior, a
+linha 832, deixa 33 paradas fora da rede principal (Figura~\ref{fig:falhas}) e custa
+0,50\% de eficiência, calculada com todas as 9.659 origens em 22~min. Cada simulação
+amostrada levou de 18 a 38~s com 100 origens, quase todo o tempo nos Dijkstras da
+eficiência; a página usa 30 origens por padrão. Medições em um Intel Core i5-1235U, com
+Python 3.14.
 
-\textbf{Limitação.} $G_P$ usa o tempo mediano entre paradas, sem espera nem horário; a
+\textbf{Limitações.} $G_P$ usa o tempo mediano entre paradas, sem espera nem horário; a
 perda mede a rede estrutural, não o tempo porta a porta. As arestas de caminhada de até
 300~m devem tornar a rede redundante a falhas isoladas, o que explicaria as perdas
-pequenas; isso ainda não foi medido sem a caminhada. A eficiência usada ainda é uma versão
-provisória, que será substituída pela da F-EFI (eficiência da rede).
+pequenas; isso ainda não foi medido sem a caminhada. Quando a falha desconecta poucas
+paradas, a perda amostrada tem cauda pesada: ela salta quando uma delas é sorteada como
+origem. Na linha 832, com 100 origens, cinco sementes deram de 0,24\% a 1,76\%, contra
+0,50\% exatos; a página avisa quando isso pode acontecer.
