@@ -45,10 +45,32 @@ Acima de 1.000 vértices o Brandes exato custaria dezenas de minutos dos dois la
 então ambos partem das mesmas 20 origens (a soma das dependências origem a origem
 continua comparável, com \texttt{betweenness\_centrality\_subset}). Além do tempo, o
 script confere que distâncias, intermediações (tolerância relativa $10^{-6}$) e
-componentes coincidem; numa execução de validação no feed real, com 2 origens, os
-quatro resultados coincidiram. \pendente{Tabela com os tempos medidos no feed real e
-nas redes sintéticas de lado 10, 30 e 60 (nosso, NetworkX e a razão), da execução final
-gravada em \texttt{benchmarks/resultados/comparacao-networkx-*.json}.}
+componentes coincidem. Na execução final (20/11/2026, $N = 3$), todos os resultados
+coincidiram, no feed real e nas sintéticas. A Tabela~\ref{tab:networkx} traz o feed real.
+
+\begin{table}[ht]
+  \centering
+  \caption{Nosso tempo contra o do NetworkX no $G_P$ do feed real
+  ($|V| = 9{.}660$, $|E| = 122{.}799$), média $\pm$ desvio de 3 execuções.}
+  \label{tab:networkx}
+  \small
+  \begin{tabular}{llrrr}
+    \hline
+    Algoritmo & Escopo & Nosso & NetworkX & Razão \\
+    \hline
+    BFS & 20 origens & 274 $\pm$ 2 ms & 131 $\pm$ 4 ms & 2,09 \\
+    Dijkstra & 20 origens & 770 $\pm$ 3 ms & 575 $\pm$ 3 ms & 1,34 \\
+    Brandes & 20 origens & 864 $\pm$ 12 ms & 1{.}036 $\pm$ 6 ms & 0,83 \\
+    Tarjan & grafo inteiro & 48 $\pm$ 20 ms & 25 $\pm$ 19 ms & 1,91 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+Nas sintéticas de lado 10, 30 e 60, a razão ficou entre 1,81 e 1,92 no Dijkstra, entre
+3,46 e 4,36 na BFS, entre 4,04 e 7,40 no Tarjan e entre 0,74 e 0,85 no Brandes. O nosso
+Brandes é o único mais rápido que o do NetworkX; nos outros, o NetworkX ganha por
+operar direto sobre dicionários, enquanto o nosso \texttt{Grafo} monta a lista de
+vizinhos ativos a cada visita.
 
 Para a complexidade empírica, \texttt{transporte.dados.sinteticas} gera redes em grade
 de $n \times n$ paradas com uma linha em cada fileira e coluna (ida e volta) e caminhada
@@ -59,17 +81,17 @@ $n = 40$) e ajusta por mínimos quadrados $\log t = a + b \log(|V| + |E|)$. A in
 $b$ é o expoente empírico: o esperado é $b \approx 1$ para BFS e Tarjan, um pouco acima
 de 1 para o Dijkstra (o fator $\log V$) e $b \approx 2$ para o Brandes, já que
 $V(V + E) \sim (V + E)^2$ quando $E$ é proporcional a $V$.
-\pendente{Inclinações medidas e $R^2$ da execução final
-(\texttt{benchmarks/resultados/complexidade-*.json}).}
+As inclinações medidas (Figura~\ref{fig:complexidade}) foram $b = 1{,}01$ na BFS,
+$1{,}06$ no Dijkstra, $1{,}10$ no Tarjan e $2{,}04$ no Brandes, com $R^2 \geq 0{,}999$ em
+todos, o que confirma as complexidades declaradas.
 
-\IfFileExists{figuras/complexidade-empirica.png}{%
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.8\linewidth]{figuras/complexidade-empirica.png}
   \caption{Tempo médio contra $|V| + |E|$ do $G_P$ sintético, em escala log-log, com a
   reta ajustada e a inclinação $b$ de cada algoritmo.}
   \label{fig:complexidade}
-\end{figure}}{\pendente{Figura da complexidade empírica, gerada pela execução final.}}
+\end{figure}
 
 A limitação principal é que tempo de parede depende da máquina e da carga dela: a razão
 entre o nosso tempo e o do NetworkX é mais estável que os valores absolutos, e as

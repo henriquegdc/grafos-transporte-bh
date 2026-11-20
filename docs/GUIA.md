@@ -561,7 +561,14 @@ travaria a página. JSON ausente ou inválido vira aviso.
 
 Limitações: tempo de parede depende da máquina e da carga; a razão nosso/NetworkX é mais
 estável que os valores absolutos. Em grafos pequenos o custo fixo de cada chamada achata a
-inclinação. Os números finais estão em `feature-F-AVAL-OPC.md` (seção Resultados).
+inclinação.
+
+Resultado (20/11/2026, N = 3, detalhes em `feature-F-AVAL-OPC.md`): todos os resultados
+coincidem com os do NetworkX. No G_P real (V = 9.660, E = 122.799), nosso tempo / NetworkX deu
+2,09 na BFS, 1,34 no Dijkstra, 0,83 no Brandes (20 origens) e 1,91 no Tarjan: só o Brandes,
+que monta a adjacência simplificada uma vez, é mais rápido; nos outros, `Grafo.vizinhos`
+monta a lista de vizinhos ativos a cada visita. Inclinações nas sintéticas: BFS 1,01, Dijkstra
+1,06, Tarjan 1,10 e Brandes 2,04, todas com R² ≥ 0,999.
 
 ## 8. Registro de decisões
 

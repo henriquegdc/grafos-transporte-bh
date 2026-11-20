@@ -10,11 +10,10 @@
 
 ## Retomada
 - **Última sessão:** 20/11/2026, branch `feat/F-AVAL-OPC-benchmark` a partir da `main` (`1b4edcf`).
-- **Onde parou:** código, testes, página e documentação prontos; **medição final pendente** (não rodada para não disputar CPU com as outras sessões).
-- **Próximo passo:** rodar, nesta ordem, na raiz do repositório e com o `.venv` ativo:
-  1. `PYTHONPATH=src python benchmarks/comparar_networkx.py --feed dados/brutos/bhtrans.zip` (feed real + sintéticas de lado 10, 30 e 60; 3 repetições; estimativa de alguns minutos).
-  2. `PYTHONPATH=src python benchmarks/complexidade_empirica.py` (lados 10 a 100; Brandes exato até lado 40; grava também `relatorio/figuras/complexidade-empirica.png`).
-  3. Commitar os dois JSON de `benchmarks/resultados/` e a figura; trocar os dois `\pendente` de `relatorio/secoes/avaliacao.tex` pela tabela e pelas inclinações; preencher "Resultados para o relatório" abaixo.
+- **Onde parou:** concluída, aguardando revisão do PR #64. Medição final feita em 20/11 (JSON e figura commitados; números em `avaliacao.tex`, no GUIA §7 e em "Resultados").
+- **Próximo passo:** revisão do PR; depois, incluir proximidade e rótulos em `COMPARACOES` quando estiverem na `main` e rodar de novo:
+  1. `PYTHONPATH=src python benchmarks/comparar_networkx.py --feed dados/brutos/bhtrans.zip`
+  2. `PYTHONPATH=src python benchmarks/complexidade_empirica.py`
 - **Arquivos tocados:** `src/transporte/dados/sinteticas.py`, `src/transporte/interface/paginas/desempenho.py`, `src/transporte/interface/app.py` (entrada "Desempenho" em `PAGINAS`), `benchmarks/avaliacao_comum.py`, `benchmarks/comparar_networkx.py`, `benchmarks/complexidade_empirica.py`, `tests/dados/test_sinteticas.py`, `tests/interface/test_pagina_desempenho.py`, `requirements.txt` (matplotlib), `relatorio/secoes/avaliacao.tex`, `docs/GUIA.md` (§7 e §10), este arquivo.
 - **Como testar:** `pytest tests/dados/test_sinteticas.py tests/interface/test_pagina_desempenho.py`; validação rápida dos scripts: `PYTHONPATH=src python benchmarks/comparar_networkx.py --lados 5 12 --repeticoes 1 --origens 5 --origens-brandes 10 --limite-exato 100 --saida <tmp>.json` e `PYTHONPATH=src python benchmarks/complexidade_empirica.py --lados 5 10 20 --lados-brandes 5 8 --repeticoes 1 --saida <tmp>.json --figura <tmp>.png`.
 - **Bloqueios:** nenhum. Proximidade (F-MET-2) e propagação de rótulos (F-MET-OPC) entram na comparação quando estiverem na `main` (ver "Pendências").
@@ -34,9 +33,9 @@ Benchmark contra NetworkX, complexidade empírica e página Desempenho. Fecha:
 | Modelo e dados | concluído | 20/11: rede sintética no formato da `Rede`, passa por `construir_gp` e `construir_ge` |
 | Interface | concluído | 20/11: página "Desempenho" em `PAGINAS`, lê `benchmarks/resultados/` |
 | Testes | concluído | 20/11: 13 testes do gerador, 4 da página (AppTest); pytest completo: 880 passaram |
-| Desempenho (tempo medido) | pendente | scripts validados com tamanhos pequenos e no feed real com 2 origens (resultados iguais aos do NetworkX); medição final pendente |
-| Guia (explicação e quiz) | concluído | 20/11: `docs/GUIA.md` §7 e §10 |
-| Relatório | parcial | 20/11: texto em `avaliacao.tex`; tabela, inclinações e figura dependem da medição final |
+| Desempenho (tempo medido) | concluído | 20/11: `comparacao-networkx-2026-11-20.json` e `complexidade-2026-11-20.json`; `todos_iguais: true` |
+| Guia (explicação e quiz) | concluído | 20/11: `docs/GUIA.md` §7 (com os resultados) e §10 |
+| Relatório | concluído | 20/11: `avaliacao.tex` com a tabela do feed real, as razões nas sintéticas, as inclinações e a figura |
 | Vídeo | roteiro | roteiro de 30 s abaixo |
 
 ## Especificação
@@ -89,8 +88,8 @@ Ponto de extensão: proximidade e rótulos entram como novas entradas em `COMPAR
 
 ## Critérios de aceite
 - [x] RF-DAD-05: Gerar redes sintéticas de tamanho crescente para o estudo de escala (`transporte.dados.sinteticas`)
-- [x] RF-AVA-03: Comparar o tempo dos nossos algoritmos com os equivalentes do NetworkX no mesmo grafo (`benchmarks/comparar_networkx.py`; números finais pendentes)
-- [x] RF-AVA-04: Gerar os gráficos de complexidade empírica (tempo × tamanho, log-log) (`benchmarks/complexidade_empirica.py`; figura final pendente)
+- [x] RF-AVA-03: Comparar o tempo dos nossos algoritmos com os equivalentes do NetworkX no mesmo grafo (`benchmarks/comparar_networkx.py`)
+- [x] RF-AVA-04: Gerar os gráficos de complexidade empírica (tempo × tamanho, log-log) (`benchmarks/complexidade_empirica.py`)
 - [x] RF-AVA-05: Página "Desempenho" na interface
 
 ## Definition of Done
@@ -100,12 +99,12 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (medição final pendente)
+- [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real (lê os JSON; independe da rede carregada)
 - [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (não feito; baixa prioridade)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (texto em `avaliacao.tex`; números e figura pendentes)
+- [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (em `avaliacao.tex`)
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado: retomada, status, pendências e timeline
 
@@ -116,13 +115,36 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 2 | Algoritmo com testes de corretude | concluída 20/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída 20/11 (validação no feed real com 2 origens) |
 | 4 | Página na interface | concluída 20/11 |
-| 5 | Tempo medido na rede real e complexidade justificada | pendente (medição final) |
+| 5 | Tempo medido na rede real e complexidade justificada | concluída 20/11 |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída 20/11, exceto diagrama e números |
 
 ## Resultados para o relatório
-_Medição final pendente: rodar os comandos da Retomada e colar aqui V, E, média ± desvio, razão e inclinações, com o comando e a máquina._
+**Medição final, 20/11/2026**, com a máquina livre. Máquina: Windows 11 (10.0.26200), Intel64 Family 6 Model 183 Stepping 1, Python 3.12.10, NetworkX 3.7. Feed `dados/brutos/bhtrans.zip`, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6` (instantâneo diferente do usado nas medições de 16/11, mas com o mesmo G_P: V = 9.660, E = 122.799). Semente 2026.
 
-Validação de corretude (20/11/2026, sem valor de tempo para o relatório): `PYTHONPATH=src python benchmarks/comparar_networkx.py --feed .../dados/brutos/bhtrans.zip --lados --repeticoes 1 --origens 2 --origens-brandes 2` deu `todos_iguais: true` (BFS, Dijkstra, Brandes com 2 origens e Tarjan iguais aos do NetworkX no G_P real).
+Comparação: `PYTHONPATH=src python benchmarks/comparar_networkx.py --feed dados/brutos/bhtrans.zip` (3 repetições, 20 origens, Brandes exato até 1.000 vértices) → `benchmarks/resultados/comparacao-networkx-2026-11-20.json`, `todos_iguais: true`.
+
+| Grafo | V | E | Algoritmo | Escopo | Nosso | NetworkX | Razão |
+|---|---|---|---|---|---|---|---|
+| G_P real | 9.660 | 122.799 | BFS | 20 origens | 274,170 ± 2,422 ms | 131,011 ± 4,324 ms | 2,09 |
+| | | | Dijkstra | 20 origens | 769,639 ± 2,728 ms | 574,622 ± 3,193 ms | 1,34 |
+| | | | Brandes | 20 origens | 864,189 ± 11,945 ms | 1,036 ± 0,006 s | 0,83 |
+| | | | Tarjan | grafo inteiro | 47,555 ± 20,444 ms | 24,861 ± 18,562 ms | 1,91 |
+| Sintética 10x10 | 100 | 1.038 | BFS / Dijkstra / Brandes exato / Tarjan | | | | 4,36 / 1,89 / 0,74 / 4,04 |
+| Sintética 30x30 | 900 | 10.280 | BFS / Dijkstra / Brandes exato / Tarjan | | | | 4,16 / 1,92 / 0,75 / 4,74 |
+| Sintética 60x60 | 3.600 | 42.026 | BFS / Dijkstra / Brandes 20 origens / Tarjan | | | | 3,46 / 1,81 / 0,85 / 7,40 |
+
+Leitura: só o nosso Brandes é mais rápido que o do NetworkX (ele monta a adjacência simplificada uma vez); nos outros, `Grafo.vizinhos` monta a lista de vizinhos ativos a cada visita, enquanto o NetworkX percorre dicionários prontos. O Tarjan tem desvio alto no feed real (± 20 ms em 48 ms), então a razão dele é a menos confiável.
+
+Complexidade: `PYTHONPATH=src python benchmarks/complexidade_empirica.py` (lados 10 a 100 com 5 repetições; Brandes nos lados 10 a 40 com 3) → `benchmarks/resultados/complexidade-2026-11-20.json` e `relatorio/figuras/complexidade-empirica.png`.
+
+| Algoritmo | Teórica | b teórico | b medido | R² | Menor e maior tamanho |
+|---|---|---|---|---|---|
+| BFS | O(V + E) | 1 | 1,008 | 0,9997 | 100,760 µs (lado 10) a 11,609 ms (lado 100) |
+| Dijkstra | O((V + E) log V) | 1 (+ log) | 1,059 | 0,9997 | 218,460 µs a 32,619 ms |
+| Tarjan | O(V + E) | 1 | 1,097 | 0,9993 | 231,880 µs a 38,587 ms |
+| Brandes | O(V (V + E) log V) | 2 (+ log) | 2,044 | 0,9998 | 16,261 ms (lado 10) a 5,616 s (lado 40) |
+
+Validação de corretude anterior (20/11/2026, sem valor de tempo para o relatório): `PYTHONPATH=src python benchmarks/comparar_networkx.py --feed .../dados/brutos/bhtrans.zip --lados --repeticoes 1 --origens 2 --origens-brandes 2` deu `todos_iguais: true` (BFS, Dijkstra, Brandes com 2 origens e Tarjan iguais aos do NetworkX no G_P real).
 
 ## Roteiro do vídeo (30 s)
 1. (5 s) "Conferimos nossos algoritmos contra o NetworkX e medimos como o tempo cresce."
@@ -131,7 +153,6 @@ Validação de corretude (20/11/2026, sem valor de tempo para o relatório): `PY
 4. (5 s) Limitação: tempo de parede depende da máquina; por isso mostramos a razão e a inclinação.
 
 ## Pendências
-- Medição final (comandos na Retomada) e números em `avaliacao.tex` e aqui.
 - Incluir proximidade (F-MET-2) e propagação de rótulos (F-MET-OPC) em `COMPARACOES` de `benchmarks/comparar_networkx.py` quando estiverem na `main`.
 - Diagrama UML (opcional).
 
@@ -139,3 +160,4 @@ Validação de corretude (20/11/2026, sem valor de tempo para o relatório): `PY
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Rafael.
 ### Sessão 20/11/2026: implementação por Henrique (plano.md H6) na `feat/F-AVAL-OPC-benchmark`: gerador sintético, dois scripts de benchmark, página Desempenho, testes, guia e relatório; medição final pendente.
+### Medição final 20/11/2026: comparação e complexidade rodadas com a máquina livre; JSON, figura e números no relatório, no guia e aqui.
