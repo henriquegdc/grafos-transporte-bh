@@ -359,6 +359,56 @@ Limitações: herda as da F-ROTA (espera média H/2, faixa fixa pela saída) e a
 compara numa faixa, porque no dia inteiro não há G_E; mostra um ponto da troca (k
 baldeações), não todos os trajetos não dominados, que são a F-BALD-OPC.
 
+#### Trajetos não dominados (F-BALD-OPC)
+
+A F-BALD-2 mostra um ponto da troca entre tempo e baldeações; a F-BALD-OPC mostra todos. Um
+trajeto **domina** outro quando não é pior em nenhum dos dois critérios e é melhor em pelo
+menos um. `trajetos_nao_dominados` devolve a **fronteira de Pareto**: um trajeto para cada
+número de baldeações que ainda compra tempo, do que troca menos ao mais rápido. Aparece na
+página Baldeações, numa faixa, com uma tabela e um mapa do trajeto escolhido.
+
+```python
+from transporte.algoritmos.comparacao_baldeacoes import trajetos_nao_dominados
+
+f = trajetos_nao_dominados(ge, "A", "D")  # [] se não há trajeto
+[(t.baldeacoes, t.tempo_total_s) for t in f]  # baldeações sobem, tempo cai
+```
+
+**O algoritmo.** Roda a F-ROTA e lê as B baldeações do mais rápido: nada com mais de B entra,
+porque o mais rápido domina. Para k = 0, 1, ..., B - 1 chama `mais_rapido_com_limite(k)` da
+F-BALD-2 e guarda o resultado só se ele reduz o tempo do último guardado; o mais rápido fecha a
+lista. Exemplo (teste `test_fronteira_com_tres_pontos`): de A a D há uma linha direta de
+3.300 s, Q1 + R3 em 1.360 s com uma baldeação e Q1 + Q2 + Q3 em 1.080 s com duas; os três
+ficam. Se o resultado com k já tem o tempo do mais rápido, a lista para ali: o de mais
+baldeações seria dominado (empate fica com o de menos baldeações).
+
+**Por que é exatamente a fronteira.** O tempo mínimo com até k baldeações não cresce com k.
+Qualquer trajeto com b baldeações tem tempo maior ou igual ao da busca com limite b, então é
+dominado ou empata com o guardado dessa busca (ou com um anterior, se ele não foi guardado por
+não reduzir o tempo). E cada guardado reduz o tempo do anterior com mais baldeações, então
+nenhum guardado domina outro.
+
+**Por que começar em k = 0 e não no mínimo da G_L.** No G_E as caminhadas se encadeiam (B3 da
+F-BALD), então pode haver trajeto com menos baldeações que o mínimo da G_L; começar nele
+perderia esses pontos. Buscas com k abaixo do mínimo real só devolvem None.
+
+**Complexidade.** B + 1 buscas: O((V + E) log V) da F-ROTA mais, para cada k < B,
+O((k + 2)(V + E) log((k + 2) V)); somando, O(B² (V + E) log(B V)) no pior caso. Espaço da maior
+busca, O((B + 1)(V + E)). O custo cresce com B². No feed real (20/11,
+`benchmarks/resultados/nao-dominados-2026-11-20.json`), no G_E do pico da manhã (V = 46.102,
+E = 209.025), nos 200 pares sorteados: 164,6 ms por par em média, mediana 127,7 ms, p95
+447,6 ms e máximo 892,7 ms. B foi 0/1/2/3/4 em 30/89/65/14/2 pares; a fronteira teve 1/2/3/4/5
+pontos em 30/89/65/15/1 pares, e o último ponto coincidiu com o mais rápido em todos.
+
+**Testes.** Gabaritos à mão (três pontos, empate, sem linha direta, origem = destino,
+inalcançável, falhas) e comparação com força bruta: em 20 redes pequenas aleatórias, para todos
+os pares, o NetworkX enumera os caminhos simples do G_E, o teste filtra os não dominados e
+compara com a fronteira.
+
+Limitações: herda as da F-BALD-2 (espera média H/2, uma faixa, sem horário de saída); só um
+trajeto por ponto da fronteira, mesmo quando há outros com o mesmo tempo e as mesmas
+baldeações.
+
 ### 5.4 Centralidades (F-MET)
 
 Quais paradas mais importam para a rede: as com mais ligações (grau) e as por onde passam mais
@@ -855,6 +905,16 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
    Porque ele pode já ter o mínimo k, ou até menos que k, encadeando caminhadas no G_E.
 5. **Por que a comparação só aparece numa faixa?** Porque o tempo depende das esperas e das
    linhas que circulam na faixa, e o G_E existe só por faixa.
+
+#### Trajetos não dominados (F-BALD-OPC)
+1. **O que é um trajeto não dominado?** Um para o qual não existe outro com tempo menor ou
+   igual e baldeações menores ou iguais, sendo melhor em pelo menos um dos dois.
+2. **Por que basta testar k de 0 até as baldeações do mais rápido?** Acima disso o mais rápido
+   domina tudo; e, como o tempo mínimo com até k baldeações não cresce com k, o mais rápido com
+   limite k representa todos os trajetos com k baldeações.
+3. **Por que não começar no mínimo de baldeações da G_L?** Porque no G_E as caminhadas se
+   encadeiam e pode haver trajeto com menos baldeações que esse mínimo; começar nele perderia
+   pontos da fronteira.
 
 ### 5.4 Centralidades (F-MET)
 1. **Por que não contar, para cada par, se o caminho mínimo passa por v?** São V² pares e pode
