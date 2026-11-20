@@ -302,6 +302,12 @@ def render(rede: RedeUI) -> None:
         "depois. Isolada: ficou sozinha na sua componente. Fora da rede principal: saiu da "
         "maior componente."
     )
+    if numeros["desconectadas"] and resultado.amostra is not None:
+        st.warning(
+            "A falha tirou paradas da rede principal: a perda amostrada varia muito com as "
+            "origens sorteadas, porque salta quando uma dessas paradas cai na amostra. Use "
+            "mais origens para um valor mais estável."
+        )
     afetadas = tabela_afetadas(rede, resultado)
     if afetadas:
         st.dataframe(afetadas, hide_index=True, width="stretch")
