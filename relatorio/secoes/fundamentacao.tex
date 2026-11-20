@@ -1,6 +1,42 @@
 % Seção: Fundamentação
 % Dono: Thiago e Henrique · Orçamento: 1 página(s) · docs/fontes/plano-de-projeto.md §14.1
 % Conteúdo: GTFS, modelos de grafo para transporte, algoritmos usados
+% Thiago: subseção de algoritmos (núcleo e centralidades). Henrique: GTFS e modelos.
 \section{Fundamentação}\label{sec:fund}
 
-\pendente{GTFS, modelos de grafo para transporte, algoritmos usados. Dono: Thiago e Henrique.}
+\pendente{GTFS e modelos de grafo para transporte. Dono: Henrique.}
+
+\subsection{Algoritmos de caminho mínimo e centralidade}
+
+Um grafo dirigido e ponderado $G = (V, E, w)$ associa a cada aresta $(u, v)$ um peso
+$w(u, v) \ge 0$; no projeto, todo peso é um tempo em segundos. A \emph{busca em largura}
+(BFS) visita os vértices por camadas a partir de uma origem e encontra, em $O(V + E)$, os
+caminhos com o menor número de arestas~\cite{cormen2009}. O \emph{algoritmo de
+Dijkstra}~\cite{dijkstra1959} encontra os caminhos de menor peso total a partir de uma
+origem quando os pesos são não negativos: a cada passo fecha o vértice aberto de menor
+distância, cuja distância já é definitiva, e relaxa as arestas que saem dele. Com uma fila
+de prioridade em \emph{heap} binário, cada inserção e extração custa $O(\log n)$ e o
+algoritmo roda em $O((V + E)\log V)$. Em vez da operação de diminuir chave, usamos
+\emph{inserção preguiçosa}: um vértice cuja distância melhora é inserido de novo, e a
+entrada antiga é descartada quando sai do heap. O heap passa a ter até $O(E)$ entradas,
+mas como $\log E \le 2\log V$ a complexidade não muda.
+
+A \emph{intermediação} (\emph{betweenness}) de um vértice $v$ mede quanto ele está no
+meio dos caminhos mínimos entre os demais:
+\[
+  bc(v) = \sum_{s \ne v \ne t} \frac{\sigma_{st}(v)}{\sigma_{st}},
+\]
+em que $\sigma_{st}$ é o número de caminhos mínimos de $s$ a $t$ e $\sigma_{st}(v)$ o
+número desses que passam por $v$. O algoritmo de Brandes~\cite{brandes2001} evita somar
+par a par: para cada origem $s$, um Dijkstra conta $\sigma_{sv}$ e guarda os
+predecessores de cada vértice, e uma passada em ordem decrescente de distância acumula a
+dependência $\delta_s(v) = \sum_{w} \frac{\sigma_{sv}}{\sigma_{sw}}(1 + \delta_s(w))$
+sobre os sucessores $w$ de $v$, de modo que $bc(v) = \sum_s \delta_s(v)$. O custo é
+$O(V(V + E)\log V)$ com pesos e $O(VE)$ sem pesos. Em redes grandes, Brandes e
+Pich~\cite{brandes2007} estimam a intermediação somando as dependências de apenas $k$
+origens sorteadas e multiplicando por $N/k$, o que dá uma estimativa não viesada a $k/N$
+do custo. O \emph{grau} de entrada e de saída, a contagem das arestas que chegam e saem
+de cada vértice, completa as medidas de centralidade usadas.
+
+\pendente{Demais algoritmos das features (A*, Yen, Tarjan, eficiência): donos das features,
+se couber no orçamento de 1 página.}

@@ -1,18 +1,20 @@
-"""Centralidades das paradas sobre G_P (F-MET: RF-MET-01, RF-MET-02, RF-MET-03).
+"""Centralidades das paradas sobre G_P (F-MET: RF-MET-01, RF-MET-02, RF-MET-03; RNF-06).
 
 Funciona sobre qualquer Grafo do núcleo; a feature usa G_P (docs/fontes/modelagem.md §3.4).
 Respeita vértices e arestas desativados (só usa o que Grafo.vizinhos devolve), então a
 F-RES pode recalcular as centralidades depois de uma falha sem reconstruir o grafo.
 
-Notação: V = número de vértices, E = número de arestas.
+Notação: V = número de vértices, E = número de arestas, k = origens sorteadas.
 
 estado: implementado
 """
 
 from __future__ import annotations
 
+import math
+import random
 from collections import deque
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 
 from transporte.grafo.grafo import Grafo
@@ -217,12 +219,28 @@ def intermediacao(
         O(V (V + E)), V BFS; a fase 2 custa O(V + E) por origem nos dois casos.
         Espaço O(V + E): a adjacência simplificada e as listas de uma origem por vez.
     """
+    ativos = [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
+    bc, _ = _somar_dependencias(g, ativos, ponderado, quadrados=False)
+    escala = _escala_normalizacao(len(ativos), normalizar)
+    return [x * escala for x in bc] if escala != 1.0 else bc
+
+
+def _somar_dependencias(
+    g: Grafo, origens: Sequence[int], ponderado: bool, quadrados: bool
+) -> tuple[list[float], list[float]]:
+    """Fases 1 e 2 do Brandes a partir de cada origem dada; devolve, por vértice, a soma
+    das dependências delta_s[v] sobre as origens s e, se `quadrados`, a soma dos quadrados
+    (para o erro padrão da estimativa amostrada).
+
+    Complexidade: tempo O(|origens| (V + E) log V) ponderado, O(|origens| (V + E)) sem
+    pesos; espaço O(V + E).
+    """
     n = g.num_vertices()
     adj = _adjacencia_simples(g, ponderado)
     fase1 = _caminhos_por_dijkstra if ponderado else _caminhos_por_bfs
-    bc = [0.0] * n
-    ativos = [v for v in range(n) if g.vertice_ativo(v)]
-    for s in ativos:
+    soma = [0.0] * n
+    soma_q = [0.0] * n if quadrados else []
+    for s in origens:
         ordem, preds, sigma = fase1(adj, s)
         delta = [0.0] * n
         # Fase 2: do mais distante para o mais próximo, cada w repassa a sua dependência
@@ -232,12 +250,114 @@ def intermediacao(
             for v in preds[w]:
                 delta[v] += sigma[v] * coef
             if w != s:
-                bc[w] += delta[w]
-    k = len(ativos)
-    if normalizar and k > 2:
-        escala = 1.0 / ((k - 1) * (k - 2))
-        bc = [x * escala for x in bc]
-    return bc
+                soma[w] += delta[w]
+                if quadrados:
+                    soma_q[w] += delta[w] * delta[w]
+    return soma, soma_q
+
+
+def _escala_normalizacao(n_ativos: int, normalizar: bool) -> float:
+    """1 / ((n - 1)(n - 2)) com normalizar e n > 2; senão 1 (decisão M4)."""
+    if normalizar and n_ativos > 2:
+        return 1.0 / ((n_ativos - 1) * (n_ativos - 2))
+    return 1.0
+
+
+@dataclass(frozen=True)
+class EstimativaIntermediacao:
+    """Intermediação estimada por amostragem de origens (RNF-06). Espaço O(V).
+
+    Atributos:
+        valores: estimativa de bc[v] para cada vértice; vértice desativado tem 0.
+        erro_padrao: erro padrão da estimativa de cada vértice, na mesma escala de
+            `valores`; 0 quando todas as origens entram (resultado exato).
+        tamanho_amostra: k, número de origens usadas.
+        tamanho_populacao: N, número de vértices ativos (origens possíveis).
+        semente: semente do sorteio, para reproduzir a amostra (RNF-07).
+    """
+
+    valores: list[float]
+    erro_padrao: list[float]
+    tamanho_amostra: int
+    tamanho_populacao: int
+    semente: int
+
+    @property
+    def exata(self) -> bool:
+        """True quando a amostra cobre todas as origens. O(1)."""
+        return self.tamanho_amostra == self.tamanho_populacao
+
+
+def estimar_intermediacao(
+    g: Grafo,
+    tamanho_amostra: int | None = None,
+    semente: int = 0,
+    ponderado: bool = True,
+    normalizar: bool = False,
+) -> EstimativaIntermediacao:
+    """Intermediação por amostragem de origens, com erro padrão (RNF-06; Brandes e Pich).
+
+    O Brandes exato soma, sobre todas as N origens s, a dependência delta_s[v] de cada
+    vértice. Aqui só k origens, sorteadas sem reposição, entram na soma, e a estimativa é
+    N vezes a média das k dependências: bc~[v] = (N / k) * soma delta_s[v]. Em média, sobre
+    todas as amostras possíveis, ela é igual ao valor exato (estimador não viesado). O erro
+    padrão de cada vértice é N * s_v / sqrt(k) * sqrt((N - k) / N), s_v = desvio amostral
+    das k dependências de v e (N - k) / N a correção de população finita: vai a 0 quando a
+    amostra cobre todas as origens.
+
+    Entradas:
+        g: grafo (G_P na feature).
+        tamanho_amostra: k; None ou k >= N usa todas as origens (exato, erro 0).
+        semente: semente do sorteio das origens (RNF-07).
+        ponderado, normalizar: como em `intermediacao`.
+    Saída: EstimativaIntermediacao.
+    Casos de borda: k <= 0 levanta ValueError; com k = 1 não há variância amostral e o
+        erro padrão sai como infinito (inf) em todo vértice com estimativa > 0; peso 0
+        com ponderado=True levanta ValueError, como em `intermediacao`.
+    Complexidade: tempo O(k (V + E) log V) ponderado, O(k (V + E)) sem pesos, mais O(V) do
+        sorteio; espaço O(V + E). Com k origens, custa k / N do exato.
+    """
+    if tamanho_amostra is not None and tamanho_amostra <= 0:
+        raise ValueError(f"tamanho_amostra deve ser positivo, recebido {tamanho_amostra}")
+    ativos = [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
+    populacao = len(ativos)
+    if tamanho_amostra is None or tamanho_amostra >= populacao:
+        origens: list[int] = ativos
+    else:
+        origens = sorted(random.Random(semente).sample(ativos, tamanho_amostra))
+    return _estimar_por_origens(g, origens, populacao, semente, ponderado, normalizar)
+
+
+def _estimar_por_origens(
+    g: Grafo,
+    origens: Sequence[int],
+    populacao: int,
+    semente: int,
+    ponderado: bool,
+    normalizar: bool,
+) -> EstimativaIntermediacao:
+    """Estimativa a partir de origens já escolhidas (separada do sorteio para os testes
+    conferirem a média sobre todas as amostras possíveis). O(k (V + E) log V)."""
+    k = len(origens)
+    soma, soma_q = _somar_dependencias(g, origens, ponderado, quadrados=k < populacao)
+    escala = _escala_normalizacao(populacao, normalizar)
+    if k == populacao:
+        return EstimativaIntermediacao(
+            [x * escala for x in soma], [0.0] * len(soma), k, populacao, semente
+        )
+    fator = populacao / k * escala
+    valores = [x * fator for x in soma]
+    erros: list[float] = []
+    fpc = (populacao - k) / populacao
+    for v in range(len(soma)):
+        media = soma[v] / k
+        if k == 1:
+            erros.append(math.inf if soma[v] > 0 else 0.0)
+            continue
+        # Variância amostral (n - 1); max(0, .) protege de -1e-17 por arredondamento.
+        var = max(0.0, (soma_q[v] - k * media * media) / (k - 1))
+        erros.append(populacao * escala * math.sqrt(var / k * fpc))
+    return EstimativaIntermediacao(valores, erros, k, populacao, semente)
 
 
 # --- RF-MET-03 ------------------------------------------------------------------------

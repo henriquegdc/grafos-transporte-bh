@@ -1,0 +1,50 @@
+@startuml atividade-comparar-baldeacoes
+' Diagrama de atividade de comparar_baldeacoes (F-BALD-2, RF-BAL-03).
+' Estado: implementado. Código: src/transporte/algoritmos/comparacao_baldeacoes.py.
+!pragma layout smetana
+skinparam dpi 150
+title Atividade · comparar_baldeacoes(ge, gl, origem, destino)
+
+start
+if (G_L e G_E de faixas diferentes?) then (sim)
+  :ValueError;
+  stop
+endif
+:mais rápido: trajeto_mais_rapido(ge) (F-ROTA);
+:mínimo k: menos_baldeacoes(gl) (F-BALD);
+if (algum dos dois é None?) then (sim)
+  :devolve None (sem trajeto);
+  stop
+endif
+if (mais rápido faz até k baldeações?) then (sim)
+  :ele mesmo é o de menos baldeações;
+  note right
+    inclui o caso em que faz menos que k:
+    no G_E as caminhadas se encadeiam
+  end note
+else (não)
+  partition "mais_rapido_com_limite(ge, origem, destino, k)" {
+    :estado (vértice, embarques), começa em (origem, 0);
+    repeat
+      :tira do heap o estado (u, e) de menor tempo;
+      if (u já fechado com menos embarques?) then (sim)
+        :descarta (dominado);
+      else (não)
+        :fecha u com e embarques;
+        :relaxa as arestas de u: o embarque
+        passa a e + 1, as outras mantêm e;
+        note right
+          estado com mais de k + 1
+          embarques não entra
+        end note
+      endif
+    repeat while (destino fechado ou heap vazio?) is (não)
+    ->sim;
+    :reconstrói os trechos como a F-ROTA;
+  }
+endif
+:devolve ComparacaoBaldeacoes:
+tempo a mais = tempo do limitado - tempo do mais rápido
+baldeações evitadas = baldeações do mais rápido - do limitado;
+stop
+@enduml

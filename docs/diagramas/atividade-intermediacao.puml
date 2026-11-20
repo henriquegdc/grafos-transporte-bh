@@ -1,0 +1,37 @@
+@startuml atividade-intermediacao
+' Diagrama de atividade da intermediação de Brandes, exata ou amostrada (F-MET, RF-MET-02,
+' RNF-06). Estado: implementado. Código: src/transporte/algoritmos/centralidade.py.
+skinparam dpi 150
+title F-MET: estimar_intermediacao(g, k, semente)
+
+start
+:Listar os N vértices ativos de G_P;
+if (k é None ou k >= N?) then (sim)
+  :origens = todos os ativos (exato);
+else (não)
+  :origens = k sorteados sem reposição\n(random.Random(semente));
+endif
+:Montar a adjacência simples:\nsem laços; paralelas viram a de menor peso (M3);
+if (alguma aresta com peso 0?) then (sim)
+  :ValueError (M2: o piso de 1 s do G_P evita);
+  stop
+endif
+repeat :Próxima origem s;
+  :Fase 1: Dijkstra a partir de s contando\nsigma[v] (caminhos mínimos) e preds[v];
+  :Fase 2: do mais distante ao mais próximo,\ndelta[v] += sigma[v] / sigma[w] * (1 + delta[w]);
+  :soma[v] += delta[v]; soma_q[v] += delta[v]²;
+repeat while (resta origem?) is (sim)
+-> não;
+if (amostra cobre todas as origens?) then (sim)
+  :valores = soma; erro = 0;
+else (não)
+  :valores = (N / k) * soma;
+  :erro[v] = N * s_v / raiz(k) * raiz((N - k) / N);
+endif
+if (normalizar?) then (sim)
+  :dividir valores e erros por (N - 1)(N - 2) (M4);
+endif
+:Devolver EstimativaIntermediacao;
+:Página: ranking (top k) e mapa de calor\n(valor / maior valor);
+stop
+@enduml

@@ -1,0 +1,42 @@
+@startuml sequencia-dijkstra
+' Diagrama de sequência do dijkstra do núcleo (P0-GRAFO, RF-GRF-02 e RF-GRF-08).
+' Estado: implementado. Código: src/transporte/grafo/{buscas,grafo,heap}.py.
+skinparam dpi 150
+title P0-GRAFO: dijkstra(g, origem, destino) com HeapMin e inserção preguiçosa
+
+actor "Consumidor\n(F-ROTA, F-ESPERA, F-RES...)" as C
+participant "buscas.dijkstra" as D
+participant "Grafo g" as G
+participant "HeapMin" as H
+
+C -> D : dijkstra(g, origem, destino)
+D -> G : vertice_ativo(origem)
+alt origem desativada
+  D --> C : Resultado com dist = INF em todos
+end
+D -> D : dist[origem] = 0; fechado = [False] * V
+D -> H : inserir(0, origem)
+loop enquanto o heap não está vazio
+  D -> H : extrair_min()
+  H --> D : (d, u)  // menor d; empate: menor u
+  alt fechado[u]
+    D -> D : descarta (entrada desatualizada)
+  else primeira extração de u
+    D -> D : fechado[u] = True
+    opt u == destino
+      D -> D : para (dist[destino] é definitiva)
+    end
+    D -> G : vizinhos(u)
+    G --> D : [(v, peso, a)] só arestas e vértices ativos
+    loop para cada (v, peso, a)
+      opt d + peso < dist[v]
+        D -> D : dist[v] = d + peso; pred[v] = u; pred_aresta[v] = a
+        D -> H : inserir(d + peso, v)  // sem diminuir chave
+      end
+    end
+  end
+end
+D --> C : Resultado(origem, dist, pred, pred_aresta)
+C -> D : caminho(r, destino) / caminho_arestas(r, destino)
+D --> C : vértices ou arestas, da origem ao destino
+@enduml

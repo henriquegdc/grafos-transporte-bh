@@ -8,10 +8,10 @@ skinparam sequenceMessageAlign left
 title Sequência · simular_falha(gp, falha, linhas_do_trecho, amostra, semente)
 hide footbox
 
-participant "Página Falhas\n(P0-UI)" as UI
+participant "Página Falhas\n(contrato P0-UI)" as UI
 participant "simular_falha" as S
 participant "componentes_fortes\n(Tarjan iterativo)" as T
-participant "eficiencia_global\n(provisória, F-EFI)" as E
+participant "eficiencia_global\n(F-EFI)" as E
 participant "aplicar_falha /\ndesfazer_falha" as F
 participant "Grafo de G_P\n(núcleo)" as G
 
