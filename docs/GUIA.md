@@ -372,6 +372,78 @@ amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).
 Limitações: G_P não tem espera nem horário (rede estrutural); caminhada em linha reta até
 300 m; a estimativa é mais precisa nas paradas mais centrais do que nas de valor pequeno.
 
+#### Proximidade (F-MET-2)
+
+Quão perto, em tempo, uma parada está das outras. Aparece como a métrica "Proximidade" na
+página Centralidades, com o mesmo controle de origens sorteadas da intermediação.
+
+```python
+from transporte.algoritmos.centralidade import proximidade, SAIDA, ENTRADA
+
+c = proximidade(g)                                   # exata, sentido de saída
+c = proximidade(g, ENTRADA)                          # o sentido do NetworkX
+c = proximidade(g, tamanho_amostra=50, semente=2026) # estimada com 50 origens
+```
+
+**Por que Wasserman e Faust.** A fórmula clássica (N − 1) / soma das distâncias supõe que v
+alcança todo mundo. G_P não é fortemente conexo: uma parada que alcança só três vizinhas, todas
+a 2 min, ficaria no topo. Com r = paradas alcançadas e D = soma dos tempos até elas,
+C(v) = (r / D) · (r / (N − 1)): o primeiro fator é o inverso do tempo médio até quem v alcança,
+o segundo é a fração da rede que v alcança. É o `wf_improved=True` do NetworkX.
+
+**Sentido.** Escolhemos a saída (de v para as outras: "daqui chego rápido à cidade?"). O
+NetworkX usa a entrada em grafo dirigido; a saída de v em G é a entrada de v no grafo reverso.
+Um Dijkstra a partir da origem s dá d(s, v) para todo v, que é a distância de entrada de v;
+por isso a saída roda os Dijkstras em `g.reverso()`.
+
+**Amostragem.** O exato faz um Dijkstra por parada. Com k origens, r e D somam só as origens
+sorteadas; como r / D não muda se r e D forem multiplicados pelo mesmo fator, a estimativa é
+(r_k / D_k) · (r_k / k_v), com k_v = origens sorteadas diferentes de v. Com k = N é a exata.
+Não há erro padrão: é uma razão, e serve para ordenar.
+
+**Exemplo** (0→1→2→4 e 0→3→2, pesos 1, N = 5): 0 alcança 1 e 3 (1), 2 (2) e 4 (3); r = 4,
+D = 7, C(0) = (4/7)(4/4) = 4/7. 2 só alcança 4: C(2) = (1/1)(1/4) = 1/4.
+
+**Complexidade.** Exata O(V (V + E) log V); com k origens O(k (V + E) log V), mais O(V + E) do
+grafo reverso. Espaço O(V + E).
+
+Limitações: sem erro padrão na estimativa; peso 0 é aceito (diferente do Brandes), e uma parada
+que só alcança outras a distância 0 fica com 0, como no NetworkX.
+
+#### Comunidades (F-MET-OPC)
+
+Grupos de paradas mais ligadas entre si do que com o resto. Aba "Comunidades" da página
+Centralidades: número de comunidades, modularidade, tabela das maiores e mapa com uma cor por
+comunidade.
+
+```python
+from transporte.algoritmos.comunidades import propagar_rotulos, modularidade
+
+c = propagar_rotulos(g, semente=2026)   # c.rotulos, c.quantidade, c.iteracoes, c.convergiu
+modularidade(g, c.rotulos)              # Q da partição
+c.tamanhos()                            # paradas por comunidade
+```
+
+**Propagação de rótulos** (Raghavan, Albert e Kumara, 2007). G_P é tratado como não dirigido e
+sem pesos (u e v são vizinhos se há aresta u → v ou v → u). Cada parada começa com o próprio
+rótulo. Em cada iteração, numa ordem embaralhada com `random.Random(semente)`, a parada adota o
+rótulo mais frequente entre as vizinhas, já vendo as mudanças desta iteração. Empate: se o
+rótulo atual está entre os mais frequentes, ele fica; senão vence o menor. Para quando uma
+iteração não muda nada ou em `max_iter` (100). Manter o atual no empate é o critério de parada
+do artigo; desempatar sempre pelo menor poderia oscilar entre dois rótulos empatados.
+
+**Modularidade.** Q = Σ_c [L_c / m − (d_c / 2m)²]: L_c = arestas dentro de c, d_c = soma dos
+graus de c, m = total de arestas. O segundo termo é a fração esperada ao acaso; Q = 0 quando
+tudo é uma comunidade só. Exemplo: dois triângulos ligados por uma aresta, m = 7: cada lado tem
+L = 3 e d = 7, Q = 2 (3/7 − 1/4) = 6/7 − 1/2 ≈ 0,36.
+
+**Complexidade.** O(V + E log E) para montar a vizinhança não dirigida (listas ordenadas, para
+o resultado não depender da ordem das arestas) e O(V + E) por iteração. Modularidade
+O(V + E log E). Espaço O(V + E).
+
+Limitações: o resultado depende da semente (a ordem de visita muda quem "ganha"); ignora o tempo
+das ligações; a caminhada liga paradas vizinhas e pode fundir comunidades próximas.
+
 ### 5.5 Eficiência da rede (F-EFI)
 
 A eficiência estrutural usa G_P, um vértice por parada e pesos em segundos. Para cada origem,
@@ -693,6 +765,22 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    de uma amostra para outra.
 5. **Por que G_P e não G_E?** A pergunta é sobre a parada física; em G_E a parada vira várias
    plataformas.
+
+#### Proximidade (F-MET-2)
+1. **Por que não usar (N − 1) / soma das distâncias?** G_P não é fortemente conexo; quem alcança
+   poucas paradas, todas perto, ficaria no topo. Wasserman e Faust multiplica por r / (N − 1).
+2. **Qual a diferença entre saída e entrada, e qual o NetworkX usa?** Saída: tempos de v até as
+   outras; entrada: das outras até v. O NetworkX usa a entrada; a saída é a entrada no reverso.
+3. **Por que a estimativa com k origens não precisa multiplicar por N/k?** Porque r / D é uma
+   razão: o fator some. Só o r / (N − 1) vira r_k / k_v.
+
+#### Comunidades (F-MET-OPC)
+1. **Por que manter o rótulo atual no empate?** É o critério de parada de Raghavan et al.;
+   desempatar sempre pelo menor poderia oscilar e nunca parar.
+2. **O que a modularidade mede?** Quanto as arestas dentro das comunidades passam da fração
+   esperada ao acaso; 0 com uma comunidade só.
+3. **Por que o resultado depende da semente?** A ordem de visita decide quem adota o rótulo
+   primeiro; com a mesma semente o resultado é sempre o mesmo.
 
 ### 5.5 Eficiência da rede (F-EFI)
 1. **Por que a eficiência global usa G_P?** Para medir a estrutura entre paradas sem incluir
