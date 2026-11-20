@@ -10,8 +10,9 @@
 
 ## Retomada
 - **Última sessão:** 18/11/2026, Henrique, branch `feat/F-ROTA-trajetos` (PR #57) (junto com F-ROTA-2 e F-ROTA-OPC): página Trajetos (RF-ROT-02), teste de integração na rede de teste, nova medição com as esperas da F-ESPERA, seção do relatório, GUIA e diagrama da página.
-- **Onde parou:** todas as etapas feitas; falta o PR ser aprovado e integrado. Página conferida no navegador pelo dono com o feed real em 18/11.
-- **Próximo passo:** revisão do PR por outro integrante; depois do merge, marcar a feature como concluída.
+- **Sessão 20/11/2026** (Henrique, com agente): ajustes da revisão do Rafael no #57. Merge da `main` com o conflito do GUIA §8 resolvido (linhas de 17/11, 18/11, 19/11 e a nova de 20/11, congelamento suspenso); `relatorio/secoes/F-ROTA.tex` encurtado para cerca de 0,75 página (A* em poucas linhas, detalhes no GUIA §8; Yen com o número medido; figura menor; "65,9 ms em média" e "90,8 ms contra 72,3 ms", mediana da busca contada, identificados como medições distintas); issue #66 do teste de integração.
+- **Onde parou:** todas as etapas feitas; falta o PR ser aprovado e integrado. Página conferida no navegador pelo dono com o feed real em 18/11; as mudanças de 20/11 na página foram testadas com AppTest, sem nova conferência no navegador.
+- **Próximo passo:** aprovação do PR #57 e merge; conferir a página no navegador com o feed; depois, marcar a feature como concluída.
 - **Arquivos tocados (18/11):** `src/transporte/interface/paginas/trajetos.py`, `tests/interface/test_pagina_trajetos.py`, `tests/algoritmos/test_integracao_trajeto_rede_teste.py`, `benchmarks/medir_modelo_rota.py`, `docs/diagramas/sequencia-trajetos-pagina.{puml,png}`, `docs/GUIA.md` §5.1, §5.7, §8 e §10, `relatorio/secoes/F-ROTA.tex`, `relatorio/figuras/trajetos-mapa.jpg`, este arquivo.
 - **Como testar:** `pytest` (801 verdes sem o feed em `dados/brutos/`; com o feed, `tests/interface/test_integracao_dados.py` falha por depender da fonte escolhida, teste de outro dono); `ruff check`. Medição: `PYTHONPATH=src python benchmarks/medir_modelo_rota.py dados/brutos/bhtrans.zip`. Navegador: `streamlit run src/transporte/interface/app.py`, página Trajetos.
 - **Bloqueios:** nenhum.
@@ -31,7 +32,7 @@ Trajeto mais rápido. Fecha:
 | Testes | concluído | 05/11: 26 verdes. Gabarito à mão (linha direta, baldeação, troca que vence a direta, espera longa que inverte a escolha, só a pé, caminhadas encadeadas, a pé nas pontas), bordas (origem = destino, inalcançável, parada inexistente, falha e reativação) e NetworkX em 15 redes aleatórias (300 consultas: 255 com trajeto, 116 com baldeação, 195 com caminhada). Mutação à mão: agrupar a pé, agrupar ônibus e o tempo total derrubam testes |
 | Desempenho (tempo medido) | concluído | 05/11: 75,8 ms por consulta em média (máximo 162,2 ms) no G_E real do pico da manhã; ver Resultados. RNF-05 (X = 1 s, R4) atendido |
 | Guia (explicação e quiz) | concluído | 18/11: GUIA §5.1 atualizado com a medição com esperas e a página |
-| Relatório | concluído | 18/11: `relatorio/secoes/F-ROTA.tex` com figura, resultado e limitação, incluindo F-ROTA-2 e F-ROTA-OPC; compila (o PDF completo ainda falha em `implementacao.tex`, de outro dono) |
+| Relatório | concluído | 18/11: `relatorio/secoes/F-ROTA.tex` com figura, resultado e limitação, incluindo F-ROTA-2 e F-ROTA-OPC; 20/11: encurtado a pedido da revisão (orçamento de 15 páginas) |
 | Vídeo | em andamento | 18/11: roteiro atualizado; falta gravar |
 
 ## Especificação
@@ -171,9 +172,9 @@ Atualizado em 18/11 (Henrique revisa):
 - ~~**PR empilhado:** o #39 tem base `feat/P0-MODELO-construtores`; integrar o #38 primeiro.~~ **feito em 09/11:** #38 integrado antes; o #39 passou a ter base `main`.
 - ~~**Script de medição:** `benchmarks/medir_modelo_rota.py` importa `transporte.dados`, que chega com o PR #42.~~ **feito:** o #42 está na `main`; o script rodou da branch sobre a `main` em 18/11.
 - ~~**Espera real:** refazer a medição de tempo total e baldeações quando a F-ESPERA publicar a tabela de esperas.~~ **feito em 18/11:** ver Resultados.
-- **PR:** aprovação de outro integrante; avisar que é código novo depois do congelamento de 15/11.
-- **Para o Arthur ou o Miguel:** `tests/interface/test_integracao_dados.py:59` espera o dia 2026-11-04 da rede de teste, mas com o feed em `dados/brutos/` o app escolhe `bhtrans.zip` e o teste falha. Sugestão: fixar `listar_fontes` com monkeypatch no teste.
-- **Para o dono do `implementacao.tex`:** `G_P` e `G_E` fora do modo matemático na linha 11 interrompem a compilação do relatório ("Missing $ inserted").
+- **PR #57:** revisão do Rafael (19/11) atendida em 20/11; falta a aprovação e o merge. ~~Avisar que é código novo depois do congelamento de 15/11.~~ **resolvido em 20/11:** o grupo suspendeu o congelamento (GUIA §8).
+- **Para o Arthur ou o Miguel:** `tests/interface/test_integracao_dados.py:59` espera o dia 2026-11-04 da rede de teste, mas com o feed em `dados/brutos/` o app escolhe `bhtrans.zip` e o teste falha. Sugestão: fixar `listar_fontes` com monkeypatch no teste. Issue #66 aberta em 20/11.
+- ~~**Para o dono do `implementacao.tex`:** `G_P` e `G_E` fora do modo matemático na linha 11 interrompem a compilação do relatório ("Missing $ inserted").~~ **corrigido pelo #54.**
 - **Para o Arthur (cosmético):** nos nomes das camadas do mapa (`mapa.py`), tempos abaixo de 60 s saem crus, como "29.4047 s".
 
 ### ~~Decisão a tomar~~ Decidida em 05/11/2026: R4 aceita pela recomendação; registrada no `docs/GUIA.md` §8 e no `docs/fontes/REQUISITOS.md` (RNF-05)
@@ -199,3 +200,6 @@ Atualizado em 18/11 (Henrique revisa):
 ### Sessão 09/11/2026: branch atualizada por merge com a `main` (que já tem o #38), conflito do GUIA §8 resolvido com as linhas dos dois lados; "intervalos" da F-ESPERA trocado por "tabela de esperas" aqui e no GUIA §5.1; 502 testes na suíte, hook verde.
 ### Merge 09/11/2026: PR #39 integrado na `main`, sem aprovação formal no GitHub (decisão do Henrique).
 ### Sessão 18/11/2026: página Trajetos (RF-ROT-02) com F-ROTA-2 e F-ROTA-OPC na branch `feat/F-ROTA-trajetos` (PR #57); teste de integração na rede de teste; medição com as esperas da F-ESPERA (65,9 ms por consulta, tempo mediano 61,1 min); seção do relatório, GUIA e diagrama da página; conferência no navegador pelo dono.
+### Revisão 19/11/2026: Rafael revisa o #57 (mesclado com a `main`, suíte verde, relatório com 17 páginas): pede conflito do GUIA §8, registro do congelamento, Yen medido no feed real e `F-ROTA.tex` menor.
+### Decisão 20/11/2026: o grupo suspende o congelamento; todas as desejáveis e opcionais entram (GUIA §8).
+### Sessão 20/11/2026: ajustes da revisão (merge da `main`, `F-ROTA.tex` encurtado, issue #66); ver F-ROTA-2 e F-ROTA-OPC.

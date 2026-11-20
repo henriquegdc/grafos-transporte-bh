@@ -9,9 +9,9 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 18/11/2026 (Henrique, com agente).
-- **Onde parou:** código, testes e medições prontos na branch `feat/F-ROTA-trajetos` (PR #57), ainda sem commit; decisão do A* registrada em Resultados. Começou depois do congelamento de 15/11 (o dono decidiu fazer mesmo assim).
-- **Próximo passo:** revisão do PR (junto com F-ROTA e F-ROTA-OPC) e merge. GUIA §5.7.1, seção no `relatorio/secoes/F-ROTA.tex` e roteiro feitos em 18/11.
+- **Última sessão:** 20/11/2026 (Henrique, com agente): ajustes da revisão do Rafael no PR #57.
+- **Onde parou:** revisão atendida e publicada na branch `feat/F-ROTA-trajetos` (merge da `main`). Nesta rodada: conjunto de fechados em `_buscar` (contagem exata de expandidos), comparação Dijkstra × A* guardada na sessão por (rede, faixa, origem, destino), aviso quando o ponto fica além do raio de caminhada, parágrafo do A* no `F-ROTA.tex` reduzido (detalhes no GUIA §8). O grupo suspendeu o congelamento em 20/11 (GUIA §8).
+- **Próximo passo:** aprovação do PR #57 e merge; depois, marcar como concluída.
 - **Arquivos tocados:** `src/transporte/algoritmos/a_estrela.py`, `src/transporte/interface/paginas/trajetos.py`, `tests/algoritmos/test_a_estrela.py`, `tests/interface/test_pagina_trajetos.py`, `benchmarks/medir_rota_extensoes.py`.
 - **Como testar:** `pytest tests/algoritmos/test_a_estrela.py tests/interface/test_pagina_trajetos.py`; medição: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`; navegador: `streamlit run src/transporte/interface/app.py`, página Trajetos.
 - **Bloqueios:** nenhum.
@@ -141,6 +141,10 @@ Por que o ganho é pequeno (diagnóstico com um script avulso sobre o mesmo G_E)
 - interpolar por distância os horários repetidos no GTFS, no P0-MODELO: é o conserto certo do dado, mas muda a decisão M2 e os números das outras features depois do congelamento de 15/11. O efeito no trajeto é pequeno (inferência pelo mecanismo, não medida): o tempo do trecho de 1 s fica somado ao trecho vizinho, então quem atravessa os dois no mesmo ônibus paga o tempo certo, e o erro só aparece para quem embarca ou desembarca entre eles (181 de 36.386 arestas de viagem). Fica registrado como trabalho futuro;
 - ALT (A* com pontos de referência e desigualdade triangular): enxergaria as esperas, mas é um algoritmo novo, fora do prazo.
 
+Nota sobre as estatísticas: "90,8 ms contra 72,3 ms" é a **mediana** do tempo da busca contada (A* e Dijkstra), desta medição; o "65,9 ms em média" do `F-ROTA.tex` é outra medição (`benchmarks/medir_modelo_rota.py`, 200 consultas seguidas do `trajeto_mais_rapido` com `medir`, ver feature-F-ROTA).
+
+**Reexecução com o conjunto de fechados em `_buscar`, 20/11/2026.** Mesmo comando, no commit `3dab370`, mesmo feed e máquina. Contagens: expandidos do Dijkstra com mediana 17.010, p95 32.840 e máximo 35.543 (era 35.544: um vértice contado duas vezes, que o conjunto de fechados elimina); A* com mediana 16.949, p95 32.810, máximo 35.537; razão A*/Dijkstra 99,7 / 99,9 / 100,0%; 0 divergências de custo em 200; experimento sem o piso igual (90,1 / 97,4 / 99,5%, 0 de 200 piores). Tempos (mediana Dijkstra 65,8 ms, A* 83,0 ms) com outro benchmark rodando ao mesmo tempo: **medição final pendente**, os números do relatório continuam os de 18/11. Refazer com a máquina livre: `python benchmarks/medir_rota_extensoes.py dados/brutos/bhtrans.zip`.
+
 | Medida | Valor |
 |---|---|
 | `parada_mais_proxima`, 1.000 pontos sorteados na caixa das paradas | 4,90 ms por ponto |
@@ -158,7 +162,7 @@ Rascunho de 18/11 (Henrique revisa):
 4. **Resultado e limitação (30 s):** mesmo custo do Dijkstra em 200 de 200 pares, mas 99,7% dos vértices expandidos e mais lento: trechos de 1 s no GTFS dão velocidade máxima de 1.258 m/s, e a h não vê as esperas. Uma velocidade realista podaria mais, mas perderia a garantia de ótimo.
 
 ## Pendências
-- PR (junto com F-ROTA e F-ROTA-OPC), avisando o grupo de que é código novo depois do congelamento de 15/11.
+- PR #57 (junto com F-ROTA e F-ROTA-OPC): revisão atendida em 20/11; falta aprovação e merge. ~~Avisar que é código novo depois do congelamento.~~ **resolvido em 20/11:** congelamento suspenso pelo grupo (GUIA §8).
 - Trabalho futuro, fora deste trabalho: interpolar no P0-MODELO os horários repetidos do GTFS, o que baixaria o vmax e daria ganho real ao A*.
 
 ## Timeline
@@ -167,3 +171,6 @@ Rascunho de 18/11 (Henrique revisa):
 ### Implementação 18/11/2026: A*, Dijkstra contado e parada mais próxima, com testes e página; medição no feed de 18/11.
 ### Decisão 18/11/2026: A* admissível mantido, ganho baixo relatado como resultado (alternativas em Resultados).
 ### Sessão 18/11/2026: conferência no navegador pelo dono; GUIA §5.7.1, §8 e §10, diagrama da página, seção no `F-ROTA.tex` e roteiro.
+### Revisão 19/11/2026: Rafael revisa o #57: código correto; pede resolver o conflito do GUIA §8, registrar a exceção ao congelamento, encurtar o `F-ROTA.tex` e dizer qual estatística é "90,8 ms contra 72,3 ms" (mediana do tempo da busca contada, `medir_rota_extensoes.py`; o "65,9 ms em média" é outra medição, `medir_modelo_rota.py`).
+### Decisão 20/11/2026: o grupo suspende o congelamento; todas as desejáveis e opcionais entram (GUIA §8).
+### Sessão 20/11/2026: merge da `main`; fechados em `_buscar`; cache da comparação; aviso de ponto longe da rede; `F-ROTA.tex` encurtado.

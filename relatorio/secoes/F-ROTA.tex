@@ -2,55 +2,43 @@
 % F-ROTA-OPC (Yen) para caber no orçamento de páginas. Dono: Henrique.
 % Fontes: docs/plano-de-desenvolvimento/features/feature-F-ROTA.md, feature-F-ROTA-2.md e
 % feature-F-ROTA-OPC.md (Como funciona e Resultados); números de
-% benchmarks/medir_modelo_rota.py e benchmarks/medir_rota_extensoes.py em 18/11/2026.
+% benchmarks/medir_modelo_rota.py e benchmarks/medir_rota_extensoes.py em 18/11/2026 e de
+% benchmarks/medir_alternativos_linhas.py em 20/11/2026. Detalhes do A*: docs/GUIA.md §8.
 % Figura: mapa da página Trajetos (mapa_trajeto) para dois pontos escolhidos por coordenadas.
 \subsection{Trajeto mais rápido}\label{sec:F-ROTA}
 
 Dadas duas paradas e uma faixa horária, a ferramenta acha o trajeto que chega mais cedo em
-média, somando caminhada, espera e viagem, e o mostra no mapa por trecho: a pé, espera e
-linha usada, com os tempos (Figura~\ref{fig:trajetos-mapa}). A visão é $G_E$: como trocar de
-linha obriga a desembarcar e pagar um novo embarque, que pesa a espera $H/2$ da nova linha
-(F-ESPERA), a baldeação vira custo comum do caminho e basta um Dijkstra com o heap próprio,
-sem penalidade arbitrária. A busca para quando o destino sai do heap, o caminho é
-reconstruído por arestas, porque o tipo de cada passo está na aresta, e as arestas são
-agrupadas em trechos. O custo é $O((V + E)\log V)$ por consulta.
+média, somando caminhada, espera e viagem, e o mostra no mapa por trecho
+(Figura~\ref{fig:trajetos-mapa}). A visão é $G_E$: trocar de linha obriga a desembarcar e
+pagar um novo embarque, que pesa a espera $H/2$ da nova linha (F-ESPERA), então a baldeação
+vira custo comum do caminho e basta um Dijkstra com o heap próprio, sem penalidade
+arbitrária, em $O((V + E)\log V)$ por consulta.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.46\linewidth]{trajetos-mapa}
-\caption{Trajeto do centro (Av.\ Afonso Pena) a Venda Nova no $G_E$ do pico da manhã,
-escolhido por coordenadas: linha 4103, troca a pé (círculo laranja) e linha 63; 50~min~09~s
-entre as paradas e 51~min~29~s de porta a porta, com 1 baldeação.}
+\includegraphics[width=0.38\linewidth]{trajetos-mapa}
+\caption{Trajeto do centro a Venda Nova no $G_E$ do pico da manhã, escolhido por
+coordenadas: linha 4103, troca a pé (círculo laranja) e linha 63; 50~min~09~s entre as
+paradas e 51~min~29~s de porta a porta.}
 \label{fig:trajetos-mapa}
 \end{figure}
 
-No feed real (18/11/2026, 9.660 paradas, 698 padrões), o $G_E$ do pico da manhã tem
-$V = 46.102$ e $E = 209.025$. Em 200 pares de paradas sorteados, a consulta levou
-$65{,}9$~ms em média e $129{,}6$~ms no pior caso (Intel Core i5-13600KF), dentro do limite
-de 1~s do RNF-05; todos tiveram trajeto, com tempo mediano de 61,1~min e 0 (30 pares),
-1 (89), 2 (65) e 3 ou mais (16) baldeações, e o custo coincidiu com o do NetworkX nos 200.
+No feed real (18/11/2026), o $G_E$ do pico da manhã tem $V = 46.102$ e $E = 209.025$. Em 200
+pares sorteados, a consulta com o Dijkstra da F-ROTA levou $65{,}9$~ms em média e
+$129{,}6$~ms no pior caso (Intel Core i5-13600KF), dentro do limite de 1~s do RNF-05; o
+custo coincidiu com o do NetworkX nos 200.
 
-\emph{Ponto no mapa e A*.} Um clique ou um par de coordenadas é ligado à parada mais próxima
-por varredura linear, $O(V)$, em 4,90~ms por ponto, e a caminhada até ela entra no tempo
-porta a porta. A página também calcula o trajeto com A*, usando como estimativa a distância
-em linha reta até o destino dividida pela maior velocidade entre as arestas de $G_E$. Essa
-estimativa é consistente, $h(u) \le w(u,v) + h(v)$ pela desigualdade triangular, e o A*
-devolveu o mesmo custo do Dijkstra nos 200 pares. O ganho, porém, foi quase nulo: expandiu
-99,7\% dos vértices do Dijkstra (mediana) e levou 90,8~ms contra 72,3~ms, porque paga uma
-distância por vértice. Dois motivos: 181 trechos com o mesmo horário em duas paradas
-seguidas no GTFS recebem o piso de 1~s e levam a velocidade máxima a 1.258~m/s, o que deixa
-a estimativa muito pequena; e ela não enxerga as esperas, que são boa parte do custo. Usar
-uma velocidade realista daria mais poda, mas tiraria a garantia de ótimo; o grupo manteve o
-A* admissível e registra a comparação como resultado.
+\emph{Ponto no mapa e A*.} Um clique é ligado à parada mais próxima por varredura linear,
+$O(V)$. O A* usa $h$ = distância em linha reta $/\,v_{\max}$, consistente pela desigualdade
+triangular, e devolveu o mesmo custo do Dijkstra nos 200 pares, mas expandiu 99,7\% dos
+vértices (mediana) e, numa segunda medição com as duas buscas contadas, teve mediana de
+90,8~ms contra 72,3~ms do Dijkstra: 181 trechos com horário repetido no GTFS ficam no piso
+de 1~s e levam $v_{\max}$ a 1.258~m/s, o que deixa $h$ quase nula.
 
-\emph{Trajetos alternativos.} O algoritmo de Yen lista os $k$ trajetos sem ciclo de menor
-tempo: cada vértice do trajeto anterior vira ponto de desvio, as saídas já usadas a partir
-da mesma raiz são desativadas pela API de falhas do núcleo, e um A* completa o desvio. O
-custo é $O(k\,n\,(V + E)\log V)$, com $n$ vértices no maior trajeto, e o tempo cresce com
-$k$: mediana de 2,3~s com $k = 3$ e 4,6~s com $k = 5$ em 20 pares, até 25,4~s, por isso a
-página só calcula sob demanda. O resultado coincidiu com o do NetworkX em redes aleatórias.
-
-\emph{Limitações:} o tempo é o esperado para quem chega à parada num instante qualquer da
-faixa (espera $H/2$), não o de um horário de saída exato; a caminhada é em linha reta, e o
-ponto escolhido no mapa só é ligado à parada mais próxima. Alternativos distintos diferem em
-pelo menos uma aresta de $G_E$ e podem ser variações pequenas do mesmo trajeto.
+\emph{Trajetos alternativos.} O Yen, com desvios em A* e as arestas desligadas pela API de
+falhas, lista os $k$ trajetos sem ciclo de menor tempo em $O(k\,n\,(V + E)\log V)$. No feed
+real, com $k = 5$ em 8 pares sorteados, os 5 caminhos usaram a mesma sequência de linhas em
+todos os pares, mudando só onde trocar ou o trecho a pé; a página mostra então um trajeto
+por sequência de linhas, tirando até $4k$ caminhos do Yen, e mesmo assim só 2 dos 8 pares
+ganharam uma segunda sequência. Limitações: o tempo é o esperado para quem chega num
+instante qualquer da faixa ($H/2$), e a caminhada é em linha reta.

@@ -526,8 +526,24 @@ reativar só o que a função desativou, num `finally`, para não desfazer uma f
 desvios, porque remover arestas não aumenta a velocidade de nenhuma restante e a h continua
 consistente.
 
-Limitações: alternativos diferem em pelo menos uma aresta de G_E e podem ser variações pequenas do
-mesmo trajeto; falta um filtro de diferença mínima.
+**Filtro por sequência de linhas** (20/11, revisão do #57). Para o Yen, caminhos diferentes em uma
+aresta de G_E são distintos, e no feed real os k primeiros costumam ser o mesmo trajeto com a troca
+uma parada antes ou outro trecho a pé. A página usa `alternativos_por_linhas`, que consome o Yen
+como gerador e guarda o mais rápido de cada sequência de `linha_id`, até k sequências ou 4·k
+caminhos; a coluna "Variantes" conta os caminhos repetidos.
+
+```python
+from transporte.algoritmos.alternativos import alternativos_por_linhas
+
+linha_do_padrao = {pid: p.linha_id for pid, p in rede.padroes.items()}
+alts = alternativos_por_linhas(ge, origem, destino, 5, linha_do_padrao, coords, vmax)
+```
+
+Limitação medida (20/11, k = 5, 8 pares, `benchmarks/medir_alternativos_linhas.py`): o Yen puro deu
+uma só sequência de linhas nos 8 pares, e o filtro, com 20 caminhos por par, achou uma segunda em só
+2 deles, a um custo de 4,4 a 4,9 vezes o tempo do Yen puro. Enumerar em ordem de custo passa por
+muitas variantes antes da primeira linha diferente; proibir a linha já usada acharia outras opções
+mais rápido, mas é outro algoritmo (trabalho futuro).
 
 ## 6. Interface (Arthur)
 
