@@ -1,0 +1,20 @@
+% Subseção da F-MET-2 (proximidade, RF-MET-04). RF-MET-05 (intermediação amostrada) está
+% na Seção F-MET. Fontes: docs/plano-de-desenvolvimento/features/feature-F-MET-2.md.
+% Números do feed real: python benchmarks/medir_metricas_extensoes.py
+% dados/brutos/bhtrans.zip --repeticoes 3 (20/11/2026;
+% benchmarks/resultados/metricas-extensoes-2026-11-20.json).
+\subsection{Proximidade}\label{sec:F-MET-2}
+
+A proximidade diz quão perto, em tempo, uma parada está das outras, sobre $G_P$. Como $G_P$
+não é fortemente conexo, usamos a correção de Wasserman e Faust: com $r$ paradas alcançadas
+a partir de $v$ e soma $D$ dos tempos até elas, $C(v) = (r/D)\,(r/(N-1))$; o segundo fator
+pune quem alcança só parte da rede. Usamos o sentido de saída (da parada para a cidade); o
+NetworkX usa o de entrada, que é o de saída no grafo reverso. O exato é um Dijkstra por
+parada, $O(V(V+E)\log V)$; a página usa $k$ origens sorteadas, como na intermediação, e
+estima $C(v)$ pela razão $r_k/D_k$, em $O(k(V+E)\log V)$. Nos testes, a proximidade exata
+coincidiu com a do NetworkX em 15 grafos aleatórios com falhas, nos dois sentidos. No feed
+real ($V = 9{.}660$, $E = 122{.}799$), com $k = 50$ origens a estimativa leva $2{,}2$~s
+(média de 3 execuções; $8{,}6$~s com $k = 200$), e as cinco paradas de maior proximidade ficam na
+Avenida Presidente Antônio Carlos, as mesmas quatro primeiras com $k$ de 25 a 200.
+\emph{Limitação:} a estimativa não traz erro padrão; serve para ordenar as paradas, e o
+valor de uma parada com poucas origens alcançadas oscila mais.
