@@ -13,6 +13,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 from transporte.algoritmos.baldeacoes import menos_baldeacoes
+from transporte.algoritmos.trajeto import ESPERA, ONIBUS
 from transporte.interface.paginas import baldeacoes
 
 LAT0, LON0 = -19.92, -43.94
@@ -281,4 +282,48 @@ def test_render_compara_so_numa_faixa() -> None:
     assert metricas["Tempo a mais"] == "25.0 min"
     assert metricas["Baldeações evitadas"] == "1"
     assert metricas["Por baldeação evitada"] == "25.0 min"
-    assert len(app.dataframe) == 2  # trechos da F-BALD e a comparação
+    assert len(app.dataframe) == 3  # trechos da F-BALD, comparação e não dominados
+
+
+# --- F-BALD-OPC (RF-BAL-04): trajetos não dominados -------------------------------------
+
+
+def test_tabela_fronteira_e_mapa_do_escolhido() -> None:
+    from transporte.algoritmos.comparacao_baldeacoes import trajetos_nao_dominados
+
+    rede = _rede_com_lenta()
+    ge = baldeacoes.ge_da_faixa(rede, "pico_manha", {})
+    # LENTA: 300 + 2400 = 2700 s, 0 baldeação; L1 + L2: 1200 s, 1 baldeação.
+    f = trajetos_nao_dominados(ge, "A", "C")
+    tabela = baldeacoes.tabela_fronteira(rede, f)
+    assert [(x["Trajeto"], x["Baldeações"], x["Tempo total"], x["Linhas"]) for x in tabela] == [
+        ("1", "0", "45.0 min", "Linha Lenta"),
+        ("2", "1", "20.0 min", "Linha 1 → Linha 2"),
+    ]
+    m = baldeacoes.para_mapa(f[1])
+    assert ESPERA in {t.tipo for t in f[1].trechos}
+    assert [t.tipo for t in m.trechos] == [ONIBUS, ONIBUS]  # as esperas saem
+    assert m.padroes() == ["P1", "P2"] and m.trocas() == [("B", "B")]
+    elementos = _descendentes(baldeacoes.mapa_trajeto(rede, m))
+    assert len([e for e in elementos if isinstance(e, folium.PolyLine)]) == 2
+    assert len([e for e in elementos if isinstance(e, folium.CircleMarker)]) == 1
+
+
+def test_render_lista_nao_dominados_e_troca_o_mapa() -> None:
+    app = AppTest.from_function(_script_da_pagina, kwargs={"com_lenta": True})
+    app.run(timeout=30)
+    app.selectbox(key="f-bald-origem").set_value("A")
+    app.selectbox(key="f-bald-destino").set_value("C")
+    app.selectbox[0].set_value("pico_manha")
+    app.run(timeout=30)
+    assert not app.exception
+    assert any(s.value == "Trajetos não dominados" for s in app.subheader)
+    fronteira = app.dataframe[2].value
+    assert list(fronteira["Baldeações"]) == ["0", "1"]
+    assert list(fronteira["Tempo total"]) == ["45.0 min", "20.0 min"]
+    escolha = app.selectbox(key="f-bald-opc-escolha")
+    assert escolha.value == 0
+    escolha.set_value(1)
+    app.run(timeout=30)
+    assert not app.exception
+    assert app.selectbox(key="f-bald-opc-escolha").value == 1

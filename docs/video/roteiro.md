@@ -3,13 +3,13 @@
 Item H9 do `plano.md`; formato do plano de projeto §14.4. Gravação em 20/11/2026, à noite, com o
 app rodando sobre o `main`. Duração alvo: **15 min 15 s** (exigido: 12 a 18 min).
 
-Fontes: a seção "Roteiro do vídeo" e a seção de resultados de cada
-`docs/plano-de-desenvolvimento/features/feature-*.md`, incluindo as versões dos PRs abertos em
-20/11. Regras deste roteiro:
+As cenas usam o roteiro e os resultados dos arquivos em
+`docs/plano-de-desenvolvimento/features/`. Cada resultado informa o feed da medição.
 
-- Todo número citado está num arquivo de feature, com o comando que o gerou. Entre parênteses,
-  o feed da medição. Número marcado **a confirmar** ainda não está no arquivo da feature no
-  `main`; só citar depois de conferido.
+- As cenas 7, 8, 18 e 19 dependem dos PRs [#67](https://github.com/henriquegdc/grafos-transporte-bh/pull/67), [#69](https://github.com/henriquegdc/grafos-transporte-bh/pull/69) e
+  [#70](https://github.com/henriquegdc/grafos-transporte-bh/pull/70). Grave cada cena só quando a opção correspondente estiver disponível
+  na `main`. Se as quatro forem omitidas, o roteiro dura **13 min 15 s**. Ajuste os tempos
+  de início na montagem.
 - O app grava sobre o feed de 18/11 (`dados/brutos/bhtrans.zip`, SHA-256 `8cb0a498…f6d6`).
   Medições feitas em feeds anteriores (05/11, 11/11, 16/11) podem mostrar outro valor na tela.
   Nesses casos, a fala cita o número do arquivo da feature como "medido no relatório" e não
@@ -83,8 +83,8 @@ Thiago 2:15, Arthur 2:10, Caio 2:00 (mais a parte dele na cena 24). Todos falam.
 - **Números:** G_P com V = 9.660 e E = 122.799; G_E do pico da manhã com V = 46.102 e
   E = 209.025 (feed de 18/11, F-ROTA). Cerca de 0,3 s por visão (G_E do pico em
   341,9 ms ± 13,1 ms, feed de 05/11, P0-MODELO). G_L do pico com V = 501 e E = 85.606 (feed de
-  11/11, F-BALD). G_T com 9.659 vértices e 146.563 arestas (feed de 05/11, **a confirmar** após o
-  merge da F-ESPERA-2).
+  11/11, F-BALD). Após o merge da F-ESPERA-2, citar também
+  G_T com 9.659 vértices e 146.563 arestas (feed de 05/11, F-ESPERA-2).
 - **Limitação:** um tempo de viagem para o dia todo; a partida conta na faixa em que ocorre (D10).
 
 ## Pergunta 1 · Qual o trajeto mais rápido? (Henrique)
@@ -115,23 +115,23 @@ Thiago 2:15, Arthur 2:10, Caio 2:00 (mais a parte dele na cena 24). Todos falam.
     logo o trajeto é o ótimo.
 - **Números:** paradas a 68 m e 28 m; 51 min 29 s porta a porta (feed de 18/11). A* com o mesmo
   custo do Dijkstra em 200 de 200, mas expande 99,7% dos vértices (mediana) e é mais lento
-  (90,8 contra 72,3 ms, medianas): trechos de 1 s no GTFS dão velocidade máxima de 1.258 m/s, e a
+  (81,0 contra 64,1 ms, medianas da medição de 20/11): trechos de 1 s no GTFS dão velocidade máxima de 1.258 m/s, e a
   h não vê as esperas.
 - **Limitação:** velocidade realista podaria mais, mas perderia a garantia de ótimo.
 
 ### Cena 5 · 03:00 · 0:30 · F-ROTA-OPC
 
-- **Tela:** Trajetos, mesmo par da cena 3; "Quantos trajetos (k)" = 3; "Listar trajetos
-  alternativos" (já calculado antes, ver checklist). Tabela em ordem de tempo, coluna
-  "Variantes", e o mapa de um alternativo em "Trajeto no mapa".
+- **Tela:** Trajetos, pico da manhã, origem 14791479, destino 14788103, k = 5. Acione
+  "Listar trajetos alternativos" antes de gravar. Mostre a coluna "Variantes" e escolha
+  a segunda sequência em "Trajeto no mapa", se ela aparecer no feed carregado.
 - **Fala:**
   - O mais rápido pode ter uma troca a mais ou uma linha que a pessoa evita.
   - Yen: cada vértice do trajeto anterior vira desvio; desativa as saídas já usadas, busca o resto
     com A* e reativa. O(k · n · (V + E) log V); por isso só no botão.
-- **Números:** mediana de 2,3 s com k = 3 e 4,6 s com k = 5, até 25 s (feed de 18/11). Nos 8 pares
-  medidos, os 5 primeiros caminhos do Yen tinham uma só sequência de linhas; agrupando por
-  sequência, com 20 caminhos, 2 dos 8 pares ganharam outra.
-- **Limitação:** alternativos podem diferir só na parada da troca ou num trecho a pé.
+- **Números (feed de 18/11, medição de 20/11):** Yen puro com medianas de 3,1 s para k = 3
+  e 4,3 s para k = 5, com máximo de 32,7 s. Para k = 5, o filtro examinou até dez caminhos
+  por par e encontrou uma segunda sequência em um dos oito pares, o da demonstração.
+- **Limitação:** o teto da busca pode deixar outras sequências de fora.
 
 ## Pergunta 2 · Quanto se espera? (Miguel)
 
@@ -159,22 +159,23 @@ Thiago 2:15, Arthur 2:10, Caio 2:00 (mais a parte dele na cena 24). Todos falam.
     instante de chegada, com busca binária da próxima partida (rede FIFO).
   - Monte Carlo: sorteia horários de saída numa janela e mostra a distribuição do total e da
     espera. Perder uma partida muda a espera.
-- **Números (a confirmar após o merge, e no feed de 18/11):** 23,67 min pelo quadro contra
-  40,24 min por H/2 (1,87 min de espera contra 15,34), feed de 05/11; consulta em 6,98 ms;
-  G_T em 318,55 ms; 30 sorteios em 279,31 ms (macOS, branch `feat/F-ESPERA-2-horarios`).
+- **Números (feed de 05/11, serviço de 04/11):** 23,67 min pelo quadro e 40,24 min por H/2,
+  com esperas de 1,87 e 15,34 min. Médias em macOS, medidas em 20/11
+  na F-ESPERA-2: consulta em 6,98 ms, G_T em 318,55 ms e 30 sorteios em 279,31 ms.
 - **Limitação:** horário programado, não o real do ônibus.
 
 ### Cena 8 · 05:05 · 0:25 · F-ESPERA-OPC
 
-Ainda sem roteiro no arquivo da feature; cena montada pelo RF-ESP-06 e pelo item M2 do plano.
-
-- **Tela:** Espera; escolher uma linha; dobrar o intervalo; tabela antes e depois (espera da
-  linha e tempo de pares sorteados).
+- **Tela:** Espera, "Simular alteração do intervalo de uma linha". Use a linha 561787,
+  pico da manhã, multiplicador 2, dez pares e semente 42. Clique em "Comparar cenários"
+  e mostre as tabelas com as esperas e os tempos por par.
 - **Fala:**
   - E se a linha passar com metade da frequência? O intervalo da linha muda na tabela antes de
     calcular as esperas e montar o G_E; os pares são recalculados.
-  - Dobrar o intervalo dobra a espera da linha; pares que não usam a linha não mudam.
-- **Números:** **a confirmar após o merge** (linha usada, espera antes e depois, pares afetados).
+  - Dobrar o intervalo dobra a espera estimada dos padrões afetados. O melhor tempo de um
+    par pode ficar igual se houver um trajeto com o mesmo custo que dispense esses padrões.
+- **Números (serviço de 04/11):** a espera no padrão passou de 566,67 s a 1.133,33 s.
+  A comparação completa levou 1,504 s em média.
 
 ## Pergunta 3 · Como trocar menos de ônibus? (Rafael)
 
@@ -289,26 +290,25 @@ Ainda sem roteiro no arquivo da feature; cena montada pelo RF-ESP-06 e pelo item
 
 ### Cena 18 · 10:50 · 0:35 · F-EFI-2
 
-Ainda sem roteiro no arquivo da feature; cena montada pelos RF-EFI-03 e RF-EFI-04 e pelo item M3.
-
-- **Tela:** Eficiência; isócrona a partir de uma parada, faixas de 15, 30, 45 e 60 min no mapa;
-  tabela ou mapa dos piores índices de desvio.
+- **Tela:** Eficiência, modo "Isócronas", parada 14788851 no pico da manhã. Compare os
+  alcances ao calcular com os limites de 15 e 60 min. Abra "Índice de desvio" com 12 pares
+  e mostre a tabela "Pares com maior desvio".
 - **Fala:**
   - Isócrona: Dijkstra no G_E com limite T a partir da parada. Índice de desvio: distância na
     rede dividida pela distância em linha reta (e tempo por km em linha reta).
-- **Números:** **a confirmar após o merge** (parada usada, paradas alcançadas por faixa, pior
-  desvio, tempo medido).
+- **Números (serviço de 04/11):** em 15 e 60 min, 68 e 4.120 paradas alcançadas.
+  A isócrona de 60 min levou 39,99 ms em média. Na amostra de 12 pares, o maior desvio
+  foi 2,215 km/km (14793286 → 14785528).
 
 ### Cena 19 · 11:25 · 0:25 · F-EFI-OPC
 
-Ainda sem roteiro no arquivo da feature; cena montada pelo RF-EFI-05 e pelo item M4.
-
-- **Tela:** Eficiência; tabela e gráfico de barras com eficiência e tempo médio por faixa (pico
-  da manhã, entrepico, pico da tarde, noite).
+- **Tela:** Eficiência, modo "Comparar faixas", 12 pares, semente 2026. Mostre a eficiência
+  na tabela e o tempo médio nas barras.
 - **Fala:**
-  - Mesmos pares e mesma semente em cada faixa; só muda a espera de cada faixa.
-- **Números:** **a confirmar após o merge** (indicador de cada faixa e a diferença pico contra
-  fora do pico).
+  - A amostra de pares é a mesma nas quatro faixas. O serviço e a espera variam por faixa.
+  - A eficiência atribui zero aos pares inalcançáveis. O tempo médio considera os alcançáveis.
+- **Números (serviço de 04/11):** os 12 pares foram alcançáveis em todas as faixas.
+  A média foi de 57,48 min no pico da manhã e 62,36 min à noite.
 
 ## Pergunta 6 · E se algo falhar? (Caio)
 
@@ -354,18 +354,17 @@ Ainda sem roteiro no arquivo da feature; cena montada pelo RF-EFI-05 e pelo item
 ### Cena 23 · 13:50 · 0:50 · Rafael · desempenho e NetworkX
 
 - **Tela:** página Desempenho: tabela "Comparação com o NetworkX" (coluna "Resultados iguais"
-  toda "sim", razão de tempo) e gráfico log-log da complexidade empírica; depois a tabela
-  consolidada da F-AVAL no relatório.
+  toda "sim", razão de tempo) e gráfico log-log da complexidade empírica. Mostre a tabela
+  consolidada do relatório se a F-AVAL ([#25](https://github.com/henriquegdc/grafos-transporte-bh/issues/25)) estiver disponível.
 - **Fala:**
   - `medir`: N execuções com `perf_counter`, só a chamada dentro do cronômetro; média e desvio
     amostral. Cada número vem com V, E e máquina.
   - Conferimos BFS, Dijkstra, Brandes e Tarjan contra o NetworkX no mesmo grafo; nas redes
     sintéticas, a inclinação do log-log segue a complexidade teórica.
-- **Números (a confirmar: estão no JSON de 20/11 do PR da F-AVAL-OPC, ainda não no arquivo da
-  feature):** G_P real, 20 origens: Dijkstra 769,6 ms contra 574,6 ms do NetworkX (razão 1,34);
-  Brandes 864 ms contra 1.036 ms (0,83); todos com resultados iguais. Inclinações: BFS 1,01,
-  Dijkstra 1,06, Tarjan 1,10 (teórica 1) e Brandes 2,04 (teórica 2). Tabela da F-AVAL:
-  **a confirmar** (ainda vazia).
+- **Números (F-AVAL-OPC, medição de 20/11):** G_P real, 20 origens. Dijkstra em 769,6 ms
+  no projeto e 574,6 ms no NetworkX (razão 1,34). Brandes em 864 ms e 1.036 ms (razão 0,83).
+  Os resultados coincidiram. Inclinações nas redes sintéticas: BFS 1,01, Dijkstra 1,06,
+  Tarjan 1,10 e Brandes 2,04.
 - **Limitação:** tempo de parede depende da máquina; por isso razão e inclinação.
 
 ### Cena 24 · 14:40 · 0:35 · Caio (0:10) e Rafael (0:25) · garantias e limitações
@@ -383,17 +382,15 @@ Ainda sem roteiro no arquivo da feature; cena montada pelo RF-EFI-05 e pelo item
 
 ## Checklist antes de gravar
 
-1. **Código:** `git pull` no `main` depois dos merges do dia (PRs da F-ROTA, P0-MODELO,
-   F-MET-2/OPC, F-BALD-OPC, F-RES-2/OPC, F-AVAL-OPC e os do Miguel). Conferir que as páginas
-   Trajetos e Desempenho aparecem no menu. `pytest` verde.
+1. **Código:** atualizar a `main` e rodar `pytest`. Conferir Trajetos e Desempenho no menu
+   e verificar quais cenas das extensões de Espera e Eficiência já podem ser gravadas.
 2. **Feed:** `dados/brutos/bhtrans.zip` de 18/11, SHA-256 `8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`
    (`dados/brutos/bhtrans.json`). Não baixar outro antes de gravar.
 3. **App:** `.venv` ativo; `streamlit run src/transporte/interface/app.py`; carregar o feed na
    Início e esperar o resumo.
 4. **Cache aquecido** (na mesma sessão do navegador que vai gravar, porque os resultados ficam na
    sessão):
-   - Trajetos: par da cena 3, k = 3, "Listar trajetos alternativos" (segundos a dezenas de
-     segundos).
+   - Trajetos: par da cena 5, k = 5, "Listar trajetos alternativos".
    - Centralidades: intermediação e proximidade com 50 origens; Comunidades com semente 2026.
    - Eficiência: 100 origens, 100 pares, semente 2026 (cerca de 35 s).
    - Falhas: Ranking (10, 20, 30, 100; cerca de 40 s) e Dirigida x aleatória (10, 30, 100).
@@ -402,8 +399,9 @@ Ainda sem roteiro no arquivo da feature; cena montada pelo RF-EFI-05 e pelo item
 5. **Conferir na tela, antes de falar:** pares das cenas 9 e 10 (medidos no feed de 11/11) e os
    valores da F-ESPERA e F-ESPERA-2 (feed de 05/11). Se a tela mostrar outro valor, falar o da tela
    como "no feed de hoje" e o do arquivo como "medido no relatório", ou trocar o par.
-6. **Números a confirmar:** cenas 7, 8, 18, 19 e 23. Sem número no arquivo da feature, a cena
-   mostra a tela e não cita valor.
+6. **Extensões:** conferir os valores na tela para as cenas 7, 8, 18 e 19. Os exemplos de
+   Espera e Eficiência foram medidos com serviço de 04/11. Verificar se a tabela consolidada
+   está no relatório antes de incluir essa tela na cena 23.
 7. **Tela:** 1920 × 1080, zoom do navegador em 110% a 125%, barra lateral do Streamlit visível,
    tema claro, notificações desligadas, outras abas fechadas.
 8. **Gravação:** OBS (ou Xbox Game Bar, Win + Alt + R) com microfone testado; 30 fps; um arquivo

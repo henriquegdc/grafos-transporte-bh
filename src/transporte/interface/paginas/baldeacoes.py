@@ -8,6 +8,9 @@ cada ônibus numa cor, a pé em verde tracejado e um marcador laranja em cada tr
 RF-BAL-03 (F-BALD-2): numa faixa, compara com o trajeto mais rápido no G_E da mesma faixa
 (com as esperas da F-ESPERA): tempo a mais contra baldeações evitadas.
 
+RF-BAL-04 (F-BALD-OPC): na mesma faixa, lista os trajetos não dominados em tempo e
+baldeações e desenha no mapa o que o usuário escolher.
+
 estado: implementado
 """
 
@@ -21,10 +24,15 @@ import folium
 import streamlit as st
 from streamlit_folium import st_folium
 
-from transporte.algoritmos.baldeacoes import TrajetoBaldeacoes, menos_baldeacoes
+from transporte.algoritmos.baldeacoes import (
+    TrajetoBaldeacoes,
+    TrechoBaldeacao,
+    menos_baldeacoes,
+)
 from transporte.algoritmos.comparacao_baldeacoes import (
     ComparacaoBaldeacoes,
     comparar_baldeacoes,
+    trajetos_nao_dominados,
 )
 from transporte.algoritmos.trajeto import A_PE, ESPERA, ONIBUS, Trajeto
 from transporte.interface.mapa import atualizar_controle_camadas, criar_mapa
@@ -126,27 +134,85 @@ def _linhas_do_trajeto(rede: RedeUI, trajeto: Trajeto) -> str:
     return " → ".join(nomes) if nomes else "a pé"
 
 
+def _linha_tabela(rede: RedeUI, rotulo: str, t: Trajeto) -> dict[str, str]:
+    partes = t.tempo_por_tipo()
+    return {
+        "Trajeto": rotulo,
+        "Tempo total": _minutos(t.tempo_total_s),
+        "A pé": _minutos(partes[A_PE]),
+        "Espera": _minutos(partes[ESPERA]),
+        "Ônibus": _minutos(partes[ONIBUS]),
+        "Baldeações": str(t.baldeacoes),
+        "Linhas": _linhas_do_trajeto(rede, t),
+    }
+
+
 def tabela_comparacao(rede: RedeUI, comparacao: ComparacaoBaldeacoes) -> list[dict[str, str]]:
     """Duas linhas, o mais rápido e o de menos baldeações, com tempos e linhas. O(k)."""
     k = comparacao.menos_baldeacoes.baldeacoes
-    linhas = []
-    for rotulo, t in (
-        ("Mais rápido", comparacao.mais_rapido),
-        (f"Mais rápido com até {k} baldeação(ões)", comparacao.rapido_com_menos_baldeacoes),
-    ):
-        partes = t.tempo_por_tipo()
-        linhas.append(
-            {
-                "Trajeto": rotulo,
-                "Tempo total": _minutos(t.tempo_total_s),
-                "A pé": _minutos(partes[A_PE]),
-                "Espera": _minutos(partes[ESPERA]),
-                "Ônibus": _minutos(partes[ONIBUS]),
-                "Baldeações": str(t.baldeacoes),
-                "Linhas": _linhas_do_trajeto(rede, t),
-            }
-        )
-    return linhas
+    return [
+        _linha_tabela(rede, "Mais rápido", comparacao.mais_rapido),
+        _linha_tabela(
+            rede,
+            f"Mais rápido com até {k} baldeação(ões)",
+            comparacao.rapido_com_menos_baldeacoes,
+        ),
+    ]
+
+
+def tabela_fronteira(rede: RedeUI, fronteira: list[Trajeto]) -> list[dict[str, str]]:
+    """Uma linha por trajeto não dominado (F-BALD-OPC), numerados de 1 em diante. O(k)."""
+    return [
+        _linha_tabela(rede, str(numero), t) for numero, t in enumerate(fronteira, start=1)
+    ]
+
+
+def para_mapa(trajeto: Trajeto) -> TrajetoBaldeacoes:
+    """Trajeto do G_E no formato que mapa_trajeto desenha: tira as esperas, que não têm
+    traço (são uma parada só), e mantém os trechos a pé e de ônibus. O(k)."""
+    return TrajetoBaldeacoes(
+        origem=trajeto.origem,
+        destino=trajeto.destino,
+        baldeacoes=trajeto.baldeacoes,
+        trechos=tuple(
+            TrechoBaldeacao(t.tipo, tuple(t.paradas), t.padrao)
+            for t in trajeto.trechos
+            if t.tipo != ESPERA
+        ),
+    )
+
+
+def _render_nao_dominados(rede: RedeUI, ge: VisaoGE, origem: str, destino: str) -> None:
+    """Bloco da F-BALD-OPC (RF-BAL-04): fronteira tempo x baldeações e mapa do escolhido."""
+    st.subheader("Trajetos não dominados")
+    inicio = perf_counter()
+    fronteira = trajetos_nao_dominados(ge, origem, destino)
+    duracao = perf_counter() - inicio
+    if not fronteira:
+        return
+    st.dataframe(tabela_fronteira(rede, fronteira), hide_index=True, width="stretch")
+    st.caption(
+        f"{len(fronteira)} trajeto(s) em {1e3 * duracao:.0f} ms. Cada um tem menos "
+        "baldeações que o de baixo e mais tempo: nenhum outro trajeto é ao mesmo tempo mais "
+        "rápido e com menos (ou iguais) baldeações."
+    )
+    escolhido = st.selectbox(
+        "Trajeto no mapa",
+        range(len(fronteira)),
+        format_func=lambda i: (
+            f"{i + 1}: {fronteira[i].baldeacoes} baldeação(ões), "
+            f"{_minutos(fronteira[i].tempo_total_s)}"
+        ),
+        key="f-bald-opc-escolha",
+    )
+    escolhido = min(escolhido or 0, len(fronteira) - 1)  # a fronteira muda com o par
+    st_folium(
+        mapa_trajeto(rede, para_mapa(fronteira[escolhido])),
+        height=500,
+        use_container_width=True,
+        key="mapa-nao-dominados",
+        returned_objects=[],
+    )
 
 
 def _render_comparacao(
@@ -192,6 +258,7 @@ def _render_comparacao(
         "do trajeto com menos baldeações podem diferir das do mapa: lá o critério é só o "
         "número de baldeações; aqui, o menor tempo com esse número."
     )
+    _render_nao_dominados(rede, ge, origem, destino)
 
 
 def mapa_trajeto(rede: RedeUI, trajeto: TrajetoBaldeacoes) -> folium.Map:
