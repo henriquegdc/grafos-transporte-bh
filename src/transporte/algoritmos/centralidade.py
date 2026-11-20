@@ -1,4 +1,5 @@
-"""Centralidades das paradas sobre G_P (F-MET: RF-MET-01, RF-MET-02, RF-MET-03; RNF-06).
+"""Centralidades das paradas sobre G_P (F-MET: RF-MET-01, RF-MET-02, RF-MET-03; RNF-06)
+e proximidade (F-MET-2: RF-MET-04).
 
 Funciona sobre qualquer Grafo do núcleo; a feature usa G_P (docs/fontes/modelagem.md §3.4).
 Respeita vértices e arestas desativados (só usa o que Grafo.vizinhos devolve), então a
@@ -17,6 +18,7 @@ from collections import deque
 from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 
+from transporte.grafo.buscas import INF, dijkstra
 from transporte.grafo.grafo import Grafo
 from transporte.grafo.heap import HeapMin
 
@@ -358,6 +360,86 @@ def _estimar_por_origens(
         var = max(0.0, (soma_q[v] - k * media * media) / (k - 1))
         erros.append(populacao * escala * math.sqrt(var / k * fpc))
     return EstimativaIntermediacao(valores, erros, k, populacao, semente)
+
+
+# --- RF-MET-04 (F-MET-2) --------------------------------------------------------------
+
+SAIDA = "saida"
+ENTRADA = "entrada"
+
+
+def proximidade(
+    g: Grafo,
+    sentido: str = SAIDA,
+    tamanho_amostra: int | None = None,
+    semente: int = 0,
+) -> list[float]:
+    """Proximidade (closeness) de cada vértice, com a correção de Wasserman e Faust
+    (RF-MET-04; F-MET-2).
+
+    G_P não é fortemente conexo, então a proximidade clássica (n - 1) / soma das distâncias
+    não serve: um vértice que alcança poucos vizinhos, todos perto, ficaria no topo. Com r
+    = número de vértices alcançados (sem contar v) e D = soma das distâncias até eles:
+
+        C(v) = (r / D) * (r / (N - 1)),   N = vértices ativos; C(v) = 0 se r = 0.
+
+    O primeiro fator é o inverso da distância média até quem v alcança; o segundo pune quem
+    alcança só uma parte da rede. É a fórmula do `closeness_centrality(wf_improved=True)`
+    do NetworkX.
+
+    Sentido: SAIDA usa as distâncias de v até os outros ("quão rápido saio daqui para a
+    cidade"); ENTRADA usa as distâncias dos outros até v, que é o que o NetworkX calcula em
+    grafo dirigido. As duas se calculam do mesmo jeito: um Dijkstra a partir de cada
+    origem s dá d(s, v) para todo v, que é distância de entrada de v; no grafo reverso,
+    d_rev(s, v) = d(v, s), distância de saída de v.
+
+    Amostragem (RNF-06): com k origens sorteadas, r e D de cada v somam só as origens da
+    amostra (sem v). Como r / D não muda ao multiplicar r e D pelo mesmo fator, a
+    estimativa é (r_k / D_k) * (r_k / k_v), k_v = origens sorteadas diferentes de v; com
+    todas as origens (k = N) é a fórmula exata. Não há erro padrão: a estimativa é uma
+    razão, e o valor serve para ordenar as paradas.
+
+    Entradas:
+        g: grafo (G_P na feature); pesos >= 0 (peso 0 é aceito, diferente do Brandes).
+        sentido: SAIDA (padrão) ou ENTRADA.
+        tamanho_amostra: k origens; None ou k >= N usa todas (exato).
+        semente: semente do sorteio das origens (RNF-07).
+    Saída: lista indexada por vértice, em [0, 1]; vértice desativado tem 0.
+    Casos de borda: sentido desconhecido ou k <= 0 levanta ValueError; grafo com um vértice
+        ativo dá [0]; vértice isolado dá 0; com k = 1, a própria origem sorteada dá 0
+        (não há outra origem para medir).
+    Complexidade: tempo O(k (V + E) log V), um Dijkstra por origem (exato: k = V), mais
+        O(V + E) para o grafo reverso no sentido SAIDA; espaço O(V + E).
+    """
+    if sentido not in (SAIDA, ENTRADA):
+        raise ValueError(f"sentido deve ser {SAIDA!r} ou {ENTRADA!r}, recebido {sentido!r}")
+    if tamanho_amostra is not None and tamanho_amostra <= 0:
+        raise ValueError(f"tamanho_amostra deve ser positivo, recebido {tamanho_amostra}")
+    n = g.num_vertices()
+    ativos = [v for v in range(n) if g.vertice_ativo(v)]
+    populacao = len(ativos)
+    if tamanho_amostra is None or tamanho_amostra >= populacao:
+        origens: list[int] = ativos
+    else:
+        origens = sorted(random.Random(semente).sample(ativos, tamanho_amostra))
+    busca = g.reverso() if sentido == SAIDA else g
+    alcancados = [0] * n
+    soma = [0.0] * n
+    for s in origens:
+        dist = dijkstra(busca, s).dist
+        for v in ativos:
+            if v != s and dist[v] != INF:
+                alcancados[v] += 1
+                soma[v] += dist[v]
+    na_amostra = set(origens)
+    k = len(origens)
+    valores = [0.0] * n
+    for v in ativos:
+        k_v = k - (1 if v in na_amostra else 0)
+        if alcancados[v] == 0 or soma[v] == 0 or k_v == 0:
+            continue
+        valores[v] = (alcancados[v] / soma[v]) * (alcancados[v] / k_v)
+    return valores
 
 
 # --- RF-MET-03 ------------------------------------------------------------------------
