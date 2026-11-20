@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from types import SimpleNamespace
 from zipfile import ZipFile
@@ -56,7 +57,13 @@ def test_app_test_carrega_o_feed_e_renderiza_o_widget_do_mapa():
     teste.button[0].click().run(timeout=30)
 
     assert not teste.exception
-    assert teste.session_state[app.CHAVE_REDE].dia == "2026-11-04"
+    # O app carrega a primeira fonte listada: a rede de teste ou, se houver um feed em
+    # dados/brutos/, esse feed, cujo dia de serviço depende da edição baixada (#66).
+    dia = teste.session_state[app.CHAVE_REDE].dia
+    if app.listar_fontes()[0] == FONTE.resolve():
+        assert dia == "2026-11-04"
+    else:
+        assert date.fromisoformat(dia)
     assert {metrica.label for metrica in teste.metric} >= {
         "G_P · arestas (E)",
         "G_E · arestas (E)",
