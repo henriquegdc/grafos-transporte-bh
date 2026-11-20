@@ -263,7 +263,7 @@ Com duas ou mais partidas distintas, publica H e calcula H/2. Com uma partida, o
 
 Para N viagens, P padrões e F faixas: deduplicação e ordenação custam O(N log N), filtragem por faixa O(FN + PF); espaço O(N + PF). Simular acrescenta a construção de G_E e o Dijkstra O((V + E) log V), com espaço O(N + PF + V + E). A tabela da página custa O(PF + FN). O mapa recebe apenas as paradas do trajeto, sem alterar a rede original.
 
-Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. Não há consulta à próxima partida exata nem Monte Carlo. A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
+Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. No modo H/2 não há consulta à próxima partida exata nem Monte Carlo; os dois ficam no quadro de horários de G_T (F-ESPERA-2, abaixo). A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
 
 #### Quadro de horários e Monte Carlo (F-ESPERA-2)
 
@@ -673,7 +673,7 @@ ranking = ranking_criticidade(gp, candidatos, indice, amostra=30, semente=2026)
 
 **Na interface**, a aba Ranking da página Falhas deixa escolher N, quantas linhas sortear e as amostras; antes de rodar mostra o custo estimado (Dijkstras vezes o tempo de um Dijkstra medido na própria rede) e guarda os resultados na sessão por parâmetros.
 
-Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Nenhum candidato desconectou paradas, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
+Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Só a linha 5034 (22.º, 0,019 %) desconectou uma parada, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
 
 #### Falhas múltiplas e em sequência (F-RES-OPC)
 
@@ -939,6 +939,23 @@ coincidem com os do NetworkX. No G_P real (V = 9.660, E = 122.799), nosso tempo 
 que monta a adjacência simplificada uma vez, é mais rápido; nos outros, `Grafo.vizinhos`
 monta a lista de vizinhos ativos a cada visita. Inclinações nas sintéticas: BFS 1,01, Dijkstra
 1,06, Tarjan 1,10 e Brandes 2,04, todas com R² ≥ 0,999.
+
+### Tabela consolidada de desempenho (F-AVAL)
+
+`python benchmarks/consolidar.py` gera `relatorio/secoes/tabela-desempenho.tex` (RF-AVA-02):
+algoritmo, feature, visão, complexidade teórica (da docstring), V, E e tempo médio ± desvio de
+cada medição. Cada JSON de `benchmarks/resultados/` tem um formato, então há um extrator por
+arquivo; as medições que só existem na seção Resultados de um arquivo de feature (F-ROTA,
+F-ROTA-2, F-ROTA-OPC, F-BALD, F-BALD-2, F-EFI, F-RES) entram por uma lista no script, com †
+na tabela.
+
+Por que agrupar por máquina e feed: as medições vieram de cinco máquinas (i5-13600KF, Core 5
+120U, i5-1235U, Ryzen 7 7730U e Apple M4) e de instantâneos diferentes do GTFS (05/11, 11/11 e
+18/11). Tempo de parede só se compara dentro da mesma máquina e da mesma rede; misturar tudo numa
+coluna sugeriria comparações falsas. Alternativa descartada: remedir tudo numa só máquina no feed
+de 18/11, que não cabia no prazo. Quando o JSON não traz a máquina ou o SHA do feed, o script usa
+o que o arquivo da feature registra ou escreve "não registrado"; não há valor inventado. Média
+sem desvio aparece quando a fonte só traz média ou mediana por consulta.
 
 ## 8. Registro de decisões
 
