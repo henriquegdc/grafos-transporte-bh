@@ -74,10 +74,10 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Código do hook integrado pelo #43 com aprovação do Henrique.
 - [x] Hook e pytest validados pela frente de fechamento documental.
 - [x] Cobertura do verificador em `tests/scripts/test_verificar_imports.py`; sem algoritmo de grafo nesta feature.
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
+- [x] Complexidade: não aplicável; a feature não implementa algoritmo de grafo (hook e verificador de imports).
+- [x] Tempo medido: não aplicável; não há consulta sobre a rede real a medir.
+- [x] Página na interface: não aplicável; a feature é de infraestrutura do repositório.
+- [x] Diagrama UML: não aplicável; o fluxo do hook (verificador e Ruff) é linear e está descrito no guia §7.
 - [x] Explicação e quiz do hook integrados ao guia §7 e §10.
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Parágrafo do hook na seção Implementação. Sem resultado experimental de grafo nesta feature.
@@ -87,15 +87,21 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| 1 | Contrato (assinaturas com estado "planejado") | não aplicável: o verificador é script, não contrato consumido por outra feature |
+| 2 | Algoritmo com testes de corretude | concluída: verificador e testes em `tests/scripts/test_verificar_imports.py` (#43) |
+| 3 | Integração com a visão do grafo e com os dados reais | não aplicável |
+| 4 | Página na interface | não aplicável |
+| 5 | Tempo medido na rede real e complexidade justificada | não aplicável |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | guia §7 e §10 e seção Implementação concluídos; diagrama não aplicável; roteiro pendente |
 
 ## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+Não há resultado experimental de grafo nesta feature. Execuções de verificação do repositório:
+
+| Data | Comando | Resultado |
+|---|---|---|
+| 20/11/2026 | `python scripts/verificar_imports.py` | nenhum import proibido |
+| 20/11/2026 | `python -m pytest` (main com o #68 mesclado, Python 3.12.10, Windows) | 1139 testes aprovados |
+| 20/11/2026 | `ruff check` | sem apontamentos |
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.

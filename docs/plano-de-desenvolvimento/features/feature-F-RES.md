@@ -29,7 +29,7 @@ Falhas e resiliência. Fecha:
 | Desempenho (tempo medido) | concluído | 10/11: `benchmarks/medir_falhas.py` no feed real (ver Resultados) |
 | Guia (explicação e quiz) | concluído | 16/11: GUIA §5.6 e §10; 17/11: as 3 decisões no GUIA §8 |
 | Relatório | concluído | Figura da remoção da linha 832 conferida em `relatorio/secoes/F-RES.tex`, com legenda, resultado e limitação. |
-| Vídeo | em andamento | Roteiro (rascunho) abaixo |
+| Vídeo | em andamento | Roteiro pronto abaixo; gravação pendente |
 
 ## Especificação
 Assinaturas públicas em `src/transporte/simulacao/falhas.py` (`estado: implementado`):
@@ -45,8 +45,6 @@ Algoritmos previstos (docs/fontes/modelagem.md §3.5):
 - Tarjan iterativo (componentes fortemente conexas) · visão G_P · O(V + E) · Iterativo por causa do limite de recursão
 
 ## Como funciona e por quê
-_Rascunho do agente em 10/11; o Caio revisa._
-
 **O problema.** O que acontece com a rede quando uma parada fecha, um trecho é interditado ou uma linha para? Queremos saber quem fica sem acesso e quanto a rede perde em rapidez.
 
 **A visão: G_P.** Um vértice por parada e arestas dirigidas de viagem (parada seguinte de alguma linha, com o tempo mediano) e de caminhada (até 300 m, nos dois sentidos). É a visão em que "parada" e "trecho" são vértice e aresta, então a falha é só desligar o que sai.
@@ -145,8 +143,6 @@ Os tempos subiram de 20 % a 110 % em relação a 10/11 com o mesmo código de Di
 **Leitura.** A perda amostrada de uma falha que desconecta poucas paradas tem cauda pesada. Sem nenhuma das 33 paradas desconectadas na amostra, ela fica perto de 0,25 %; quando uma delas é sorteada como origem, a contribuição dela despenca e a estimativa salta para 1 % a 3 %. O valor de 0,94 % de 19/11 era uma dessas amostras. Por isso o relatório usa o exato, e a página avisa quando a falha desconecta paradas e a perda é amostrada.
 
 ## Roteiro do vídeo (2 a 2,5 min)
-_Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só depois de conferidos em Resultados._
-
 1. **O problema (20 s).** "Se a parada mais movimentada de BH fecha, ou uma linha para, quem fica sem ônibus? E quanto a rede inteira fica mais lenta?" Mostrar o mapa com a rede.
 2. **Funcionando (50 s).** Na página Falhas, escolher a parada com mais saídas e simular. Mostrar o número de componentes antes e depois, as paradas isoladas no mapa e a perda de eficiência. Repetir com uma linha e comentar que só os trechos exclusivos dela saem, porque os trechos compartilhados continuam com as outras linhas. Se a página não existir na gravação, rodar `python benchmarks/medir_falhas.py` no terminal.
 3. **Algoritmo e complexidade (50 s).** A falha não reconstrói o grafo: só desliga vértices e arestas e religa no fim. Componentes fortemente conexas com o Tarjan, O(V + E). Mostrar `indice` e `low` no exemplo de 4 vértices do "Como funciona". É iterativo porque, no G_P real, a DFS chega a 4.657 níveis e o Python para em 1.000. Eficiência: média de 1/d, um Dijkstra por origem, O(s (V + E) log V), por isso a amostra com semente fixa.

@@ -253,7 +253,7 @@ com H/2 de cada linha, caíram para 16 de 200.
 
 ### 5.2 Espera e simulação por faixa (F-ESPERA)
 
-**Sensibilidade ao intervalo (RF-ESP-06).** Na página Espera, selecione a alteração do intervalo, a linha, a faixa e o fator. A simulação multiplica o intervalo de cada padrão estimável da linha pelo fator, recalcula H/2 e reconstrói G_E. Os mesmos pares de paradas são consultados nos dois grafos. Uma troca de caminho pode amortecer o efeito na viagem. Padrões com espera provisória conservam esse valor. O quadro de horários programados permanece como referência do dia.
+**Sensibilidade ao intervalo (RF-ESP-06).** Na página Espera, selecione a alteração do intervalo, a linha, a faixa e o fator. A simulação multiplica o intervalo de cada padrão estimável da linha pelo fator, recalcula H/2 e reconstrói G_E. Os mesmos pares de paradas são consultados nos dois grafos: a origem é sorteada entre as paradas da linha alterada e o destino em toda a rede, com semente fixa, porque pares sorteados na rede inteira quase nunca passam pela linha. A página mostra quantos pares mudaram de tempo. No feed de 18/11 (pico da manhã, linha 561787, fator 2, 100 pares, semente 42), a espera do padrão foi de 9,44 para 18,89 min, mas só 3 dos 100 pares ficaram mais lentos, em média 81 s (1,35 min); com 10 pares, nenhum mudou. Nos demais, o melhor trajeto não depende dessa linha (outra linha ou caminhada chega no mesmo tempo). Uma troca de caminho pode amortecer o efeito na viagem. Padrões com espera provisória conservam esse valor. O quadro de horários programados permanece como referência do dia.
 
 A F-ESPERA usa o primeiro horário de cada viagem expandida em `Rede.viagens[padrão]`, como a D10 de P0-MODELO. Para cada padrão, ordena e deduplica partidas; em cada faixa `[início, fim)`, estima a média das diferenças consecutivas como `(última - primeira)/(n - 1)`. Não reúne sentidos ou variantes diferentes da mesma linha, nem conta de novo as frequências ou visitas de uma circular à mesma parada.
 
@@ -813,6 +813,11 @@ indexado pela origem e pelos metadados dos arquivos; cada sessão recebe uma có
 que simulações mutáveis não alterem a rede de outras sessões. Um erro de carga é mostrado sem
 substituir a rede anterior.
 
+Medida no feed da BHTrans (serviço de 04/11/2026, faixa `pico_manha`, três repetições,
+`benchmarks/resultados/inicio-bhtrans.json`): carga com cache frio 7,827 ± 0,034 s, carga
+com cache quente (incluindo a cópia por sessão) 0,671 ± 0,017 s e montagem do resumo de G_P
+e G_E 0,440 ± 0,001 s.
+
 ## 7. Como testamos e medimos (Rafael)
 A pasta `dados/rede-teste/` contém o feed pequeno e um gabarito calculado à mão.
 Confira primeiro uma viagem específica no `GABARITO.md`, depois execute a suíte
@@ -827,7 +832,7 @@ os controles públicos da página e conferem o resultado apresentado ao usuário
 Os scripts de desempenho usam o feed real e guardam a identificação do conjunto
 medido. Execute as medições uma de cada vez e conserve os JSONs junto aos comandos.
 
-#### Verificação do repositório (P0-REPO)
+### Verificação do repositório (P0-REPO)
 
 Após clonar, ative o hook com `git config core.hooksPath .githooks`. Antes do
 commit, o hook executa o verificador de imports e o Ruff. O verificador lê a
@@ -1029,7 +1034,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | Isócrona | Conjunto de paradas alcançáveis de uma origem em até um tempo limite. A faixa e a caminhada alteram esse conjunto. |
 | Índice de desvio | Razão entre a distância aproximada do percurso e a distância em linha reta entre as pontas. Para pontas coincidentes, a razão é indefinida. |
 | Intermediação | Participação de uma parada nos caminhos mínimos entre outros pares. Quando há empate, cada caminho recebe uma fração do crédito. |
-| Proximidade | Centralidade baseada nas distâncias mínimas até uma parada. O sentido das distâncias e a fração de vértices alcançáveis afetam a interpretação. |
+| Proximidade | Centralidade pelas distâncias mínimas da parada às que ela alcança (sentido de saída, o da página), corrigida pela fração de paradas alcançadas (Wasserman e Faust). |
 | Modularidade | Medida de concentração das ligações dentro das comunidades, comparada ao esperado de uma rede com os mesmos graus. |
 | Fronteira de Pareto | Conjunto de trajetos para os quais nenhuma alternativa melhora o tempo ou as baldeações sem piorar o outro critério. |
 | Componente fortemente conexa | Conjunto maximal de paradas que conseguem alcançar umas às outras por caminhos dirigidos. |
@@ -1185,13 +1190,13 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
    amostra e a semente para reproduzir o cálculo.
 
-#### Isócronas e desvios
+#### Isócronas e desvios (F-EFI-2)
 
 1. **A parada no limite exato de tempo entra?** Sim. O relaxamento aceita custo menor ou igual ao orçamento.
 2. **Qual percurso define o desvio?** O trajeto de menor tempo. Somam-se distâncias entre paradas consecutivas, inclusive a pé.
 3. **E se os extremos têm coordenadas iguais?** A distância direta é zero, então ambas as razões ficam indefinidas.
 
-#### Comparação por faixa
+#### Comparação por faixa (F-EFI-OPC)
 
 1. **Por que sorteamos apenas uma vez?** Para comparar os mesmos deslocamentos sob diferentes ofertas.
 2. **O que muda no grafo?** Os embarques com serviço e a espera por padrão na faixa; a caminhada usa os mesmos parâmetros.
@@ -1237,6 +1242,21 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 5. **Como o Yen não estraga uma falha simulada pela F-RES?** Só reativa o que ele mesmo desativou,
    num `finally`.
 
+### 6. Interface (P0-UI)
+1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
+   normalização pertencem a P0-DADOS; a UI consome a `Rede` publicada nesse contrato.
+2. **Como uma nova página entra na navegação?** O módulo da feature publica `render(rede)`;
+   a aplicação importa esse módulo e passa a mesma rede carregada.
+3. **Quais camadas o componente de mapa pode exibir?** Paradas, padrões/linhas, caminhos e
+   intensidades de calor, cada uma como camada separada.
+4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
+   interação do Streamlit; a chave considera a origem e a versão observável da fonte.
+5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
+   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
+   inconsistências e V/E de G_P e G_E. No feed da BHTrans (serviço de 04/11/2026), a carga
+   fria levou 7,8 s, a quente 0,67 s e o resumo de G_P e G_E 0,44 s
+   (`benchmarks/resultados/inicio-bhtrans.json`).
+
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
    `time.time()` segue o relógio do sistema, que pode ser ajustado no meio da medição.
@@ -1260,17 +1280,3 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
    `estimar_intermediacao` antes do fator N/k, então a conferência continua valendo.
 3. **O que a inclinação b do gráfico log-log diz?** Que o tempo cresce como (V + E)^b: b ≈ 1 é
    linear (BFS, Tarjan), b ≈ 2 é quadrático (Brandes, V buscas de custo V + E).
-
-### 6. Interface (P0-UI)
-1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
-   normalização pertencem a P0-DADOS; a UI consome a `Rede` publicada nesse contrato.
-2. **Como uma nova página entra na navegação?** O módulo da feature publica `render(rede)`;
-   a aplicação importa esse módulo e passa a mesma rede carregada.
-3. **Quais camadas o componente de mapa pode exibir?** Paradas, padrões/linhas, caminhos e
-   intensidades de calor, cada uma como camada separada.
-4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
-   interação do Streamlit; a chave considera a origem e a versão observável da fonte.
-5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
-   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
-   inconsistências e V/E de G_P e G_E. A medição em um feed real ainda depende de um feed
-   disponível no ambiente.

@@ -96,6 +96,8 @@ def maquina(dados: dict) -> str:
     for chave, nome in MAQUINAS.items():
         if chave in texto:
             return nome
+    if isinstance(m, str) and m:
+        return f"{m.replace('-SP0', '')}, processador não registrado"
     return "não registrada"
 
 
@@ -107,7 +109,11 @@ SHA_NA_FEATURE = {
 
 def feed(dados: dict, nome: str = "") -> str:
     f = dados.get("feed")
-    sha = dados.get("sha256") or (f.get("sha256") if isinstance(f, dict) else None)
+    sha = (
+        dados.get("sha256")
+        or dados.get("sha256_feed")
+        or (f.get("sha256") if isinstance(f, dict) else None)
+    )
     for prefixo, sha_feature in SHA_NA_FEATURE.items():
         if not sha and nome.startswith(prefixo):
             sha = sha_feature

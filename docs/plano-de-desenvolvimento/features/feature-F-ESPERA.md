@@ -23,11 +23,11 @@ Espera e simulação de trajeto. Fecha:
 
 | Camada | Status | Observação |
 |---|---|---|
-| Núcleo (algoritmo) | implementado | Intervalos, H/2 e simulação reutilizando F-ROTA |
-| Modelo e dados | implementado | Frequências já expandidas; contrato `esperas` de P0-MODELO |
-| Interface | implementado | Página render(rede), tabela e decomposição; feed completo validado sem exceção com AppTest |
-| Testes | implementado | Gabaritos, bordas, AppTest e entrada normal sem PYTHONPATH; suíte final registrada no fechamento |
-| Desempenho (tempo medido) | implementado | JSON e comando em Resultados |
+| Núcleo (algoritmo) | concluído | Intervalos, H/2 e simulação reutilizando F-ROTA |
+| Modelo e dados | concluído | Frequências já expandidas; contrato `esperas` de P0-MODELO |
+| Interface | concluído | Página render(rede), tabela e decomposição; feed completo validado sem exceção com AppTest |
+| Testes | concluído | Gabaritos, bordas, AppTest e entrada normal sem PYTHONPATH; suíte final registrada no fechamento |
+| Desempenho (tempo medido) | concluído | JSON e comando em Resultados |
 | Guia (explicação e quiz) | concluído | Guia §5.2 e §10 conferidos com as regras de embarque e de estimativa por faixa. |
 | Relatório | concluído | Seção com fluxograma, medição identificada e limitação de H/2. |
 | Vídeo | roteiro concluído | Gravação pelo integrante no vídeo do grupo. |

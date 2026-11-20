@@ -11,7 +11,9 @@
 \subsection{Extensões desejáveis e opcionais}\label{sec:extensoes}
 
 Cada pergunta ganhou uma extensão desejável e uma opcional, sobre as mesmas visões e o mesmo
-núcleo (Tabela~\ref{tab:extensoes}; tempos na Tabela~\ref{tab:desempenho}).
+núcleo (Tabela~\ref{tab:extensoes}; tempos na Tabela~\ref{tab:desempenho}). F-ESPERA-2,
+F-EFI-2 e F-EFI-OPC foram medidas no serviço de 04/11; as demais, no feed de 18/11, exceto a
+F-BALD-2 (serviço de 04/11).
 
 \begin{table}[t]
 \centering
@@ -33,7 +35,8 @@ F-ESPERA-2 & Chegada mais cedo com busca binária nas partidas; Monte Carlo de s
   $O((V + E)\log E + E\log(k + 1))$ por consulta & Espera de 1,87~min pelo quadro contra
   15,34~min por $H/2$ no mesmo par \\
 F-ESPERA-OPC & Intervalo de uma linha multiplicado; dois $G_E$ e Dijkstra por par &
-  $O(n(V + E)\log V)$ & Dobrar a linha 561787 leva a espera de 9,44 a 18,89~min \\
+  $O(n(V + E)\log V)$ & Dobrar a linha 561787 leva a espera de 9,44 a 18,89~min; 3 de 100
+  pares ficam mais lentos \\
 F-BALD-2 & Dijkstra com estado (vértice, embarques), até $k$ baldeações; $G_L$ e $G_E$ &
   $O((k + 2)(V + E)\log((k + 2)V))$ & Em 40 de 200 pares, menos baldeações custam 1,5~min
   (mediana; máximo 14,5) \\
@@ -66,8 +69,9 @@ com cerca de 2,2 vezes o tempo do Yen puro.
 \textbf{Espera.} Em $G_T$, entre as paradas 14788851 e 14792190 às 08h do serviço de 04/11, o
 quadro de horários deu 23,67~min de porta a porta, contra 40,24~min por $H/2$; cada modelo
 escolhe seu trajeto. $G_T$ não tem tempo mínimo de transferência: o trajeto do exemplo tem trocas
-com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade, os 10 pares
-sorteados não mudaram de tempo ao dobrar a linha 561787, porque nenhum trajeto a usava.
+com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade (feed de 18/11),
+com origens sorteadas entre as paradas da linha, só 3 de 100 pares ficaram mais lentos ao dobrar
+a linha 561787, em média 1,35~min; nos outros 97 o melhor trajeto não depende dela.
 
 \textbf{Baldeações.} O tempo comparado é o do mais rápido com até $k$ baldeações, não o do
 trajeto de $G_L$, cujo desempate não olha o tempo. A comparação levou 212,9~ms por par em média

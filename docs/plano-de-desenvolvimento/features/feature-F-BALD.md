@@ -138,7 +138,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 1 | Contrato (assinaturas com estado "planejado") | concluída em 11/11 (publicado já implementado, como na F-ROTA: ninguém consome a G_L antes da F-BALD-2, que é do mesmo dono) |
 | 2 | Algoritmo com testes de corretude | concluída em 11/11 |
 | 3 | Integração com a visão do grafo e com os dados reais | concluída em 11/11 (rede de teste pelo `ler()` e feed real) |
-| 4 | Página na interface | pronta em 11/11 na `feat/F-BALD-pagina` (#49); refeita sobre a `main` em 16/11; falta o merge |
+| 4 | Página na interface | pronta em 11/11 na `feat/F-BALD-pagina` (#49); refeita sobre a `main` em 16/11; concluída, na `main` pelo #49 (`8138604`) |
 | 5 | Tempo medido na rede real e complexidade justificada | concluída em 11/11 |
 | 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | concluída em 11/11; revisada pelo Rafael em 16/11 |
 
@@ -171,7 +171,7 @@ Limitação observada: a G_L não vê horários. As 101 consultas com 1 baldeaç
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
-Rascunho de 11/11 (Rafael revisa):
+Revisado pelo Rafael em 16/11:
 
 1. **Problema (20 s):** muita gente prefere um trajeto com menos trocas de ônibus, mesmo que demore mais. Entre duas paradas de BH, qual o mínimo de baldeações, e onde trocar?
 2. **Na ferramenta (45 s):** página Baldeações, origem no Barreiro e destino na Pampulha, pico da manhã. Mostrar as métricas (2 baldeações, 3 ônibus), a sequência 342 → 6350 → 643, a tabela de trechos e, no mapa, uma cor por linha, a caminhada tracejada e os círculos laranja nas trocas. Trocar para "dia inteiro" e mostrar que o trajeto pode mudar.
