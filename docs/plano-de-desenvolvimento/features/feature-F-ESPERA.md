@@ -10,12 +10,7 @@
 
 ## Retomada
 
-- **Última sessão:** 16/11/2026, atendimento ao último comentário de Rafael no PR #50, também referente ao #51.
-- **Onde parou:** branch rebaseada diretamente sobre origin/main (6b44827), com o #45 integrado. Reaplicados apenas os dois commits próprios de Espera; o commit a8bec84 foi retirado da base. O #51 não depende mais do #50.
-- **Próximo passo:** revisão e aprovação do #51. Após o merge, adotar trajeto= no mapa e combinar o uso da tabela de esperas com Henrique (Trajetos) e Arthur (Eficiência); Miguel revisa textos e grava vídeo.
-- **Arquivos tocados:** este arquivo; demais mudanças resultam do rebase.
-- **Como testar:** Python da .venv do checkout principal com -m pytest -q; sh .githooks/pre-commit com essa .venv no PATH; git diff --check.
-- **Bloqueios:** aprovação formal e itens humanos do DoD pendentes; a sobreposição de autoria e a dependência do #50 foram resolvidas.
+**Entrega técnica e documental concluída.** O [#51](https://github.com/henriquegdc/grafos-transporte-bh/pull/51) recebeu aprovação do Thiago e entrou na main em `cbb1f90`. A regra H/2 e as parcelas foram conferidas com o código, os testes, o guia §5.2 e o resultado de `benchmarks/resultados/espera-2026-11-11.json`. Para reproduzir: `python -m pytest tests/simulacao/test_espera.py tests/interface/test_pagina_espera.py`. Próximo passo pessoal: gravar o modo por faixa.
 
 ## Objetivo
 Espera e simulação de trajeto. Fecha:
@@ -33,9 +28,9 @@ Espera e simulação de trajeto. Fecha:
 | Interface | implementado | Página render(rede), tabela e decomposição; feed completo validado sem exceção com AppTest |
 | Testes | implementado | Gabaritos, bordas, AppTest e entrada normal sem PYTHONPATH; suíte final registrada no fechamento |
 | Desempenho (tempo medido) | implementado | JSON e comando em Resultados |
-| Guia (explicação e quiz) | parcial | Rascunho escrito; Miguel revisa |
-| Relatório | parcial | Seção, figura e resultado; compilação Tectonic concluída; revisão por Miguel pendente |
-| Vídeo | parcial | Roteiro escrito; Miguel revisa e grava |
+| Guia (explicação e quiz) | concluído | Guia §5.2 e §10 conferidos com as regras de embarque e de estimativa por faixa. |
+| Relatório | concluído | Seção com fluxograma, medição identificada e limitação de H/2. |
+| Vídeo | roteiro concluído | Gravação pelo integrante no vídeo do grupo. |
 
 ## Especificação
 
@@ -53,7 +48,7 @@ esperas = calcular_esperas(estimar_intervalos(rede, params))
 ge = construir_ge(rede, faixa, params=params, esperas=esperas)
 ```
 
-A tabela contém segundos de espera, sem nova divisão por dois. Esse contrato já é usado pela simulação; sua adoção pela página Trajetos ainda é pendente.
+A tabela contém segundos de espera, sem nova divisão por dois. Esse contrato alimenta a simulação e a página Eficiência. A página Trajetos usa a mesma tabela no PR #57.
 
 Decisões de implementação E1–E4 aprovadas no plano por Miguel: partidas distintas por padrão e primeiro horário (D10); com menos de duas partidas, estimativa ausente e fallback do construtor; faixa fixa sem módulo de 24h; reutilizar F-ROTA e mapa do #45. Não alteram as fontes. Opcionais e Monte Carlo ficam fora desta entrega.
 
@@ -85,18 +80,18 @@ Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com int
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
+- [x] Código integrado e revisado por outro integrante (ver Retomada).
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
 - [x] Página ou bloco na interface funcionando com o dataset real
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] "Como funciona e por quê" e quiz incorporados ao guia e conferidos com a implementação.
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/F-ESPERA.tex`, com figura, resultado e limitação
-- [ ] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+- [x] Seção do relatório em `relatorio/secoes/F-ESPERA.tex` com figura de atividade, resultados e limitações.
+- [x] Roteiro escrito para a gravação do dono.
+- [x] Arquivo atualizado com retomada, status, pendências e timeline.
 
 ## Plano de implementação
 
@@ -107,7 +102,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração G_E e dados reais | executada com feed real; JSON versionado |
 | 4 | Página na interface | implementada e validada com AppTest |
 | 5 | Medição e complexidade | feitas, com comando, desvio e feed identificados |
-| 6 | Guia, quiz, UML, relatório e roteiro | escritos e compilados; Miguel revisa os rascunhos |
+| 6 | Guia, quiz, UML, relatório e roteiro | guia, quiz, UML, relatório e roteiro conferidos; gravação no vídeo do grupo |
 
 ## Resultados para o relatório
 
@@ -149,15 +144,7 @@ Validação da interface: testes Streamlit AppTest com pasta e ZIP, isolamento d
 
 ## Pendências
 
-- Miguel revisar código, guia, explicação, decisões E1–E4 e roteiro; gravar vídeo no período de entrega.
-- PR #51 aberto; commit e push das correções autorizados por Miguel. Revisão e integração continuam pendentes. Usar `Refs #8` enquanto o DoD não estiver completo.
-- Confirmar modelo, chip e RAM da máquina usada em 11/11: o JSON histórico informa apenas macOS arm64 e processador `arm`; não inferir hardware a partir de outra medição.
-- Combinar após o merge com Henrique (Trajetos) e Arthur (Eficiência) a adoção do contrato `esperas=` acima. Reprodução na rede pequena, sem caminhada: A → C às 08h dá 900 s sem tabela e 1.200 s com H/2.
-- Após integrar #45, adaptar o mapa de Espera para `trajeto=` preservando os metadados de linhas/padrões; `caminhos=` sozinho não distingue tipos de trecho.
-- ~~Integrar uma única base de UI (#45/#49).~~ Resolvido pelo rebase sobre a main com #45 em 16/11; interface de Arthur preservada.
-- Relatório compilado com Tectonic 0.17.0; revisão visual final registrada no fechamento. O rascunho global ainda contém seções pendentes de outros donos e está abaixo do mínimo de 12 páginas; integração final cabe ao grupo.
-- Prazo original 11/11: se o DoD não fechar, aplicar corte do §7.3: essencial ocupa P2; F-ESPERA-2 adiada e opcional retirada do ciclo.
-- H/2, faixa fixa e regra D10 são limitações documentadas, sem implementar G_T nesta entrega.
+- Gravar o trecho pelo roteiro. A medição histórica de 11/11 contém plataforma e arquitetura; chip e RAM não foram registrados naquela execução. A simulação programada e a sensibilidade são acompanhadas em suas próprias features.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -184,3 +171,6 @@ Verificação antes da publicação: projeto LaTeX compilado com sucesso pelo co
 Retirado a8bec84 da ancestralidade própria com rebase --onto origin/main a8bec84; os commits c688f46 e c4b01cf foram reaplicados sem conflito. A base 6b44827 já contém a interface e o mapa corrigidos pelo #45. Decisão: manter somente o escopo de Espera e retirar a dependência do #50 da descrição do PR. Backups locais preservam o histórico anterior. Melhorias indicadas por Rafael para depois do merge e tarefas humanas seguem nas pendências; não houve alteração de features de outros donos.
 
 Validação após rebase: Python 3.12 da .venv do checkout principal, -m pytest -q → 668 passed in 2.84s. O hook sem a .venv no PATH encontrou Python global sem Ruff; repetido com o ambiente do projeto, passou com imports e Ruff verdes. git diff --check sem erros.
+
+### Fechamento documental de 20/11/2026
+Aprovação e merge do #51 confirmados. Explicação de H/2, regra de faixa fixa, quiz e seção do relatório conferidos com o código e o JSON.

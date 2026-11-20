@@ -9,12 +9,8 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 16/11, Rafael, branch `feat/F-BALD-pagina` (PR #49), refeita sobre a `main` (`48767d7`, com o #48).
-- **Onde parou:** núcleo na `main` pelo #48. Etapa 4 na `feat/F-BALD-pagina`: a branch foi refeita a partir da `main` só com os dois commits da página (`2a56deb` e `9ac437b`, por cherry-pick), sem o commit antigo do #45 que dava conflito em 8 arquivos. A página passou a usar `atualizar_controle_camadas` do P0-UI no lugar do `_controle_de_camadas_por_ultimo` próprio; o teste de ordem do controle de camadas continua. Na revisão do #49, o revisor aplicou os dois commits sobre a `main` com o #48, carregou a rede de teste no app e a página calculou o trajeto sem erro (726 testes verdes).
-- **Próximo passo:** rodar `pytest -q` e `ruff check`, subir a branch (`git push --force-with-lease`), trocar o título do #49 para `feat(F-BALD): página Baldeações`, preencher a descrição com `Closes #9` e pedir nova revisão. Depois do merge, marcar RF-BAL-02 e os itens de página e de PR do DoD, e passar a Retomada a "concluída". Avisar o Henrique do texto da G_L na modelagem e o Miguel do limite do `baixar_gtfs.py`.
-- **Arquivos tocados:** `src/transporte/modelo/visoes.py` (`VisaoGL`, `BALDEACAO`), `src/transporte/modelo/linhas.py`, `src/transporte/algoritmos/baldeacoes.py`, `src/transporte/interface/paginas/baldeacoes.py` (só na branch da página), `tests/modelo/test_linhas.py`, `tests/algoritmos/test_baldeacoes.py`, `tests/integracao/test_integracao_baldeacoes_rede_teste.py`, `tests/interface/test_pagina_baldeacoes.py` (só na branch da página), `benchmarks/medir_baldeacoes.py`, `docs/diagramas/atividade-menos-baldeacoes.{puml,png}`, `relatorio/secoes/F-BALD.tex`, `relatorio/figuras/baldeacoes-mapa.jpg`, `docs/GUIA.md` (§5.3, §8 e §10), este arquivo.
-- **Como testar:** `pytest tests/modelo/test_linhas.py tests/algoritmos/test_baldeacoes.py tests/integracao/test_integracao_baldeacoes_rede_teste.py` (52 testes); `ruff check`. Página, na `feat/F-BALD-pagina`: `pytest tests/interface/test_pagina_baldeacoes.py` (6 testes). Medição: `PYTHONPATH=src python benchmarks/medir_baldeacoes.py dados/brutos/bhtrans.zip` (cerca de 8 min, quase tudo na conferência com o NetworkX).
-- **Bloqueios:** nenhum. O #48 já está na `main`; falta a aprovação do #49.
+
+**Interface concluída.** A página Baldeações está na main pelo [#49](https://github.com/henriquegdc/grafos-transporte-bh/pull/49) (`8138604`). Recebe uma rede carregada, obtém a sequência de linhas e paradas de troca e desenha o percurso no mapa. Para reproduzir: `python -m pytest tests/interface/test_pagina_baldeacoes.py`. A figura da consulta real está em `relatorio/figuras/baldeacoes-mapa.jpg`. Próximo passo: gravar a demonstração.
 
 ## Objetivo
 Menos baldeações. Fecha:
@@ -28,7 +24,7 @@ Menos baldeações. Fecha:
 |---|---|---|
 | Núcleo (algoritmo) | concluído | 11/11: `menos_baldeacoes` (BFS por camadas sobre a G_L, com a posição de embarque como rótulo), `estado: implementado` |
 | Modelo e dados | concluído | 11/11: `construir_gl` e `VisaoGL`; integração com `dados/rede-teste` pelo `ler()` (5 testes) e com o feed real (Resultados) |
-| Interface | em andamento | 11/11: página `Baldeações` na `feat/F-BALD-pagina` (6 testes; roda no feed real pelo `AppTest`, consulta em 22 ms); 16/11: branch refeita sobre a `main` com o #48, usando `atualizar_controle_camadas` do P0-UI; falta o merge do #49 |
+| Interface | concluído | Página integrada pelo #49; consulta e mapa cobertos por AppTest e pela figura no relatório. |
 | Testes | concluído | 11/11: 52 testes. Gabarito à mão (linha direta, troca na mesma parada e a pé, a pé nas pontas, ordem dentro do padrão, padrão que melhora numa camada posterior, laço, circular, desempates), bordas (origem = destino, destino perto, inalcançável, parada sem padrão, parada inexistente, falhas e reativação) e NetworkX num grafo de estados em 12 redes aleatórias (480 consultas). Fora da suíte, 12.000 consultas em 400 redes com 0 divergências |
 | Desempenho (tempo medido) | concluído | 11/11: 36,7 ms por consulta (máximo 172,9 ms) e G_L do pico em 3,1 s no feed real; ver Resultados |
 | Guia (explicação e quiz) | concluído | 11/11: Como funciona e 5 perguntas, copiados para o `docs/GUIA.md` §5.3 e §10; 16/11: revisados pelo Rafael |
@@ -118,7 +114,7 @@ Sem a restrição de ordem dentro do padrão, os passos 2 a 5 são exatamente o 
 ## Critérios de aceite
 - [x] RF-GRF-06: Construir a visão G_L (linhas) (11/11: `construir_gl`; no feed real, V = 698 e E = 149.551 no dia, V = 501 e E = 85.606 no pico da manhã)
 - [x] RF-BAL-01: Calcular o trajeto com o menor número de baldeações entre duas paradas (11/11: 200 de 200 consultas no feed real com 0 divergências contra o NetworkX)
-- [ ] RF-BAL-02: Mostrar a sequência de linhas e as paradas de troca no mapa (11/11: página pronta na `feat/F-BALD-pagina`, conferida no feed real pelo `AppTest` e na figura do relatório; marcar quando o #49 estiver na `main`)
+- [x] RF-BAL-02: sequência de linhas e paradas de troca no mapa, integrada na main pelo #49.
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
@@ -128,13 +124,13 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (11/11: 52 testes; NetworkX num grafo de estados, porque ele não tem um equivalente direto do mínimo de baldeações)
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature (11/11, em Como funciona)
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (11/11)
-- [ ] Página ou bloco na interface funcionando com o dataset real (11/11: funciona pelo `AppTest` no feed real; falta o #49 entrar na `main`)
+- [x] Página integrada na main pelo #49, verificada no feed real na execução da figura e no AppTest.
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/` (11/11: `atividade-menos-baldeacoes`)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (11/11; revisadas pelo Rafael em 16/11)
 - [ ] O revisor do PR consegue explicar o que o código faz
 - [x] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação (11/11)
 - [x] Roteiro do vídeo escrito no arquivo da feature (11/11)
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline (fecha com o merge)
+- [x] Retomada, status, pendências e timeline atualizados.
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
@@ -200,3 +196,6 @@ Rascunho de 11/11 (Rafael revisa):
 ### Sessão 11/11/2026: etapa 6: Como funciona, 5 perguntas, diagrama `atividade-menos-baldeacoes`, `docs/GUIA.md` §5.3, §8 e §10, `relatorio/secoes/F-BALD.tex` com figura do mapa real, roteiro do vídeo; decisões B1 a B7 propostas.
 ### Revisão 16/11/2026: ajustes pedidos na revisão do #48. Rebase sobre a `main` (`cbb1f90`), com o conflito do `docs/GUIA.md` resolvido mantendo a §5.2 (F-ESPERA) e a §5.3 (F-BALD); decisões B1 a B7 aceitas pelo Rafael e marcas de rascunho retiradas do GUIA §8; docstring de `VisaoGL.transferencias` corrigida para i e j decrescentes. Na revisão, o revisor rodou 720 testes verdes, com hook e ruff limpos, sobre a `main` atual.
 ### Revisão 16/11/2026: #48 integrado na `main` (`48767d7`). Ajustes da revisão do #49: `feat/F-BALD-pagina` refeita a partir da `main` com os dois commits da página (cherry-pick de `2a56deb` e `9ac437b`), sem o commit antigo do #45; `_controle_de_camadas_por_ultimo` trocado por `atualizar_controle_camadas` do P0-UI. Na revisão, o revisor aplicou os dois commits sobre a `main` com o #48 e rodou 726 testes verdes, com a página calculando o trajeto na rede de teste.
+
+### Fechamento documental de 20/11/2026
+Verificada a presença da página do #49 na main e atualizado o aceite RF-BAL-02.
