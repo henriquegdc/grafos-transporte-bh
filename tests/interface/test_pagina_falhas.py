@@ -11,6 +11,7 @@ ResultadoFalha montado à mão.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -143,3 +144,103 @@ def test_shell_abre_falhas_e_simula(monkeypatch):
     assert rotulos["Maior componente (paradas)"] == "3"
     assert rotulos["Paradas isoladas"] == "0"
     assert any("Nenhuma parada perdeu" in s.value for s in at.success)
+
+
+# --- F-RES-2 e F-RES-OPC -----------------------------------------------------------------
+
+
+def test_tabela_ranking_e_curva(rede, preparado):
+    visao, _indice, _ = preparado
+    r = _resultado_a_mao(visao)
+    linha = Falha(linhas=("L1",))
+    tabela = pagina.tabela_ranking(rede, [r, replace(r, falha=linha, perda_eficiencia=0.25)])
+    assert tabela[0]["Tipo"] == "Parada" and tabela[0]["Sai de operação"] == "Meio (B)"
+    assert tabela[0]["Perda de eficiência"] == "50.0000%"
+    assert tabela[1]["Tipo"] == "Linha" and tabela[1]["Posição"] == 2
+    assert pagina.curva_eficiencia([r, replace(r, perda_eficiencia=0.75)]) == [1.0, 0.5, 0.25]
+    assert pagina.curva_eficiencia([]) == [1.0]
+    passos = pagina.tabela_passos(rede, [r])
+    assert passos[0]["Falhas"] == 1 and passos[0]["Isoladas"] == 1
+
+
+def test_custo_estimado():
+    # 3 candidatos, 10 origens: 4 eficiências de 10 Dijkstras, mais 50 do Brandes.
+    assert pagina.dijkstras_ranking(3, 10, 50, n_paradas=2) == 90
+    assert pagina.dijkstras_ranking(3, 10, 50, n_paradas=0) == 40
+    assert pagina.dijkstras_ranking(0, 10, 50, n_paradas=0) == 0
+
+
+def test_segundos_por_dijkstra_em_cache(rede, preparado):
+    cache: dict = {}
+    t = pagina.segundos_por_dijkstra(rede, preparado[0], cache)
+    assert t > 0
+    assert pagina.segundos_por_dijkstra(rede, preparado[0], cache) == t
+
+
+def _abrir_falhas(monkeypatch) -> AppTest:
+    monkeypatch.setattr(app, "listar_fontes", lambda: (FONTE,))
+    monkeypatch.setattr(app, "render_mapa", lambda *a, **kw: None)
+    monkeypatch.setattr(pagina, "st_folium", lambda *a, **kw: None)
+    at = AppTest.from_string("from transporte.interface.app import main\nmain()")
+    at.run(timeout=30).button[0].click().run(timeout=30)
+    at.sidebar.radio[0].set_value("Falhas").run(timeout=30)
+    assert not at.exception
+    return at
+
+
+def test_aba_ranking(monkeypatch):
+    at = _abrir_falhas(monkeypatch)
+    assert [t.label for t in at.tabs] == ["Falha única", "Ranking", "Falhas múltiplas"]
+    assert any("Custo estimado" in c.value for c in at.caption)
+    [botao] = [b for b in at.button if b.label == "Calcular ranking"]
+    botao.click().run(timeout=30)
+    assert not at.exception
+    tabela = at.dataframe[0].value
+    # 4 paradas (todas, rede de teste) e 2 linhas; B, o meio, lidera.
+    assert len(tabela) == 6
+    assert tabela.iloc[0]["Sai de operação"] == "Meio (B)"
+    perdas = [float(p.rstrip("%")) for p in tabela["Perda de eficiência"]]
+    assert perdas == sorted(perdas, reverse=True)
+
+
+def test_aba_falhas_multiplas(monkeypatch):
+    at = _abrir_falhas(monkeypatch)
+    at.multiselect(key="multiplas-paradas").set_value(["B", "C"]).run(timeout=30)
+    [botao] = [b for b in at.button if b.label == "Simular sequência"]
+    botao.click().run(timeout=30)
+    assert not at.exception
+    tabela = at.dataframe[0].value
+    assert list(tabela["Falhas"]) == [1, 2]
+    assert len(at.get("vega_lite_chart")) == 1
+
+    [modo] = [r for r in at.radio if r.label == "Modo"]
+    modo.set_value(pagina.MODO_COMPARACAO).run(timeout=30)
+    [botao] = [b for b in at.button if b.label == "Comparar remoções"]
+    botao.click().run(timeout=30)
+    assert not at.exception
+    assert len(at.get("vega_lite_chart")) == 1
+
+
+def test_falhas_em_rede_com_uma_parada():
+    at = AppTest.from_string(
+        "from dataclasses import replace\n"
+        "from pathlib import Path\n"
+        "from transporte.dados.leitor_gtfs import ler\n"
+        "from transporte.interface.paginas.falhas import render\n"
+        "rede = ler(Path('dados/rede-teste'))\n"
+        "render(replace(rede, paradas={'A': rede.paradas['A']}, padroes={}, viagens={}))\n"
+    ).run()
+    assert not at.exception
+    assert len(at.tabs) == 3
+
+    [botao] = [b for b in at.button if b.label == "Calcular ranking"]
+    botao.click().run()
+    assert not at.exception
+    assert len(at.dataframe[0].value) == 1
+
+    [modo] = [r for r in at.radio if r.label == "Modo"]
+    modo.set_value(pagina.MODO_COMPARACAO).run()
+    [botao] = [b for b in at.button if b.label == "Comparar remoções"]
+    botao.click().run()
+    assert not at.exception
+    assert len(at.get("vega_lite_chart")) == 1

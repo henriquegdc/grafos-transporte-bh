@@ -1,4 +1,5 @@
-"""Falhas e resiliência sobre G_P (F-RES: RF-RES-01, RF-RES-02, RF-RES-03).
+"""Falhas e resiliência sobre G_P (F-RES: RF-RES-01 a 03; F-RES-2: RF-RES-04;
+F-RES-OPC: RF-RES-05).
 
 Uma falha remove paradas, trechos ou linhas de G_P desativando vértices e arestas do núcleo
 (Grafo.desativar_*), sem reconstruir o grafo. A simulação mede o grafo antes e depois e
@@ -24,6 +25,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
+from transporte.algoritmos.centralidade import estimar_intermediacao, ranking
 from transporte.algoritmos.eficiencia import eficiencia_global
 from transporte.grafo.grafo import Grafo
 from transporte.modelo.visoes import VIAGEM, VisaoGP
@@ -301,29 +303,59 @@ def simular_falha(
     Complexidade: tempo O(s (V + E) log V) com amostra de s origens, O(V (V + E) log V)
         exata (duas eficiências), mais O(V + E) de dois Tarjan; espaço O(V + E).
     """
+    base = _linha_de_base(visao, amostra, semente)
+    vertices, arestas = aplicar_falha(visao, falha, linhas_do_trecho)
+    try:
+        return _comparar(visao, base, falha, vertices, arestas, set(vertices))
+    finally:
+        desfazer_falha(visao, vertices, arestas)
+
+
+@dataclass
+class _Base:
+    """Estado da rede antes das falhas: origens sorteadas, n e as medidas de antes."""
+
+    origens: list[int]
+    n: int
+    amostra: int | None
+    componentes: list[list[int]]
+    eficiencia: float
+
+
+def _linha_de_base(visao: VisaoGP, amostra: int | None, semente: int) -> _Base:
+    """Sorteia as origens e mede componentes e eficiência antes de qualquer falha.
+
+    Complexidade: O(V + E) do Tarjan mais s Dijkstras.
+    """
     g = visao.grafo
     ativos = [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
     n = len(ativos)
     if amostra is None or amostra >= n:
-        origens = ativos
-        amostra_usada = None
+        origens, amostra_usada = ativos, None
     else:
-        origens = random.Random(semente).sample(ativos, amostra)
-        amostra_usada = amostra
+        origens, amostra_usada = random.Random(semente).sample(ativos, amostra), amostra
+    return _Base(origens, n, amostra_usada, componentes_fortes(g),
+                 eficiencia_global(g, origens, n))
 
-    componentes_antes = componentes_fortes(g)
-    eficiencia_antes = eficiencia_global(g, origens, n)
 
-    vertices, arestas = aplicar_falha(visao, falha, linhas_do_trecho)
-    try:
-        componentes_depois = componentes_fortes(g)
-        eficiencia_depois = eficiencia_global(g, origens, n)
-    finally:
-        desfazer_falha(visao, vertices, arestas)
+def _comparar(
+    visao: VisaoGP,
+    base: _Base,
+    falha: Falha,
+    vertices: list[int],
+    arestas: list[int],
+    removidos: set[int],
+) -> ResultadoFalha:
+    """Mede o grafo com a falha já aplicada e compara com a linha de base.
 
+    `removidos` são todos os vértices fora de operação desde a base (numa sequência,
+    inclui os dos passos anteriores). Complexidade: O(V + E) mais s Dijkstras.
+    """
+    g = visao.grafo
+    componentes_depois = componentes_fortes(g)
+    eficiencia_depois = eficiencia_global(g, base.origens, base.n)
     nomes = visao.parada_do_vertice
-    removidos = set(vertices)
-    sozinhas_antes = {c[0] for c in componentes_antes if len(c) == 1}
+    sozinhas_antes = {c[0] for c in base.componentes if len(c) == 1}
     isoladas = sorted(
         nomes[c[0]]
         for c in componentes_depois
@@ -332,22 +364,199 @@ def simular_falha(
     maior_depois = _maior(componentes_depois)
     desconectadas = sorted(
         nomes[v]
-        for v in _maior(componentes_antes)
+        for v in _maior(base.componentes)
         if v not in maior_depois and v not in removidos
     )
-    perda = (
-        (eficiencia_antes - eficiencia_depois) / eficiencia_antes if eficiencia_antes else 0.0
-    )
+    antes = base.eficiencia
+    perda = (antes - eficiencia_depois) / antes if antes else 0.0
     return ResultadoFalha(
         falha=falha,
-        componentes_antes=componentes_antes,
+        componentes_antes=base.componentes,
         componentes_depois=componentes_depois,
         paradas_isoladas=isoladas,
         paradas_desconectadas=desconectadas,
-        eficiencia_antes=eficiencia_antes,
+        eficiencia_antes=antes,
         eficiencia_depois=eficiencia_depois,
         perda_eficiencia=perda,
         vertices_desativados=vertices,
         arestas_desativadas=arestas,
-        amostra=amostra_usada,
+        amostra=base.amostra,
     )
+
+
+# --- RF-RES-04: ranking de criticidade (F-RES-2) -------------------------------------
+
+
+def paradas_mais_centrais(
+    visao: VisaoGP,
+    n: int,
+    amostra_intermediacao: int | None = None,
+    semente: int = 0,
+) -> list[str]:
+    """As n paradas de maior intermediação ponderada em G_P (F-MET), da maior para a menor.
+
+    Entradas:
+        n: quantas paradas; n <= 0 devolve [].
+        amostra_intermediacao: origens do Brandes amostrado (estimar_intermediacao);
+            None = exato, O(V (V + E) log V), cerca de 40 min no G_P real.
+        semente: semente do sorteio das origens do Brandes.
+    Empate: menor vértice primeiro (ranking da F-MET), então a saída é determinística.
+    Complexidade: tempo O(k (V + E) log V + V log V), k = origens do Brandes; espaço
+        O(V + E).
+    """
+    if n <= 0:
+        return []
+    est = estimar_intermediacao(visao.grafo, amostra_intermediacao, semente=semente)
+    return [visao.parada_do_vertice[v] for v, _ in ranking(visao.grafo, est.valores, n)]
+
+
+def candidatos_criticidade(
+    visao: VisaoGP,
+    n_paradas: int,
+    linhas_do_trecho: Mapping[Trecho, set[str]] | None = None,
+    n_linhas: int | None = None,
+    amostra_intermediacao: int | None = None,
+    semente: int = 0,
+) -> list[Falha]:
+    """Falhas candidatas do ranking: as n_paradas mais centrais e as linhas (RF-RES-04).
+
+    Simular todas as paradas custaria V simulações; a intermediação (F-MET) escolhe as que
+    mais caminhos mínimos atravessam, que são as suspeitas naturais. As linhas são poucas
+    (centenas), então entram todas, ou uma amostra sorteada se n_linhas for menor.
+
+    Entradas:
+        n_paradas: paradas candidatas (0 = nenhuma).
+        linhas_do_trecho: indexar_linhas(rede); None = nenhuma linha candidata.
+        n_linhas: None = todas as linhas do índice; senão, n_linhas sorteadas com a semente.
+        amostra_intermediacao, semente: como em paradas_mais_centrais.
+    Saída: uma Falha por candidato, paradas primeiro e depois linhas em ordem de id.
+    Complexidade: a de paradas_mais_centrais mais O(K + L log L), L = linhas.
+    """
+    falhas = [
+        Falha(paradas=(p,))
+        for p in paradas_mais_centrais(visao, n_paradas, amostra_intermediacao, semente)
+    ]
+    if linhas_do_trecho:
+        linhas = sorted(set().union(*linhas_do_trecho.values()))
+        if n_linhas is not None and n_linhas < len(linhas):
+            linhas = sorted(random.Random(semente).sample(linhas, max(0, n_linhas)))
+        falhas += [Falha(linhas=(linha,)) for linha in linhas]
+    return falhas
+
+
+def ranking_criticidade(
+    visao: VisaoGP,
+    candidatos: Sequence[Falha],
+    linhas_do_trecho: Mapping[Trecho, set[str]] | None = None,
+    amostra: int | None = None,
+    semente: int = 0,
+) -> list[ResultadoFalha]:
+    """Ordena as falhas candidatas pela perda de eficiência que causam (RF-RES-04).
+
+    Cada candidato é simulado sozinho a partir da rede intacta, com as mesmas origens
+    sorteadas (mesma amostra e semente) e o mesmo denominador, então as perdas são
+    comparáveis entre si e cada uma é igual à de simular_falha com os mesmos parâmetros.
+    A linha de base (componentes e eficiência antes) é medida uma vez só, não uma por
+    candidato: o ranking custa c + 1 eficiências, não 2c.
+
+    Entradas: candidatos (ex.: candidatos_criticidade); o resto como em simular_falha.
+    Saída: um ResultadoFalha por candidato, em ordem decrescente de perda; empate pela
+        quantidade de paradas desconectadas (mais primeiro) e depois pela ordem de
+        entrada (ordenação estável).
+    Casos de borda: lista vazia devolve []; candidato inválido levanta o erro de
+        aplicar_falha e a visão volta ao estado de entrada.
+    Complexidade: tempo O((c + 1) s (V + E) log V + c (V + E)), c candidatos e s origens
+        (s = V sem amostra); espaço O(c V) pelas componentes guardadas em cada resultado.
+    """
+    if not candidatos:
+        return []
+    base = _linha_de_base(visao, amostra, semente)
+    resultados = []
+    for falha in candidatos:
+        vertices, arestas = aplicar_falha(visao, falha, linhas_do_trecho)
+        try:
+            resultados.append(_comparar(visao, base, falha, vertices, arestas, set(vertices)))
+        finally:
+            desfazer_falha(visao, vertices, arestas)
+    resultados.sort(key=lambda r: (-r.perda_eficiencia, -len(r.paradas_desconectadas)))
+    return resultados
+
+
+# --- RF-RES-05: falhas múltiplas e em sequência (F-RES-OPC) ------------------------------
+
+
+def simular_falhas(
+    visao: VisaoGP,
+    falhas: Sequence[Falha],
+    linhas_do_trecho: Mapping[Trecho, set[str]] | None = None,
+    amostra: int | None = None,
+    semente: int = 0,
+) -> list[ResultadoFalha]:
+    """Aplica as falhas uma depois da outra e mede a rede depois de cada passo (RF-RES-05).
+
+    O passo k compara a rede intacta com a rede sem as falhas 0..k (efeito acumulado),
+    sempre com as mesmas origens e o mesmo denominador. Ao terminar (inclusive com erro),
+    desfaz tudo na ordem inversa: a visão sai como entrou.
+
+    Decisão: as linhas se acumulam. Um trecho usado pelas linhas L1 e L2 continua depois
+        que L1 falha, mas cai quando L2 também falha, porque nenhuma linha restante o
+        atende. Por isso o passo k aplica as paradas e trechos da falha k junto com todas
+        as linhas que falharam até ali, e o estado final é igual ao de uma falha única que
+        junta todas (testado).
+    Saída: um ResultadoFalha por passo; nele `falha` é a falha do passo,
+        vertices_desativados e arestas_desativadas são o que o passo desligou a mais, e
+        isoladas, desconectadas e perda são acumuladas desde a rede intacta.
+    Casos de borda: lista vazia devolve []; falha inválida levanta o erro de aplicar_falha
+        e desfaz os passos anteriores.
+    Complexidade: tempo O((k + 1) s (V + E) log V + k (V + E + K)), k passos, s origens;
+        espaço O(k V) pelas componentes de cada passo.
+    """
+    if not falhas:
+        return []
+    base = _linha_de_base(visao, amostra, semente)
+    desligados: list[tuple[list[int], list[int]]] = []
+    removidos: set[int] = set()
+    linhas: dict[str, None] = {}
+    resultados = []
+    try:
+        for falha in falhas:
+            linhas.update(dict.fromkeys(falha.linhas))
+            efetiva = Falha(falha.paradas, falha.trechos, tuple(linhas))
+            vertices, arestas = aplicar_falha(visao, efetiva, linhas_do_trecho)
+            desligados.append((vertices, arestas))
+            removidos.update(vertices)
+            resultados.append(_comparar(visao, base, falha, vertices, arestas, removidos))
+    finally:
+        for vertices, arestas in reversed(desligados):
+            desfazer_falha(visao, vertices, arestas)
+    return resultados
+
+
+def sequencia_dirigida(
+    visao: VisaoGP, k: int, amostra_intermediacao: int | None = None, semente: int = 0
+) -> list[Falha]:
+    """Ataque dirigido: as k paradas de maior intermediação, da maior para a menor.
+
+    Decisão: a intermediação é calculada uma vez, na rede intacta, e não recalculada a
+        cada remoção; recalcular custaria k Brandes. Complexidade: a de
+        paradas_mais_centrais.
+    """
+    return [Falha(paradas=(p,)) for p in paradas_mais_centrais(
+        visao, k, amostra_intermediacao, semente)]
+
+
+def sequencia_aleatoria(visao: VisaoGP, k: int, semente: int = 0) -> list[Falha]:
+    """Falhas aleatórias: k paradas ativas sorteadas sem reposição com a semente.
+
+    Decisão: o sorteio usa um gerador derivado da semente (texto "sequencia_aleatoria:"
+        + semente), não random.Random(semente). Com a mesma semente da eficiência, as k
+        paradas sorteadas seriam exatamente as k primeiras origens da amostra (mesma lista
+        de ativos, mesmo gerador), e a remoção "aleatória" derrubaria as próprias origens.
+    Casos de borda: k maior que o número de paradas ativas usa todas; k <= 0 devolve [].
+    Complexidade: O(V).
+    """
+    g = visao.grafo
+    ativos = [v for v in range(g.num_vertices()) if g.vertice_ativo(v)]
+    k = max(0, min(k, len(ativos)))
+    sorteados = random.Random(f"sequencia_aleatoria:{semente}").sample(ativos, k)
+    return [Falha(paradas=(visao.parada_do_vertice[v],)) for v in sorteados]
