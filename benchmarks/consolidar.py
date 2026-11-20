@@ -92,7 +92,7 @@ def de_dict(d: dict) -> tuple[float, float, int]:
 
 def maquina(dados: dict) -> str:
     m = dados.get("maquina")
-    texto = json.dumps(m) if m is not None else ""
+    texto = json.dumps([m, dados.get("processador")])
     for chave, nome in MAQUINAS.items():
         if chave in texto:
             return nome
@@ -104,6 +104,7 @@ def maquina(dados: dict) -> str:
 # JSON sem SHA cujo arquivo de feature registra o SHA do feed usado.
 SHA_NA_FEATURE = {
     "metricas-extensoes-": "8cb0a498",  # feature-F-MET-2.md e feature-F-MET-OPC.md
+    "quadro-horarios-bhtrans": "8cb0a498",  # feature-F-ESPERA-2.md (regerado em 20/11)
 }
 
 
@@ -429,7 +430,8 @@ EXTRATORES = {
     "falhas-extensoes-": de_falhas_extensoes,
     "centralidade-": de_centralidade,
     "nucleo-": de_nucleo,
-    "espera-": de_espera,
+    # espera-2026-11-11.json (macOS, serviço de 04/11) foi substituído pelo de 20/11.
+    "espera-2026-11-20": de_espera,
     "quadro-horarios-bhtrans": de_quadro_horarios,
     "sensibilidade-": de_sensibilidade,
     "f-efi-2-": de_efi_2,

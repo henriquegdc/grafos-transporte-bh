@@ -83,10 +83,12 @@ F-ROTA-2, F-ROTA-OPC, F-BALD, F-BALD-2, F-EFI e F-RES (marcadas com † na tabel
 mostradas em outro ponto do relatório são omitidas (`OMITIDAS` no script) para caber em meia página.
 
 Grupos de máquina e feed na tabela: i5-13600KF / feed de 18/11; Core 5 120U / feed de 11/11 (SHA
-241f0bb2); i5-1235U / feed baixado em 11/11, serviço de 04/11; Ryzen 7 7730U / feed de 18/11; Apple
-M4 / feed de 05/11, serviço de 04/11 (F-ESPERA, F-EFI-2, F-EFI-OPC); Apple M4 / serviço de 04/11 sem
-SHA no JSON (F-ESPERA-2); Windows 11 10.0.26200 sem processador no JSON / feed de 18/11
-(F-ESPERA-OPC). O nome da máquina vem do processador do JSON casado com o registrado no arquivo da
+241f0bb2); i5-1235U / feed baixado em 11/11, serviço de 04/11; Ryzen 7 7730U / feed de 18/11;
+Windows 11 10.0.26200 sem processador no JSON / feed de 18/11 (F-ESPERA-OPC). Na segunda rodada
+de 20/11, F-ESPERA (`espera-2026-11-20.json`, no lugar do de 11/11), F-ESPERA-2, F-EFI-2 e
+F-EFI-OPC foram regeradas no feed de 18/11 no i5-13600KF e saíram dos grupos do Apple M4; o JSON
+do quadro de horários não grava o SHA, que vem de `SHA_NA_FEATURE` (registrado em
+`feature-F-ESPERA-2.md`). O nome da máquina vem do processador do JSON casado com o registrado no arquivo da
 feature (Model 183 = i5-13600KF; Model 186 = Core 5 120U). Ao conferir o JSON da F-RES-2, a linha
 5034 isola uma parada (o arquivo da F-RES-2 e o GUIA diziam "nenhuma"); corrigido nos dois.
 
