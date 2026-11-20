@@ -74,3 +74,68 @@ def simular_trajeto(
     esperas = calcular_esperas(estimar_intervalos(rede, params))
     ge = construir_ge(rede, faixa.nome, params=params, esperas=esperas)
     return trajeto_mais_rapido(ge, origem, destino)
+
+
+def sensibilidade_intervalo(
+    rede: Rede,
+    linha: str,
+    faixa: str,
+    fator: float,
+    pares: int,
+    semente: int,
+    params: Parametros | None = None,
+):
+    """Compara H/2 por padrão e durações dos mesmos pares OD em dois cenários.
+
+    Multiplica o intervalo estimado dos padrões da linha na faixa pelo fator
+    positivo. Padrões sem duas partidas mantêm a regra original. Amostra até
+    N pares distintos sem reposição; None indica ausência de caminho. Com uma
+    parada não há pares. Uma linha inexistente levanta KeyError.
+    Tempo de estimar os intervalos, montar duas visões e até 2N buscas
+    O((V+E) log V). Espaço auxiliar O(V+E+N), além das tabelas de intervalos.
+    """
+    from random import Random
+
+    from transporte.grafo.buscas import INF, dijkstra
+
+    params = params or Parametros()
+    params.faixa(faixa)
+    if linha not in rede.linhas:
+        raise KeyError(linha)
+    if not isfinite(fator) or fator <= 0 or pares < 1:
+        raise ValueError("Informe fator positivo e ao menos um par.")
+    base = estimar_intervalos(rede, params)
+    alterada = base.copy()
+    esperas = []
+    for (pid, nome), intervalo in base.items():
+        if rede.padroes[pid].linha_id == linha and nome == faixa:
+            alterada[pid, nome] = intervalo * fator
+            esperas.append((pid, intervalo / 2, alterada[pid, nome] / 2))
+    if not esperas:
+        raise ValueError("A linha não tem intervalo estimável nesta faixa.")
+    ids = sorted(rede.paradas)
+    tamanho = len(ids)
+    populacao = tamanho * (tamanho - 1)
+    sorteados = Random(semente).sample(range(populacao), min(pares, populacao))
+    od = []
+    for i in sorteados:
+        u, v = divmod(i, tamanho - 1)
+        od.append((ids[u], ids[v + (v >= u)]))
+
+    def duracoes(intervalos):
+        ge = construir_ge(rede, faixa, params, calcular_esperas(intervalos))
+        tempos = []
+        for origem, destino in od:
+            s, t = ge.vertice_da_parada[origem], ge.vertice_da_parada[destino]
+            custo = dijkstra(ge.grafo, s, t).dist[t]
+            tempos.append(None if custo == INF else custo)
+        return tempos, ge.grafo.num_vertices(), ge.grafo.num_arestas()
+
+    antes, v, e = duracoes(base)
+    depois, _, _ = duracoes(alterada)
+    return {
+        "esperas": esperas,
+        "pares": [(o, d, a, b) for (o, d), a, b in zip(od, antes, depois)],
+        "V": v,
+        "E": e,
+    }

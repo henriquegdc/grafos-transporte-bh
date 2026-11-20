@@ -78,6 +78,22 @@ def test_pagina_simula_decompoe_e_preserva_resultado_em_rerun(pagina):
     assert not pagina.metric
 
 
+def test_sensibilidade_l1_dobra_espera_e_preserva_pares(pagina):
+    pagina.checkbox[0].check().run()
+    pagina.selectbox[0].set_value("L1")
+    pagina.number_input[1].set_value(12)
+    pagina.button[0].click().run()
+    assert not pagina.exception
+    esperas, pares = (df.value for df in pagina.dataframe)
+    assert esperas.iloc[0]["Antes"] == 10
+    assert esperas.iloc[0]["Depois"] == 20
+    ac = pares[(pares.Origem == "A") & (pares.Destino == "C")].iloc[0]
+    assert (ac.Antes, ac.Depois) == (20, 30)
+    from math import isnan
+    ca = pares[(pares.Origem == "C") & (pares.Destino == "A")].iloc[0]
+    assert isnan(ca.Antes) and isnan(ca.Depois)
+
+
 def test_pagina_horario_invalido_limpa_resultado(pagina):
     pagina.button[0].click().run()
     assert pagina.metric
