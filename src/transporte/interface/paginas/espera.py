@@ -4,8 +4,10 @@ from datetime import time
 
 import streamlit as st
 
+from transporte.algoritmos.chegada_mais_cedo import chegada_mais_cedo, monte_carlo
 from transporte.dados.modelo import Rede
 from transporte.interface.mapa import render_mapa
+from transporte.modelo.horarios import construir_gt
 from transporte.modelo.parametros import Parametros
 from transporte.simulacao.espera import calcular_esperas, estimar_intervalos, simular_trajeto
 
@@ -99,24 +101,26 @@ def render(rede: Rede) -> None:
         _mostrar_sensibilidade(rede)
         return
     st.title(TITULO)
-    st.caption(
-        "Horários programados, com espera média H/2. A faixa do horário de saída "
-        "vale para todo o trajeto; não usamos a próxima partida exata."
-    )
     if not rede.paradas:
         st.info("A rede não contém paradas para simular um trajeto.")
         return
 
     params = Parametros()
-    intervalos = estimar_intervalos(rede, params)
-    st.subheader("Intervalos e esperas por linha e padrão")
-    faixa = st.selectbox("Faixa da tabela", [f.nome for f in params.faixas])
-    tabela = _tabela_intervalos(rede, params, intervalos)
-    st.dataframe([r for r in tabela if r["Faixa"] == faixa], hide_index=True, width="stretch")
-    st.caption(
-        "Com uma partida distinta na faixa, a espera é provisória (5 min). "
-        "Sem partidas, não há embarque nesse padrão."
-    )
+    modo = st.radio("Modelo de espera", ["Estimativa H/2", "Quadro de horários"], horizontal=True)
+    temporal = modo == "Quadro de horários"
+    if temporal:
+        st.caption("G_T consulta as partidas programadas no dia de serviço carregado.")
+    else:
+        st.caption("A espera média H/2 usa a faixa da saída durante todo o trajeto.")
+        intervalos = estimar_intervalos(rede, params)
+        st.subheader("Intervalos e esperas por linha e padrão")
+        faixa = st.selectbox("Faixa da tabela", [f.nome for f in params.faixas])
+        tabela = _tabela_intervalos(rede, params, intervalos)
+        st.dataframe([r for r in tabela if r["Faixa"] == faixa], hide_index=True, width="stretch")
+        st.caption(
+            "Com uma partida distinta, a espera é provisória (5 min). "
+            "Sem partidas, não há embarque nesse padrão."
+        )
     ids = list(rede.paradas)
 
     def rotulo(pid):
@@ -126,29 +130,63 @@ def render(rede: Rede) -> None:
         origem = st.selectbox("Origem", ids, format_func=rotulo)
         destino = st.selectbox("Destino", ids, index=min(1, len(ids) - 1), format_func=rotulo)
         saida = st.time_input("Horário de saída", value=time(8, 0))
+        if temporal:
+            dias = st.number_input("Dias após o início do serviço (GTFS)", min_value=0, value=0)
+            janela = st.number_input(
+                "Janela Monte Carlo a partir da saída (min)", min_value=1, value=20
+            )
+            n = st.number_input("Amostras", min_value=1, max_value=1000, value=30)
+            semente = st.number_input("Semente", value=42)
         executar = st.form_submit_button("Simular trajeto")
     if executar:
-        # Limpa o resultado anterior antes de uma consulta inválida.
         st.session_state.pop(_RESULTADO, None)
         try:
             saida_s = saida.hour * 3600 + saida.minute * 60 + saida.second
+            if temporal:
+                saida_s += dias * 86400
+            faixa_saida = next((f.nome for f in params.faixas if f.contem(saida_s)), None)
             with st.spinner("Calculando o trajeto…"):
-                trajeto = simular_trajeto(rede, origem, destino, saida_s, params)
-            st.session_state[_RESULTADO] = (rede, saida_s, trajeto)
+                estimativa = None
+                amostras = []
+                if temporal:
+                    cache = st.session_state.get("espera-gt")
+                    if cache is None or cache[0] is not rede:
+                        cache = (rede, construir_gt(rede, params))
+                        st.session_state["espera-gt"] = cache
+                    gt = cache[1]
+                    trajeto = chegada_mais_cedo(gt, origem, destino, saida_s)
+                    amostras = monte_carlo(
+                        gt, origem, destino, saida_s, saida_s + janela * 60, n, semente
+                    )
+                    if faixa_saida:
+                        estimativa = simular_trajeto(rede, origem, destino, saida_s, params)
+                else:
+                    trajeto = simular_trajeto(rede, origem, destino, saida_s, params)
+            st.session_state[_RESULTADO] = (rede, modo, faixa_saida, trajeto, estimativa, amostras)
         except (KeyError, ValueError) as erro:
             st.error(str(erro))
 
     resultado = st.session_state.get(_RESULTADO)
-    if resultado is None or resultado[0] is not rede:
+    if resultado is None or resultado[0] is not rede or resultado[1] != modo:
         return
-    _, saida_s, trajeto = resultado
+    _, _, faixa_saida, trajeto, estimativa, amostras = resultado
+    if temporal:
+        _mostrar_amostras(amostras)
+        if estimativa:
+            espera = estimativa.tempo_por_tipo()["espera"]
+            st.caption(
+                f"Estimativa H/2 para a saída consultada ({faixa_saida}): "
+                f"{espera / 60:.2f} min de espera e {estimativa.tempo_total_s / 60:.2f} "
+                "min de tempo total."
+            )
+        else:
+            st.caption("Estimativa H/2 indisponível para o par e a faixa da saída.")
     if trajeto is None:
-        st.warning("Não há trajeto entre as paradas para a faixa selecionada pela saída.")
+        st.warning("Não há trajeto entre as paradas para a saída selecionada.")
         return
 
-    faixa_trajeto = next(f.nome for f in params.faixas if f.contem(saida_s))
     st.subheader("Resultado da simulação")
-    st.caption(f"Faixa do trajeto: {faixa_trajeto} · Baldeações: {trajeto.baldeacoes}")
+    st.caption(f"{modo} · Baldeações: {trajeto.baldeacoes}")
     parcelas = trajeto.tempo_por_tipo()
     colunas = st.columns(4)
     for coluna, (nome, segundos) in zip(
@@ -181,5 +219,31 @@ def render(rede: Rede) -> None:
     caminhos = tuple(t.paradas for t in trajeto.trechos) or ((trajeto.origem,),)
     paradas_usadas = {p for caminho in caminhos for p in caminho}
     # Projeção apenas para exibição: não recorta nem recalcula os dados da simulação.
-    rede_mapa = Rede({p: rede.paradas[p] for p in paradas_usadas}, {}, {}, {})
-    render_mapa(rede_mapa, caminhos=caminhos, chave="mapa-espera")
+    rede_mapa = Rede({p: rede.paradas[p] for p in paradas_usadas}, rede.linhas, rede.padroes, {})
+    render_mapa(rede_mapa, trajeto=trajeto, chave="mapa-espera")
+
+
+def _mostrar_amostras(amostras):
+    dados = []
+    for a in amostras:
+        if a.total_s is not None:
+            dados.extend(
+                [
+                    {"Parcela": "Total", "Minutos": a.total_s / 60},
+                    {"Parcela": "Espera", "Minutos": a.espera_s / 60},
+                ]
+            )
+    st.subheader("Distribuição das saídas sorteadas")
+    st.caption(f"{len(dados) // 2} de {len(amostras)} saídas com trajeto.")
+    if dados:
+        st.vega_lite_chart(
+            spec={
+                "data": {"values": dados},
+                "mark": "bar",
+                "encoding": {
+                    "x": {"field": "Minutos", "type": "quantitative", "bin": True},
+                    "y": {"aggregate": "count", "title": "Saídas"},
+                    "row": {"field": "Parcela", "type": "nominal", "title": None},
+                },
+            }
+        )

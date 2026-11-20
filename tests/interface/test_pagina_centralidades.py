@@ -11,6 +11,7 @@ Gabarito à mão de G_P da rede de teste (paradas A, B, C, D; vértices 0 a 3):
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -60,7 +61,7 @@ def test_grau_de_saida_com_caminhada(visao):
 
 def test_metrica_desconhecida(visao):
     with pytest.raises(ValueError):
-        pagina.calcular(visao, "proximidade")
+        pagina.calcular(visao, "pagerank")
 
 
 def test_tabela_ranking_ordena_e_mostra_erro(rede, visao):
@@ -141,3 +142,124 @@ def test_shell_abre_centralidades_e_calcula(monkeypatch):
     tabela = at.dataframe[0].value
     assert tabela["Parada"].iloc[0] == "Meio (B)"
     assert "± erro padrão" not in tabela.columns  # 4 origens: o padrão cobre todas (exato)
+
+
+# --- Proximidade (F-MET-2) e comunidades (F-MET-OPC) ----------------------------------
+# Distâncias mínimas de G_P da rede de teste (todas por caminhada, mais curtas que a
+# viagem): A: B 127, C 185, D 174 (soma 486); B: A, C, D 127 (381); C: A 185, B 127,
+# D 254 por B (566); D: A 174, B 127, C 254 por B (555). Todas alcançam as outras 3:
+# proximidade = 3 / soma.
+
+
+def _caminhada(visao) -> dict[tuple[int, int], float]:
+    """Peso de cada aresta de caminhada (os 127 s etc. acima são arredondados)."""
+    g = visao.grafo
+    pesos = {}
+    for a in range(g.num_arestas()):
+        u, v, peso, tipo = g.aresta(a)
+        if tipo == "caminhada":
+            pesos[(u, v)] = peso
+    return pesos
+
+
+def test_proximidade_exata_gabarito(visao):
+    w = _caminhada(visao)
+    a, b, c_, d = 0, 1, 2, 3
+    somas = [
+        w[a, b] + w[a, c_] + w[a, d],
+        w[b, a] + w[b, c_] + w[b, d],
+        w[c_, a] + w[c_, b] + w[c_, b] + w[b, d],
+        w[d, a] + w[d, b] + w[d, b] + w[b, c_],
+    ]
+    c = pagina.calcular(visao, pagina.PROXIMIDADE, amostra=None)
+    assert c.valores == pytest.approx([3 / s for s in somas])
+    assert c.erros is None and "exata (4 origens)" in c.descricao
+
+
+def test_proximidade_amostrada_descreve_amostra(visao):
+    c = pagina.calcular(visao, pagina.PROXIMIDADE, amostra=2)
+    assert "2 de 4 origens" in c.descricao
+
+
+def test_tabela_ranking_proximidade(rede, visao):
+    c = pagina.calcular(visao, pagina.PROXIMIDADE, amostra=None)
+    linhas = pagina.tabela_ranking(rede, visao, c, 4)
+    assert [linha["Parada"].split(" (")[1][0] for linha in linhas] == ["B", "A", "D", "C"]
+    assert linhas[0]["Valor"] == round(c.valores[1], 6)
+
+
+def test_comunidades_na_rede_de_teste(rede, visao):
+    # A, B, C, D são todas vizinhas de B (não dirigido): uma comunidade só, Q = 0.
+    c = pagina.calcular_comunidades(visao)
+    assert c.comunidades.quantidade == 1 and c.comunidades.convergiu
+    assert c.modularidade == pytest.approx(0.0)
+    linhas = pagina.tabela_comunidades(rede, visao, c, 10)
+    assert linhas == [
+        {"Comunidade": 1, "Paradas": 4, "% das paradas": 100.0, "Exemplo": "Origem (A)"}
+    ]
+
+
+def test_mapa_comunidades_tem_uma_camada_por_comunidade(rede, visao):
+    c = pagina.calcular_comunidades(visao)
+    mapa = pagina.mapa_comunidades(rede, visao, c)
+    html = mapa.get_root().render()
+    assert "Comunidade 1 (4 paradas)" in html
+    assert pagina.CORES_COMUNIDADES[0] in html
+    assert type(list(mapa._children.values())[-1]).__name__ == "LayerControl"
+
+
+def _abrir_centralidades(monkeypatch) -> AppTest:
+    monkeypatch.setattr(app, "listar_fontes", lambda: (FONTE,))
+    monkeypatch.setattr(app, "render_mapa", lambda *a, **kw: None)
+    monkeypatch.setattr(pagina, "st_folium", lambda *a, **kw: None)
+    at = AppTest.from_string("from transporte.interface.app import main\nmain()")
+    at.run(timeout=30).button[0].click().run(timeout=30)
+    at.sidebar.radio[0].set_value("Centralidades").run(timeout=30)
+    return at
+
+
+def _botao(at: AppTest, rotulo: str):
+    return next(b for b in at.button if b.label == rotulo)
+
+
+def test_shell_calcula_proximidade(monkeypatch):
+    at = _abrir_centralidades(monkeypatch)
+    metrica = next(r for r in at.radio if "Proximidade (Wasserman-Faust)" in r.options)
+    metrica.set_value(pagina.PROXIMIDADE)
+    _botao(at, "Calcular").click().run(timeout=30)
+    assert not at.exception
+    assert at.dataframe[0].value["Parada"].iloc[0] == "Meio (B)"
+    assert any("Proximidade exata" in c.value for c in at.caption)
+
+
+def test_shell_detecta_comunidades(monkeypatch):
+    at = _abrir_centralidades(monkeypatch)
+    _botao(at, "Detectar comunidades").click().run(timeout=30)
+    assert not at.exception
+    valores = {m.label: m.value for m in at.metric}
+    assert valores["Comunidades"] == "1"
+    assert valores["Modularidade"] == "0.000"
+    assert at.dataframe[0].value["Paradas"].iloc[0] == 4
+
+def test_proximidade_e_comunidades_em_rede_com_uma_parada(monkeypatch):
+    monkeypatch.setattr(pagina, "st_folium", lambda *a, **kw: None)
+    at = AppTest.from_string(
+        "import streamlit as st\n"
+        "from transporte.interface.paginas.centralidades import render\n"
+        "render(st.session_state.rede)\n"
+    )
+    rede = ler(FONTE)
+    at.session_state["rede"] = replace(
+        rede, paradas={"A": rede.paradas["A"]}, padroes={}, viagens={}
+    )
+    at.run()
+    assert not at.exception
+
+    at.radio[0].set_value(pagina.PROXIMIDADE)
+    _botao(at, "Calcular").click().run()
+    assert not at.exception
+    assert at.dataframe[0].value["Valor"].tolist() == [0.0]
+
+    _botao(at, "Detectar comunidades").click().run()
+    assert not at.exception
+    assert at.dataframe[1].value["Paradas"].tolist() == [1]
