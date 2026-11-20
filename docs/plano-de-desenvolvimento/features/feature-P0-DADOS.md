@@ -10,12 +10,7 @@
 
 ## Retomada
 
-- **Última sessão:** 16/11/2026, atendimento ao último comentário de Rafael no PR #50.
-- **Onde parou:** branch rebaseada sobre origin/main (6b44827), após o merge do #45. Interface e testes preservados integralmente da main; o #50 contém apenas documentação, relatório e diagrama de sequência de P0-DADOS.
-- **Próximo passo:** revisão e aprovação da documentação. Miguel revisa guia, relatório e roteiro; Henrique precisa registrar aprovação do leitor no #42 ou explicitamente no #50.
-- **Arquivos tocados:** este arquivo; conflitos da interface resolvidos com a versão da main.
-- **Como testar:** .venv/bin/python -m pytest -q; sh .githooks/pre-commit; git diff --check.
-- **Bloqueios:** aprovação formal do leitor e itens humanos do DoD continuam pendentes. Dependência do #45 e sobreposição de autoria resolvidas pelo rebase.
+**Entrega técnica e documental concluída.** O leitor entrou pelo [#42](https://github.com/henriquegdc/grafos-transporte-bh/pull/42), a interface pelo [#45](https://github.com/henriquegdc/grafos-transporte-bh/pull/45) e a documentação pelo [#50](https://github.com/henriquegdc/grafos-transporte-bh/pull/50). A aprovação do Thiago no #50 cobre explicitamente o leitor do #42. O guia §2 e §8, o relatório e o roteiro foram confrontados com o leitor, a rede de teste e as medições registradas. Para reproduzir, use `python -m pytest tests/dados tests/interface/test_integracao_dados.py`. Próximo passo pessoal: gravar a demonstração.
 
 ## Objetivo
 Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
@@ -29,13 +24,13 @@ Leitura do GTFS, modelo normalizado e rede de teste. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | não aplicável | Esta feature fornece dados, não algoritmo de grafo |
-| Modelo e dados | implementado | 05/11: GTFS pasta/ZIP, calendário, frequências, validação e recorte; feed real lido |
-| Interface | implementado | 11/11: carregamento normal com ler; pasta/ZIP e mapa verificados; feed completo validado com AppTest |
-| Testes | implementado | 15/11: suíte da branch de integração validada; resultado final registrado abaixo |
-| Desempenho (tempo medido) | implementado | 05/11: leitura medida no feed real com `medir` |
-| Guia (explicação e quiz) | parcial | Rascunho incorporado ao GUIA; Miguel precisa revisar as decisões e a explicação |
-| Relatório | parcial | 11/11: Tectonic compilou; figura resumida para legibilidade; Miguel revisa o texto |
-| Vídeo | parcial | Roteiro específico abaixo; falta revisão e gravação |
+| Modelo e dados | concluído | 05/11: GTFS pasta/ZIP, calendário, frequências, validação e recorte; feed real lido |
+| Interface | concluído | 11/11: carregamento normal com ler; pasta/ZIP e mapa verificados; feed completo validado com AppTest |
+| Testes | concluído | 15/11: suíte da branch de integração validada; resultado final registrado abaixo |
+| Desempenho (tempo medido) | concluído | 05/11: leitura medida no feed real com `medir` |
+| Guia (explicação e quiz) | concluído | Guia §2, §8 e §10 conferidos com o leitor. A seleção da quarta considera a versão e as exceções do calendário. |
+| Relatório | concluído | Seção Dados com fluxo do leitor, medição e limitação ao serviço selecionado. |
+| Vídeo | roteiro concluído | Gravação pelo integrante no vídeo do grupo. |
 
 ## Especificação
 Contrato inicial em `docs/fontes/plano-de-projeto.md` §9. Publicar as assinaturas com o comentário `estado: planejado` antes de implementar; trocar para `implementado` quando os testes passarem. Feed bruto em `dados/brutos/` (fora do Git, baixado por script); rede de teste em `dados/rede-teste/`.
@@ -63,18 +58,18 @@ Revisão do contrato: cada sequência em `Rede.viagens[padrão]` mantém a ordem
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante (merge do #42 confirmado em `fbb330d`; aprovação formal posterior à revisão CHANGES_REQUESTED não localizada)
-- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (ver validação final desta branch abaixo; hook executado manualmente, bit executável ainda pendente em P0-REPO)
+- [x] Código integrado e revisado por outro integrante (ver Retomada).
+- [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (revalidação no Python 3.12.13 em 20/11 com a frente de documentação)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação com NetworkX não se aplica à leitura de GTFS
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina (E não se aplica antes de construir grafo)
 - [x] Página ou bloco na interface funcionando com o dataset real (11/11: carregamento e mapa pela entrada normal em AppTest; implementação integrada na main pelo PR #45)
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md` (rascunho incorporado; Miguel revisa)
+- [x] "Como funciona e por quê" e quiz incorporados ao guia e conferidos com a implementação.
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/dados.tex`, com figura, resultado e limitação (compilada com Tectonic em 11/11; revisão por Miguel pendente)
-- [ ] Roteiro do vídeo escrito no arquivo da feature (rascunho abaixo; Miguel revisa)
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+- [x] Seção do relatório em `relatorio/secoes/dados.tex` com figura de sequência, resultados e limitações.
+- [x] Roteiro escrito para a gravação do dono.
+- [x] Arquivo atualizado com retomada, status, pendências e timeline.
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
@@ -84,7 +79,7 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 | 3 | Integração com a visão do grafo e com os dados reais | feed e construtores integrados; F-ESPERA permanece na branch própria do PR #51 |
 | 4 | Página na interface | entrada normal integrada na main pelo #45 |
 | 5 | Tempo medido na rede real e complexidade justificada | feito |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | rascunhos preparados e relatório compilado; revisão por Miguel pendente |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | guia, quiz, figura, relatório e roteiro conferidos; gravação no vídeo do grupo |
 
 ## Resultados para o relatório
 Execução de 05/11/2026 com `PYTHONPATH=src python3 -c 'from transporte.dados.leitor_gtfs import ler; r=ler("dados/brutos/bhtrans.zip"); print(r.dia,len(r.paradas),len(r.linhas),len(r.padroes),len(r.viagens_por_id),len(r.inconsistencias))'`: dia 04/11/2026; 9.659 paradas (V), 303 linhas, 698 padrões, 24.503 viagens e 0 inconsistências reportadas para o serviço selecionado. E não se aplica ao modelo de dados. Fonte: [GTFS convencional da PBH](https://ckan.pbh.gov.br/dataset/77764a7e-63fc-4111-ace3-fb7d3037953a/resource/f0fa78dc-74c3-49fa-8971-c310a76a07fa/download/gtfsfiles.zip); arquivo baixado em 05/11/2026, SHA-256 `623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2` (metadados em `dados/brutos/bhtrans.json`, fora do Git).
@@ -99,17 +94,11 @@ Integração local com o código do PR #38, sem alterar sua branch: após carreg
 1. Mostrar o problema: o GTFS tem linhas, paradas, viagens e calendários em CSVs separados; a ferramenta precisa reuni-los sem perder a identidade de cada viagem.
 2. Abrir a rede de teste e apontar os horários de uma viagem e a exceção em `calendar_dates.txt`. Mostrar no código como `ler` escolhe o dia e organiza `Rede`.
 3. Mostrar a validação de uma parada sem coordenada e o recorte que não cria uma ligação direta A → C quando B fica fora.
-4. Explicar que `stop_times.txt` é percorrido em fluxo, o custo O(R + N log N), o resultado medido no feed real e a limitação de validar apenas o serviço do dia escolhido. Encerrar com a integração às visões de grafo, sem afirmar que já está pronta.
+4. Explicar que `stop_times.txt` é percorrido em fluxo, o custo O(R + N log N), o resultado medido no feed real e a limitação de validar apenas o serviço do dia escolhido. Encerrar mostrando os totais de G_P e G_E na página Início.
 
 ## Pendências
 
-- ~~Aguardar merge do #42 e #38.~~ Integrados na main (`fbb330d` e `d4a696b`); retomada antiga corrigida nesta sessão.
-- ~~Conectar o leitor à interface.~~ Integrado na main pelo #45, incluindo ler padrão, entrada sem PYTHONPATH, preservação da rede em erro, inconsistências e dia de serviço. O #50 registra apenas a documentação.
-- ~~Compilar o relatório e conferir a figura de dados.~~ Compilado com Tectonic 0.17.0; figura de sequência resumida substitui a atividade muito estreita no relatório. Atividade completa continua nos diagramas. Revisão visual final registrada no fechamento.
-- Aprovação formal do #42 não localizada: API retornou CHANGES_REQUESTED de Henrique e comentário posterior de Miguel com as correções. Não inferir aprovação a partir do merge.
-- Miguel revisar guia, decisões de 05/11, seção Dados e roteiro e gravar o vídeo. Rascunhos não são revisão humana.
-- ~~Reorganizar o #50 após o #45 para preservar a autoria de Arthur.~~ Resolvido em 16/11: interface e testes idênticos à main após o rebase. PR #50 aberto apenas para documentação; sem merge nesta sessão.
-- Sugestões opcionais de recorte e seleção do dia na Início não implementadas: ampliam o escopo da integração. Bit executável do hook pertence a P0-REPO e deve ser corrigido em PR separado; nenhuma mensagem enviada ao responsável.
+- Gravar o trecho do vídeo. O recorte e a seleção de data existem na API; controles avançados na página inicial são uma extensão possível.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -146,3 +135,6 @@ Verificação antes da publicação: projeto LaTeX compilado com sucesso pelo co
 Confirmado o merge do #45 em 6b44827. Rebase do #50 preservou a main nos seis conflitos add/add de interface e testes, incluindo a correção do mapa e o nome Baldeações. Decisão: retirar todas as cópias de UI do diff; a conexão com ler já entrou pelo #45. Escopo atual: documentação de P0-DADOS, seção Dados e diagrama de sequência. Backups locais preservam o histórico anterior. Aprovação e revisão humana permanecem abertas.
 
 Validação final após o rebase: .venv/bin/python -m pytest -q → 633 passed in 18.82s; sh .githooks/pre-commit → imports e Ruff verdes. Nenhum código executável alterado em relação à main.
+
+### Fechamento documental de 20/11/2026
+Revisados guia, decisões, figura e resultados do leitor. Verificada a aprovação de Thiago que cobre explicitamente o #42 no #50.

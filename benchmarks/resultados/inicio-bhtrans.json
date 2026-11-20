@@ -1,0 +1,35 @@
+{
+  "feed": "dados/brutos/bhtrans.zip",
+  "sha256": "623bdf422fb01e8c80373bf92d9cf261199cff213b9eaee9ff16a5610d8d2bd2",
+  "dia": "2026-11-04",
+  "maquina": "macOS-26.6.2-arm64-arm-64bit",
+  "python": "3.12.13",
+  "faixa": "pico_manha",
+  "visoes": {
+    "G_P": {
+      "V": 9659,
+      "E": 122732
+    },
+    "G_E": {
+      "V": 46100,
+      "E": 208956
+    }
+  },
+  "tempos": {
+    "carga_cache_frio": {
+      "media_s": 7.826745236001443,
+      "desvio_s": 0.034246894001078235,
+      "repeticoes": 3
+    },
+    "carga_cache_quente": {
+      "media_s": 0.670967708011934,
+      "desvio_s": 0.01660465354879506,
+      "repeticoes": 3
+    },
+    "montagem_gp_ge": {
+      "media_s": 0.4401145553177533,
+      "desvio_s": 0.001357469450660896,
+      "repeticoes": 3
+    }
+  }
+}

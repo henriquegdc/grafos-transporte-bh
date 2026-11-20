@@ -1,11 +1,30 @@
 # Guia do projeto · Análise de redes de transporte público
 
 Para quem não escreveu o código. Explica como a ferramenta funciona e por que foi feita assim.
-Não cria requisito: explica o que docs/fontes/ decide. Integrador: Caio.
+As definições de requisitos e modelagem estão em `docs/fontes/`.
 
 ## 1. Visão geral
-O problema, as seis perguntas, o caminho do dado: GTFS -> modelo normalizado -> visões do grafo
--> algoritmos -> interface. Um diagrama de componentes.
+Quanto tempo leva uma viagem de ônibus entre duas paradas de BH? A resposta depende
+das linhas que atendem cada parada, do sentido, do horário e da caminhada necessária
+para fazer uma troca. O GTFS descreve o serviço programado para uma data. As páginas
+do aplicativo usam esse serviço para responder às seguintes perguntas.
+
+| Pergunta | Página | Unidade de análise |
+|---|---|---|
+| Qual o trajeto mais rápido? | Trajetos | Tempo de caminhada, espera e viagem entre origem e destino |
+| Quanto tempo se espera pelo ônibus? | Espera | Intervalo por padrão de linha, faixa e instante de partida |
+| Como fazer menos baldeações? | Baldeações | Ordem das trocas entre padrões |
+| Que paradas ocupam posições importantes? | Centralidades | Conexões e caminhos mínimos que passam pela parada |
+| Quão acessível é a rede? | Eficiência | Tempos entre pares de paradas e alcance a partir de uma origem |
+| O que acontece quando uma parada ou linha falha? | Falhas | Conectividade e eficiência antes e depois da remoção |
+
+O leitor converte o GTFS em uma `Rede`. Cada construtor escolhe quais objetos dessa
+rede viram vértices, quais ligações viram arestas e o que cada peso representa. A
+página seleciona a visão adequada, executa o algoritmo e apresenta o resultado em
+mapa ou tabela. Para reproduzir uma consulta, carregue o mesmo arquivo e dia de
+serviço e mantenha a faixa, os parâmetros e a semente usados na primeira execução.
+
+![Leitura, construção das visões, algoritmos e páginas](diagramas/componentes.png)
 
 ## 2. Dados e GTFS (Miguel)
 
@@ -47,8 +66,18 @@ passagem pelos dados. A explicação do fluxo aparece no diagrama
 `docs/diagramas/atividade-p0-dados.png`.
 
 ## 3. Modelagem e visões do grafo (Henrique)
-G_P, G_E, G_L e G_T: o que é vértice, o que é aresta, que pergunta cada uma responde e por quê.
-Espera esperada e paradoxo da inspeção. Parâmetros e seus motivos.
+| Visão | Vértices e arestas | Como interpretar um caminho |
+|---|---|---|
+| G_P | Paradas unidas por trechos dirigidos de viagem e caminhada | O peso acumulado representa o deslocamento estrutural em segundos. Permite estudar centralidade e falhas. |
+| G_E | Paradas e plataformas ligadas por embarque, desembarque, viagem ou caminhada | Mudar de veículo exige novo embarque. A espera de cada padrão é estimada para a faixa escolhida. |
+| G_L | Padrões de linha ligados por trocas possíveis entre posições de seus itinerários | Cada troca acrescenta uma baldeação. Os rótulos de posição impedem voltar no sentido contrário ao percurso. |
+| G_T | Paradas ligadas por viagens programadas e caminhada | O custo do próximo embarque depende de quando se chega ao ponto. O rótulo é o horário de chegada. |
+
+Se os ônibus passam regularmente e as chegadas ao ponto são uniformes, um
+passageiro espera, em média, metade do intervalo. Se os intervalos variam, o
+passageiro tem mais chance de chegar durante um intervalo longo. É o paradoxo da
+inspeção. A estimativa H/2 por faixa e a consulta pelo horário de saída respondem
+a perguntas diferentes sobre a mesma viagem.
 
 ### Construtores de G_P e G_E (P0-MODELO)
 
@@ -69,8 +98,7 @@ ge.vertice_da_parada["A"]; ge.plataforma[("A", padrao_id)]
 **G_P.** Um vértice por parada. Uma aresta VIAGEM a → b para cada par de paradas
 consecutivas em algum padrão, com peso igual à mediana das diferenças de horário de todas as
 viagens que passam por ali (D2). Arestas CAMINHADA nos dois sentidos entre paradas a até 300 m,
-com peso distância / 1,2 m/s. Exemplo: viagens de 300, 360 e 300 s de A a B dão 300 s; se uma
-tivesse −500 s (erro de cadastro), ela ficaria fora e a mediana de 60 e 80 seria 70 (D8).
+com peso distância / 1,2 m/s. As diferenças negativas são descartadas antes de calcular a mediana (D8).
 
 **G_E.** Em G_P, continuar no ônibus e trocar de ônibus custam o mesmo. G_E cria uma
 **plataforma** por (parada, padrão): para trocar de linha é preciso desembarcar (0 s), voltar à
@@ -168,9 +196,7 @@ Limitações: sem pesos negativos (no projeto todo peso é tempo); vértice e ar
 removidos, só desativados; com `destino`, só a distância do destino é garantida.
 
 ## 5. Features
-Uma subseção por feature, copiada e ajustada de "Como funciona e por quê" do arquivo da feature:
-5.1 Trajeto mais rápido · 5.2 Espera · 5.3 Baldeações · 5.4 Centralidades · 5.5 Eficiência ·
-5.6 Falhas · 5.7 Desejáveis e opcionais que foram feitas.
+Cada subseção reúne as hipóteses da análise e a interpretação do resultado mostrado na página correspondente.
 
 ### 5.1 Trajeto mais rápido (F-ROTA)
 
@@ -785,8 +811,33 @@ indexado pela origem e pelos metadados dos arquivos; cada sessão recebe uma có
 que simulações mutáveis não alterem a rede de outras sessões. Um erro de carga é mostrado sem
 substituir a rede anterior.
 
+Medida no feed da BHTrans (serviço de 04/11/2026, faixa `pico_manha`, três repetições,
+`benchmarks/resultados/inicio-bhtrans.json`): carga com cache frio 7,827 ± 0,034 s, carga
+com cache quente (incluindo a cópia por sessão) 0,671 ± 0,017 s e montagem do resumo de G_P
+e G_E 0,440 ± 0,001 s.
+
 ## 7. Como testamos e medimos (Rafael)
-Gabarito à mão, comparação de resultado com NetworkX, medição de tempo.
+A pasta `dados/rede-teste/` contém o feed pequeno e um gabarito calculado à mão.
+Confira primeiro uma viagem específica no `GABARITO.md`, depois execute a suíte
+com `python -m pytest`. A escolha da faixa, da caminhada e da data faz parte do
+experimento. Nos testes da espera, por exemplo, desativar a caminhada permite
+verificar o intervalo sem que o roteador encontre um atalho a pé.
+
+Para checar uma propriedade em várias topologias, os testes geram grafos pequenos
+com semente fixa. As distâncias e componentes são comparadas com as do NetworkX;
+caminhos distintos podem ter o mesmo custo mínimo. Os testes AppTest percorrem
+os controles públicos da página e conferem o resultado apresentado ao usuário.
+Os scripts de desempenho usam o feed real e guardam a identificação do conjunto
+medido. Execute as medições uma de cada vez e conserve os JSONs junto aos comandos.
+
+### Verificação do repositório (P0-REPO)
+
+Após clonar, ative o hook com `git config core.hooksPath .githooks`. Antes do
+commit, o hook executa o verificador de imports e o Ruff. O verificador lê a
+árvore sintática dos módulos de `src/`, encontra importações mesmo com alias e
+separa o código da aplicação dos testes que usam NetworkX como referência. Para
+reproduzir a verificação no terminal, execute `sh .githooks/pre-commit`. A suíte
+de testes roda em uma etapa separada antes do push.
 
 ### Medição de tempo (P0-AVAL)
 
@@ -894,6 +945,9 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 
 | Data | Decisão | Por quê | Alternativa descartada |
 |---|---|---|---|
+| 20/11 | O grupo reabriu as extensões no plano de finalização e distribuiu a integração do guia e dos slides a Miguel | A versão de apresentação volta a contemplar os requisitos desejáveis e opcionais | Manter o corte do congelamento de 15/11 |
+| 20/11 | Tempos finais das features são coletados em sequência no mesmo computador e gravados com contexto no JSON | A carga simultânea altera os tempos de parede e prejudica a comparação | Rodar benchmarks pesados simultaneamente |
+| 20/11 | G_T preserva por segmento as partidas ainda competitivas por horário de chegada e reutiliza a caminhada de G_P | Uma partida posterior pode chegar antes por ultrapassagem; quem chega cedo tem a opção de esperar | Aceitar sempre a primeira partida do quadro bruto |
 | 29/10 | Método enxuto, sem plantão, ata, reunião semanal nem controle de mudança formal | Trabalho de 1 mês; o custo desses rituais só se paga em projetos longos | Manter o método do TI5 inteiro |
 | 29/10 | Sem CI/CD e sem releases | Não há deploy nem versão publicada; a regra crítica fica no hook e na revisão | GitHub Actions com checks obrigatórios |
 | 29/10 | Hook de pre-commit com verificação de imports e ruff | A regra que zera a nota não pode depender só de atenção | Só revisão humana |
@@ -927,7 +981,7 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 29/10 | Todos os arquivos de feature e as issues criados na abertura do repositório | Cada integrante clona, pergunta ao agente o que fazer e começa no mesmo dia | Cada dono cria os seus quando começar |
 | 03/11 | `medir` usa `time.perf_counter` e devolve média e desvio amostral (N − 1), sem aquecimento nem descarte de outliers (P0-AVAL) | Relógio monotônico de maior resolução; as N execuções são amostra; número honesto e contrato simples | `time.time`, desvio populacional, descartar a primeira execução |
 | 03/11 | `Medicao.formatar()` acrescentado ao contrato de medição, escolhendo µs, ms ou s pela média (P0-AVAL) | Mesmo formato de tempo em todas as features, na interface e na tabela do relatório | Cada feature formata o seu |
-| 03/11 | Relatório com uma seção por arquivo, seções de feature incluídas sozinhas por `\InputIfFileExists` e `\pendente` para o que falta (P0-AVAL) | Cada dono edita só o seu arquivo, sem conflito de merge e sem mexer no `main.tex`; o que falta fica visível no PDF | Um `main.tex` único editado por todos |
+| 03/11 | Relatório com uma seção por arquivo, seções de feature incluídas sozinhas por `\InputIfFileExists` e indicação visual para o que falta (P0-AVAL) | Cada dono edita só o seu arquivo, sem conflito de merge e sem mexer no `main.tex`; o que falta fica visível no PDF | Um `main.tex` único editado por todos |
 | 03/11 | Relatório compilado com `latexmk` para `relatorio/build/`, fora do Git; PDF versionado só na entrega (P0-AVAL) | Arquivos gerados não poluem o histórico nem causam conflito | Versionar o PDF a cada mudança |
 | 05/11 | Piso de 1 s nas arestas de viagem e de caminhada de G_P e G_E (`Parametros.peso_minimo_s`); desembarque continua com 0 (P0-MODELO, a pedido da F-MET, decisão M2) | O GTFS arredonda horários e paradas no mesmo ponto ficam a 0 m; com peso 0 o Brandes deixa de contar certo os caminhos mínimos, e 0 s entre paradas distintas não é tempo real | Desempatar pelo número de arestas no Brandes; somar ε só dentro do Brandes |
 | 05/11 | Diferença de horário negativa fica fora da mediana; trecho sem diferença válida recebe o piso (D8) | É erro de cadastro isolado; o trecho existe na sequência do padrão | Levantar erro; descartar a viagem inteira |
@@ -940,14 +994,14 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 05/11 | Peso negativo, infinito ou NaN recusado na inserção; desativar é flag; empate no heap pelo menor item (G4 a G6, P0-GRAFO) | O Dijkstra só é correto com pesos ≥ 0; reativar volta exatamente ao estado anterior; caminhos de mesmo custo determinísticos para os gabaritos | Validar dentro do Dijkstra; remover vértices e arestas |
 | 05/11 | Dijkstra com inserção preguiçosa, sem "diminuir chave" (P0-GRAFO) | Mesmo O((V + E) log V) com código menor e sem o mapa vértice → posição no heap; custa espaço O(E) | Heap indexado com diminuir chave |
 | 05/11 | Grau conta arestas, com filtro por tipo; caminhos da intermediação como sequência de vértices (paralelas viram a de menor peso, laços ignorados); normalização opcional, ligada na página (M1, M3 e M4, F-MET) | Definições usuais, comparáveis ao NetworkX; viagem e caminhada entre o mesmo par são uma ligação só; o bruto é mais fácil de explicar e o normalizado compara redes de tamanhos diferentes | Vizinhos distintos; contar cada paralela como caminho distinto |
-| 15/11 | F-EFI usa G_P para eficiência global estrutural e G_E somente para o tempo médio entre paradas; pares ordenados, sem auto-pares; inalcançáveis somam zero na eficiência e são excluídos da média de tempo | G_P tem unidades de tempo sem as plataformas de custo zero de G_E; o custo total de G_E preserva a semântica de `Trajeto.tempo_total_s` da F-ROTA | Calcular eficiência sobre todos os nós de G_E; tratar viagem inexistente como duração zero |
+| 15/11 | F-EFI usa G_P para eficiência global estrutural e G_E somente para o tempo médio entre paradas; pares ordenados, sem auto-pares; inalcançáveis somam zero na eficiência e são excluídos da média de tempo | G_P tem pesos de tempo sem as plataformas de custo zero de G_E; o custo total de G_E preserva a semântica de `Trajeto.tempo_total_s` da F-ROTA | Calcular eficiência sobre todos os nós de G_E; tratar viagem inexistente como duração zero |
 | 15/11 | Amostras de origem e de pares são uniformes sem reposição e têm semente explícita; o erro informado é erro padrão amostral | Evita duplicar observações por sorteio; permite repetição determinística e reporta dispersão da média sem inventar um nível de confiança | Amostragem não reproduzível ou intervalo de confiança com nível não especificado |
 | 16/11 | Intermediação por amostragem de k origens, com estimativa (N/k) · soma e erro padrão por parada com correção de população finita (M5, F-MET, RNF-06) | O exato faz um Dijkstra por parada (cerca de 40 min no G_P real); a amostra de origens é não viesada e informa o erro; mesmo formato de estimativa da F-EFI | Amostrar pares (s, t); exato na página |
 | 16/11 | F-MET-2 e F-MET-OPC cortadas pelo congelamento de 15/11; a intermediação amostrada com erro medido contra a exata (RF-MET-05) entrou pela F-MET, por causa do RNF-06 | Regra do calendário: depois de 15/11, só correção; a página essencial (RF-MET-03) ainda faltava | Fazer a proximidade (RF-MET-04) depois do congelamento |
 | 06/11 | Henrique integra o relatório final (itens 5 e 6 da seção 2.1) e monta o vídeo (item 9) | Pedido do Henrique; issues #28 e #30 reatribuídas a ele. Rafael segue com a avaliação de desempenho e o fechamento do vídeo; cada dono continua escrevendo a sua seção e gravando o seu trecho | Rafael integra o relatório; Caio monta o vídeo |
-| 05/11 (rascunho para Miguel revisar) | Leitor escolhe a quarta-feira ativa mais próxima da versão do feed, quando essa data existe | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
-| 05/11 (rascunho para Miguel revisar) | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
-| 05/11 (rascunho para Miguel revisar) | Recorte separa trechos desconectados e reúne os que têm a mesma linha e sequência de paradas | Não inventa viagem direta entre paradas quando a intermediária sai do recorte nem divide as partidas de uma plataforma equivalente | Concatenar todas as paradas restantes; manter padrões duplicados após o recorte |
+| 05/11 | Leitor tenta a quarta-feira da versão do feed ou a imediatamente anterior; se inválida, usa a primeira quarta com serviço da vigência | Mantém a análise reproduzível e próxima do instantâneo baixado | Usar sempre a primeira quarta-feira da vigência, que pode ser antiga |
+| 05/11 | `stop_times.txt` é lido em fluxo e só horários de serviços ativos são guardados | Evita carregar o CSV inteiro do feed real em memória | Materializar todos os horários antes de filtrar |
+| 05/11 | Recorte separa trechos desconectados e reúne os que têm a mesma linha e sequência de paradas | Não inventa viagem direta entre paradas quando a intermediária sai do recorte nem divide as partidas de uma plataforma equivalente | Concatenar todas as paradas restantes; manter padrões duplicados após o recorte |
 | 11/11 | G_L dirigida, com as trocas não dominadas (posição de descida, posição de embarque) em cada aresta; mínimo de baldeações por BFS por camadas com a posição de embarque no rótulo (B1, F-BALD) | Os padrões têm sentido: o BFS comum usa trocas que ficaram para trás e dá só um limite inferior (menos baldeações que o possível em 14 de 200 pares no feed real) | BFS comum na G_L; BFS 0-1 no G_E (exato, mas não constrói a G_L e roda num grafo de 46.100 vértices, com caminhadas encadeadas) |
 | 11/11 | Laço P → P na G_L (B2, F-BALD) | Descer, andar e pegar o mesmo padrão mais atrás é outro embarque; sem o laço, o NetworkX achou trajetos com um ônibus a menos | Proibir troca para o mesmo padrão |
 | 11/11 | Caminhada de até 300 m, uma por vez, entre paradas, na F-BALD; destino a até 300 m da origem vai a pé (B3) | É a ligação que a modelagem define para a G_L; encadear caminhadas tornaria a distância a pé ilimitada | Caminhadas encadeadas, como no G_E |
@@ -965,10 +1019,33 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 20/11 | Teto padrão de 2·k caminhos do Yen no filtro por sequência de linhas da F-ROTA-OPC (decisão do Henrique) | Com 4·k, o filtro quase não achava sequências novas no feed real (segunda sequência em 2 de 8 pares) e custava 4 a 5 vezes o Yen puro; com 2·k, segunda sequência em 1 de 8 pares, a 2,1 a 2,3 vezes o Yen puro (pior par 45,4 s), k = 5 | 4·k, sugestão da revisão do #57 (pior par 100,8 s com a máquina carregada); sem filtro, só o Yen puro |
 
 ## 9. Glossário
-Parada, padrão, plataforma, embarque, baldeação, intervalo, isócrona, intermediação, ...
+
+| Termo | Significado neste projeto |
+|---|---|
+| Dia de serviço | Data GTFS para seleção de viagens. Um horário acima de 24h ainda pertence à mesma jornada. |
+| Parada | Ponto identificado por `stop_id`. Pontos próximos de sentidos opostos podem ter IDs diferentes. |
+| Linha e padrão | A linha é o serviço identificado por `route_id`. Um padrão é a linha combinada com a sequência ordenada de paradas. |
+| Plataforma | Vértice de G_E para uma parada atendida por determinado padrão. |
+| Embarque e baldeação | O embarque entra no veículo e paga a espera. Cada embarque além do primeiro conta como baldeação. |
+| Intervalo H | Tempo entre partidas consecutivas do mesmo padrão. H/2 estima a espera sob chegadas aleatórias e serviço regular. |
+| G_T e FIFO | G_T guarda partidas e chegadas por segmento. Sob a regra FIFO, quem chega mais cedo ao ponto pode esperar e usar qualquer conexão que atenderia a quem chega depois. |
+| Isócrona | Conjunto de paradas alcançáveis de uma origem em até um tempo limite. A faixa e a caminhada alteram esse conjunto. |
+| Índice de desvio | Razão entre a distância aproximada do percurso e a distância em linha reta entre as pontas. Para pontas coincidentes, a razão é indefinida. |
+| Intermediação | Participação de uma parada nos caminhos mínimos entre outros pares. Quando há empate, cada caminho recebe uma fração do crédito. |
+| Proximidade | Centralidade pelas distâncias mínimas da parada às que ela alcança (sentido de saída, o da página), corrigida pela fração de paradas alcançadas (Wasserman e Faust). |
+| Modularidade | Medida de concentração das ligações dentro das comunidades, comparada ao esperado de uma rede com os mesmos graus. |
+| Fronteira de Pareto | Conjunto de trajetos para os quais nenhuma alternativa melhora o tempo ou as baldeações sem piorar o outro critério. |
+| Componente fortemente conexa | Conjunto maximal de paradas que conseguem alcançar umas às outras por caminhos dirigidos. |
+| Eficiência global | Média do inverso do tempo mínimo entre pares ordenados de paradas. Pares inalcançáveis contribuem zero. |
 
 ## 10. Perguntas de verificação
-Todas as perguntas das features, com resposta, agrupadas por seção.
+Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resultado da página.
+
+### 1. Repositório (P0-REPO)
+
+1. **O que bloqueia um commit com importação de biblioteca de grafo em `src/`?** O verificador de imports chamado pelo hook. O erro identifica o arquivo e a linha.
+2. **Por que comparar resultados com NetworkX em testes?** Um algoritmo independente verifica a resposta nos mesmos dados. Essa comparação fica fora do aplicativo.
+3. **O hook executa a suíte de testes?** O hook roda o verificador e o Ruff. A suíte deve ser executada com `python -m pytest` antes do push.
 
 ### 2. Dados e GTFS (P0-DADOS)
 1. **Por que guardar os horários por viagem?** Para ligar passagens consecutivas do
@@ -1109,13 +1186,13 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
 5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
    amostra e a semente para reproduzir o cálculo.
 
-#### Isócronas e desvios
+#### Isócronas e desvios (F-EFI-2)
 
 1. **A parada no limite exato de tempo entra?** Sim. O relaxamento aceita custo menor ou igual ao orçamento.
 2. **Qual percurso define o desvio?** O trajeto de menor tempo. Somam-se distâncias entre paradas consecutivas, inclusive a pé.
 3. **E se os extremos têm coordenadas iguais?** A distância direta é zero, então ambas as razões ficam indefinidas.
 
-#### Comparação por faixa
+#### Comparação por faixa (F-EFI-OPC)
 
 1. **Por que sorteamos apenas uma vez?** Para comparar os mesmos deslocamentos sob diferentes ofertas.
 2. **O que muda no grafo?** Os embarques com serviço e a espera por padrão na faixa; a caminhada usa os mesmos parâmetros.
@@ -1161,6 +1238,21 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
 5. **Como o Yen não estraga uma falha simulada pela F-RES?** Só reativa o que ele mesmo desativou,
    num `finally`.
 
+### 6. Interface (P0-UI)
+1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
+   normalização pertencem a P0-DADOS; a UI consome a `Rede` publicada nesse contrato.
+2. **Como uma nova página entra na navegação?** O módulo da feature publica `render(rede)`;
+   a aplicação importa esse módulo e passa a mesma rede carregada.
+3. **Quais camadas o componente de mapa pode exibir?** Paradas, padrões/linhas, caminhos e
+   intensidades de calor, cada uma como camada separada.
+4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
+   interação do Streamlit; a chave considera a origem e a versão observável da fonte.
+5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
+   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
+   inconsistências e V/E de G_P e G_E. No feed da BHTrans (serviço de 04/11/2026), a carga
+   fria levou 7,8 s, a quente 0,67 s e o resumo de G_P e G_E 0,44 s
+   (`benchmarks/resultados/inicio-bhtrans.json`).
+
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
    `time.time()` segue o relógio do sistema, que pode ser ajustado no meio da medição.
@@ -1184,17 +1276,3 @@ Todas as perguntas das features, com resposta, agrupadas por seção.
    `estimar_intermediacao` antes do fator N/k, então a conferência continua valendo.
 3. **O que a inclinação b do gráfico log-log diz?** Que o tempo cresce como (V + E)^b: b ≈ 1 é
    linear (BFS, Tarjan), b ≈ 2 é quadrático (Brandes, V buscas de custo V + E).
-
-### 6. Interface (P0-UI)
-1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e
-   normalização pertencem a P0-DADOS; a UI consome a `Rede` publicada nesse contrato.
-2. **Como uma nova página entra na navegação?** O módulo da feature publica `render(rede)`;
-   a aplicação importa esse módulo e passa a mesma rede carregada.
-3. **Quais camadas o componente de mapa pode exibir?** Paradas, padrões/linhas, caminhos e
-   intensidades de calor, cada uma como camada separada.
-4. **Por que a rede carregada fica em cache?** Para não reler e reconstruir os dados a cada
-   interação do Streamlit; a chave considera a origem e a versão observável da fonte.
-5. **Como a página inicial carrega e resume o GTFS?** Ela chama o `ler` oficial de P0-DADOS
-   para uma pasta ou ZIP, mantém a rede anterior em caso de erro e mostra o dia, as
-   inconsistências e V/E de G_P e G_E. A medição em um feed real ainda depende de um feed
-   disponível no ambiente.
