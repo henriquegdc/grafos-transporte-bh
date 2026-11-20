@@ -9,12 +9,8 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 15/11/2026.
-- **Onde parou:** conexão com `transporte.dados.leitor_gtfs.ler`, carga de pastas/ZIP, preservação da rede anterior quando a carga falha, resumo da rede, V/E de G_P e G_E, inconsistências e trajetos segmentados no mapa implementados. A branch ainda não contém P0-DADOS porque está 4 commits atrás de `origin/main`; nenhuma alteração de Miguel foi copiada ou mesclada.
-- **Próximo passo:** alinhar a atualização da branch com o responsável por P0-DADOS e resolver as sobreposições do app/testes com o PR #50 antes de integrar. Em seguida medir na rede real, quando os dados GTFS estiverem disponíveis, e concluir relatório/vídeo.
-- **Arquivos tocados:** `src/transporte/interface/app.py`, `src/transporte/interface/mapa.py`, `src/transporte/interface/protocolos.py`, `tests/interface/test_mapa.py`, `tests/interface/test_integracao_dados.py`, `docs/GUIA.md`, `docs/diagramas/sequencia-p0-ui.puml`, este arquivo e `relatorio/secoes/implementacao.tex`.
-- **Como testar:** `python -m pytest tests/interface/test_app.py::test_entrada_real_inicia_sem_pythonpath -q`; `python -m pytest tests/interface -q`; `python -m pytest -q`; `ruff check`; `ruff format --check src/transporte/interface tests/interface`; `python scripts/verificar_imports.py`; `git diff --check`.
-- **Bloqueios:** o checkout desta branch não contém os arquivos da P0-DADOS nem os arquivos de `dados/rede-teste/`, embora estejam em `origin/main`; por isso os testes de integração foram executados numa árvore temporária combinada, sem atualizar o histórico da branch. Não há feed GTFS real em `dados/brutos/` para medir desempenho.
+
+**Preparação da página Início medida no feed real.** A leitura da fonte, a cópia por sessão e a montagem dos dois grafos usam as funções chamadas pela página, na main após o #45. O diagrama está em `docs/diagramas/sequencia-p0-ui.puml` e seu PNG é incluído em Implementação. Para reproduzir o benchmark use o comando em Resultados. Para validar a interface: `python -m pytest tests/interface`. Próximo passo pessoal: gravar a demonstração.
 
 ## Objetivo
 Aplicação Streamlit e componente de mapa. Fecha:
@@ -27,12 +23,12 @@ Aplicação Streamlit e componente de mapa. Fecha:
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
 | Núcleo (algoritmo) | não aplicável | P0-UI não implementa algoritmo de grafo. |
-| Modelo e dados | integrado | A interface consome `ler` e `Rede` publicados em P0-DADOS na `origin/main`; o checkout local permanece atrás desse commit. |
-| Interface | implementado | Pasta/ZIP, preservação da rede em erro, resumo, dia, inconsistências, V/E, mapa real no Streamlit e contrato `render(rede)` validados com `dados/rede-teste`. |
-| Testes | aprovado em árvore combinada | 24 testes de interface e 632 testes totais passaram com Python 3.14.4. Python 3.12 não está instalado. |
-| Desempenho (tempo medido) | pendente | Não há feed real disponível no checkout. O requisito de medição com dados reais permanece aberto; não substituir por números da rede de teste. |
-| Guia (explicação e quiz) | implementado | Seção 6 e pergunta 5 atualizadas em `docs/GUIA.md`. |
-| Relatório | parcial | Seção da UI preenchida com figura de componentes, resultado da rede de teste e limitação explícita; figura de sequência ainda não renderizada porque PlantUML não está disponível. |
+| Modelo e dados | integrado | Usa a Rede normalizada e os construtores da main. |
+| Interface | concluído | Pasta/ZIP, preservação da rede em erro, resumo, dia, inconsistências, V/E, mapa real no Streamlit e contrato `render(rede)` validados com `dados/rede-teste`. |
+| Testes | concluído | Casos de pasta e ZIP, erro preservando a sessão, mapa, navegação e resumo. |
+| Desempenho (tempo medido) | concluído | Carga fria e quente e montagem de G_P/G_E pelo código da página. Ver JSON em Resultados. |
+| Guia (explicação e quiz) | concluído | Seção 6 e pergunta 5 atualizadas em `docs/GUIA.md`. |
+| Relatório | concluído | Figura de sequência da página e números do feed real na seção Implementação. |
 | Vídeo | roteiro atualizado | Roteiro de demonstração incluído abaixo; gravação com feed real ainda pendente. |
 
 ## Especificação
@@ -85,15 +81,15 @@ real por subprocesso desde a raiz, sem herdar `PYTHONPATH`.
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
 - [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [x] Hook executado manualmente e verde; Ruff e verificador de imports verdes; pytest verde na árvore combinada baseada em `origin/main` + mudanças P0-UI. A branch isolada ainda não contém P0-DADOS.
+- [x] Hook e suíte executados sobre a base da main no Python 3.12, com as dependências fixadas.
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente (casos de UI testados; comparação de grafos não se aplica)
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
+- [x] Tempo medido no feed real, por etapa e com contagens V/E.
+- [x] Página no feed real validada pelo AppTest da integração de P0-DADOS em 11/11 (ver feature-P0-DADOS).
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/sequencia-p0-ui.puml`
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [x] Seção do relatório em `relatorio/secoes/implementacao.tex`, com figura de componentes, resultado da rede de teste e limitação explícita
+- [x] Seção Implementação com figura de sequência de Início, resultados e custo fora do escopo da medição.
 - [x] Roteiro do vídeo escrito no arquivo da feature
 - [x] Arquivo da feature atualizado com retomada, status, pendências e timeline (a feature não está concluída)
 
@@ -102,20 +98,28 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 |---|---|---|
 | 1 | Contrato (assinaturas com estado "planejado") | Implementado com protocolos estruturais para `Rede`, `Trecho` e `Trajeto`; a interface usa o loader publicado por P0-DADOS. |
 | 2 | Algoritmo com testes de corretude | Não aplicável: P0-UI não implementa algoritmo de grafo; mapa e integração têm testes próprios. |
-| 3 | Integração com a visão do grafo e com os dados reais | Integração e teste com a rede de teste concluídos na árvore combinada; validação com feed real pendente. |
+| 3 | Integração com a visão do grafo e com os dados reais | Integrada em main; feed real carregado na validação P0-DADOS e no benchmark P0-UI. |
 | 4 | Página na interface | Concluída para pasta/ZIP: carga, resumo, V/E, inconsistências, mapa e despacho `render(rede)` testados. |
-| 5 | Tempo medido na rede real e complexidade justificada | Complexidades documentadas; não há feed real local para medição, então o item permanece pendente. |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Guia, fonte PlantUML, seção do relatório e roteiro atualizados; PNG da sequência e gravação do vídeo pendentes. |
+| 5 | Tempo medido na rede real e complexidade justificada | Carga e montagem medidas na rede real com a função medir; ver Resultados. |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | Guia, UML, PNG no relatório e roteiro disponíveis. Gravação a cargo do integrante. |
 
 ## Resultados para o relatório
-Na rede de teste GTFS, o AppTest confirmou 4 paradas, 2 linhas, 2 padrões e dia de serviço
-2026-11-04. Para `pico_manha`, a execução mostrou G_P com V=4 e E=13, e G_E com V=9 e E=18.
-Comando: `python -m pytest tests/interface -q` (24 passed, Python 3.14.4) e execução do app por
-AppTest com o componente Folium real. A suíte completa na árvore temporária combinada
-(`origin/main` mais as mudanças desta branch) passou: `python -m pytest -q` (632 passed).
-Não foram medidos tempos de carregamento nem `criar_mapa` em feed real: `dados/brutos/` não está
-disponível neste ambiente, então os totais da rede de teste não são apresentados como resultado
-do feed real.
+
+Comando na raiz, com o ZIP de BH e o ambiente do projeto:
+
+```sh
+PYTHONPATH=src python benchmarks/medir_inicio.py dados/brutos/bhtrans.zip --repeticoes 3
+```
+
+O [JSON da execução](../../../benchmarks/resultados/inicio-bhtrans.json) identifica o SHA-256 do ZIP, a máquina e o serviço de 04/11/2026. No macOS arm64 com Python 3.12.13, `medir` produziu estes resultados em três repetições (média e desvio padrão amostral).
+
+| Etapa da página | Média (s) | Desvio (s) |
+|---|---:|---:|
+| Esvaziar o cache da aplicação, ler o ZIP e devolver a cópia por sessão | 7,827 | 0,034 |
+| Recuperar a mesma fonte do cache e copiar para a sessão | 0,671 | 0,017 |
+| Construir G_P e G_E do pico da manhã e obter os totais | 0,440 | 0,001 |
+
+O resumo exibiu G_P com 9.659 vértices e 122.732 arestas e G_E com 46.100 vértices e 208.956 arestas. O cache frio se refere ao cache Streamlit. O sistema operacional pode conservar o arquivo em memória. O benchmark termina antes de desenhar o mapa no navegador.
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. **0:00–0:20 — Objetivo:** explicar que a interface conecta o GTFS normalizado às páginas
@@ -128,18 +132,11 @@ do feed real.
    como uma página registra `render(rede)`; mostrar o suporte do mapa aos trechos publicados por
    F-ROTA sem inventar dados ausentes.
 5. **1:50–2:20 — Limitações:** mostrar o teste de erro que preserva a rede anterior e esclarecer
-   que o feed GTFS real e a medição de desempenho ainda não estão disponíveis.
+   que a renderização do mapa no navegador fica fora das medidas de carga e montagem.
 
 ## Pendências
-- Alinhar a identidade do cache com P0-DADOS; a invalidação atual considera caminho, tamanho e
-  data de modificação, não o conteúdo de cada arquivo.
-- O checkout local está 4 commits atrás de `origin/main` e não contém P0-DADOS nem `dados/rede-teste`; atualizar a base em coordenação com o responsável antes de executar a suíte diretamente na branch.
-- Coordenar com Miguel a sobreposição do app, mapa e testes com o PR #50; não copiar os arquivos do leitor nem a rede de teste para esta branch.
-- Confirmar com F-ROTA o uso de `render_mapa(..., trajeto=...)` na página da feature, que ainda não existe nesta branch.
-- Descoberta de fontes aceita ZIPs na raiz e pastas GTFS na raiz ou um nível abaixo das pastas configuradas; alinhar se outros layouts forem necessários.
-- Medir carregamento e `criar_mapa` com `medir` no feed GTFS real, quando disponível, e registrar V/E e máquina.
-- Gerar PNG da sequência P0-UI quando PlantUML estiver disponível; o repositório não contém esse PNG nem foi encontrado CLI/JAR neste ambiente.
-- Fazer revisão por outro integrante e integrar via PR; não executado nesta sessão.
+
+- Gravar a demonstração no feed real. A renderização no navegador varia com o tamanho do mapa e permanece fora da medição de preparação. A identidade da fonte em cache usa caminho, tamanho e data de modificação.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -147,3 +144,6 @@ do feed real.
 ### Implementação 09/11/2026: shell Streamlit, navegação, contrato estrutural, cache, mapa Folium, testes e documentação local; carga real bloqueada por P0-DADOS.
 ### Correção 12/11/2026: bootstrap do layout `src/` para o comando direto e teste real de inicialização em subprocesso sem `PYTHONPATH`; 13 testes de interface e 515 totais aprovados com Python 3.14.4.
 ### Integração 15/11/2026: leitor P0-DADOS como padrão, visões G_P/G_E, carga de pasta/ZIP, mapa de trajetos, testes e documentação atualizados; 24 testes de interface e 632 testes totais aprovados numa árvore combinada, Python 3.14.4. Feed real e PNG PlantUML pendentes.
+
+### Fechamento documental de 20/11/2026
+Medidas as etapas que preparam Início no GTFS de BH. O relatório recebeu o diagrama renderizado e os tempos, com a separação entre cache frio e quente.

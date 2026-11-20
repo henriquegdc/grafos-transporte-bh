@@ -9,12 +9,8 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 18/11/2026, Arthur.
-- **Onde parou:** página integrada a F-ESPERA e benchmark reproduzível executado no GTFS baixado nesta sessão. O revisor já confirmou 754 testes no Python 3.12.10 e a eficiência de `6,139 × 10⁻⁴ s⁻¹` para 100 origens, igual à medição do Caio. O benchmark temporal desta sessão está registrado abaixo; algoritmo e valor confirmado não foram reimplementados.
-- **Próximo passo:** revisar os resultados e a integração no PR #52; ainda faltam a captura da página para o relatório e a revisão/aprovação final.
-- **Arquivos tocados nesta etapa:** `benchmarks/medir_eficiencia.py`, `src/transporte/interface/paginas/eficiencia.py`, `tests/interface/test_pagina_eficiencia.py`, `docs/diagramas/sequencia-eficiencia.png`, `relatorio/secoes/F-EFI.tex` e este arquivo.
-- **Como testar:** `python -m pytest tests/algoritmos/test_eficiencia.py tests/interface/test_pagina_eficiencia.py -q`; `$env:PYTHONPATH='src'; python benchmarks/medir_eficiencia.py dados/brutos/bhtrans.zip`; `ruff check` nos arquivos alterados; `python scripts/verificar_imports.py`; `git diff --check`. A suíte completa de 754 testes no Python 3.12.10 foi validada pelo revisor; nesta etapa, 28 testes direcionados de algoritmo e interface passaram em Python 3.14.4.
-- **Bloqueios:** nenhum bloqueio de algoritmo ou feed. A validação visual da página no feed real, a figura de tela do relatório e a aprovação do PR ainda dependem de revisão manual.
+
+**Núcleo e documentação concluídos.** O [#52](https://github.com/henriquegdc/grafos-transporte-bh/pull/52), aprovado pelo Henrique, integrou a página e a API de eficiência. O gráfico de tela `relatorio/figuras/eficiencia.png` já consta na seção F-EFI. A revisão documental comparou o texto do guia §5.5 e as respostas em §10 com o denominador, a unidade e a população realmente usada por cada função. Execute `python -m pytest tests/algoritmos/test_eficiencia.py tests/interface/test_pagina_eficiencia.py`. Próximo passo: gravar a demonstração.
 
 ## Objetivo
 Eficiência da rede. Fecha:
@@ -30,8 +26,8 @@ Eficiência da rede. Fecha:
 | Interface | implementado | 18/11: `render(rede)` usa as esperas da F-ESPERA; AppTest verifica peso de embarque calculado, além das métricas |
 | Testes | implementado | Revisor confirmou 754 testes no Python 3.12.10; nesta etapa, 28 testes direcionados de algoritmo e interface passaram no Python 3.14.4 |
 | Desempenho (tempo medido) | medido | 18/11: benchmark reproduzível; resultados e hash registrados abaixo |
-| Guia (explicação e quiz) | em andamento | Explicação e perguntas adicionadas ao arquivo e ao GUIA; revisão cruzada pendente |
-| Relatório | em andamento | Resultados reais incluídos; figura de tela pendente |
+| Guia (explicação e quiz) | concluído | Revisão técnica cruzada da frente de documentação de Miguel sobre o guia da frente de Arthur. Conferidos o denominador fixo da falha, os pares alcançáveis e o erro padrão. |
+| Relatório | concluído | `relatorio/secoes/F-EFI.tex` inclui a captura `eficiencia.png` do feed de 18/11, com legenda e resultado. |
 | Vídeo | em andamento | Roteiro atualizado com resultado real; gravação pendente |
 
 ## Especificação
@@ -76,18 +72,18 @@ G_P foi escolhido para RF-EFI-01 por medir eficiência estrutural e manter compa
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
+- [x] Código integrado pelo #52 com aprovação do Henrique.
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde (hook executado manualmente; não está configurado como hook automático neste checkout)
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
 - [x] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real (AppTest cobre a rede de teste; falta validação visual da aplicação)
+- [x] Página no feed real documentada pela captura identificada no relatório.
 - [x] Diagrama UML da feature gerado em `docs/diagramas/` (`sequencia-eficiencia.puml` e PNG)
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
+- [x] Seção do relatório com captura, resultado e limitação.
 - [x] Roteiro do vídeo escrito no arquivo da feature (gravação pendente)
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+- [x] Arquivo atualizado com retomada, status, pendências e timeline.
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
@@ -118,13 +114,14 @@ O benchmark usa a versão mais recente baixada em 18/11 e pode variar com o hard
 4. **Resultado e limitação (25 s):** apresentar a medição registrada para o GTFS baixado, explicando que tempos dependem da máquina, da amostra e da semente; a espera de G_E vem da estimativa da F-ESPERA.
 
 ## Pendências
-- **F-RES (Caio):** trocar a função provisória pela API `transporte.algoritmos.eficiencia.eficiencia_global`; a assinatura e a compatibilidade matemática foram testadas, mas a integração de produção não foi feita porque arquivos da F-RES estão fora do escopo autorizado.
-- **F-ESPERA (Miguel):** integrada à página; padrões sem intervalo estimável continuam sujeitos ao fallback definido em `Parametros`.
-- **Interface/relatório:** validar visualmente a página com o GTFS real e adicionar a captura à seção do relatório.
-- **Fechamento:** obter revisão cruzada e aprovação do PR; a API da F-RES ainda é provisória e permanece fora do escopo desta alteração.
+
+- Gravação do vídeo e explicação do resultado pelo integrante. A API de eficiência já é consumida pela F-RES desde #61.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
 ### Dono 29/10/2026: feature atribuída a Arthur.
 ### Sessão 15/11/2026: implementados o contrato oficial e os algoritmos em `algoritmos/eficiencia.py`, página `render(rede)`, testes matemáticos/NetworkX/AppTest e documentação; suíte completa (660 testes, Python 3.14.4), Ruff, verificador de imports, hook manual e verificações de diff passaram. F-RES permanece sem alteração. Feed real indisponível; medição, PNG, fechamento do relatório e revisão cruzada continuam pendentes.
 ### Sessão 18/11/2026: integração da página com as esperas calculadas pela F-ESPERA; AppTest confirma o peso derivado de H/2; benchmark no GTFS baixado (hash, V/E, máquina e tempos) e PNG de sequência gerados; relatório atualizado com o resultado e com a distinção entre G_P e G_E.
+
+### Fechamento documental de 20/11/2026
+Conferidos texto, captura publicada e correspondência entre a seção do guia e os estimadores de F-EFI.

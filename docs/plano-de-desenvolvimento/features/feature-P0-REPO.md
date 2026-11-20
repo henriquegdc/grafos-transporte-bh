@@ -9,12 +9,8 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 16/11/2026.
-- **Onde parou:** hook, `scripts/verificar_imports.py` (com testes), `requirements.txt`, `pyproject.toml`, `.gitattributes` e README §5 integrados na `main` pelo PR #43 (`c3da48a`). Fechamento de 15/11 feito em 16/11 na `main` (`cbb1f90`): nenhum import proibido, ruff limpo, pytest com 667 verdes e 1 falha (ver Pendências). Alerta ao grupo: só as páginas Espera e Baldeações estão na `main`. Proteção da `main` e Kanban continuam pendentes.
-- **Próximo passo:** 17/11: listar as lacunas do `docs/GUIA.md` por dono (prazo 18/11, plano-de-projeto §7.3). 21/11: montar o `.zip` (código, `.tex` e PDF do relatório) e conferir os seis envios no Canvas (checklist §2.1, itens 10 e 11). Pedir ao Henrique a regra da `main` exigindo 1 aprovação.
-- **Arquivos tocados:** `.githooks/pre-commit`, `.gitattributes`, `scripts/verificar_imports.py`, `tests/scripts/test_verificar_imports.py`, `requirements.txt`, `pyproject.toml`, `README.md`, `AGENTS.md` (§4).
-- **Como testar:** `pytest` (231 testes em 05/11, 30 deles do script); `sh .githooks/pre-commit`; para ver o bloqueio, criar um `.py` em `src/` com `import networkx` e tentar commitar.
-- **Bloqueios:** nenhum.
+
+**Guia e relatório concluídos.** O hook, o leitor AST e as perguntas de revisão estão no guia §7 e §10 e na seção Implementação. O bit executável do hook passou a ser versionado para sistemas POSIX. Reproduza com `git config core.hooksPath .githooks`, `sh .githooks/pre-commit` e `python -m pytest`. O núcleo da P0-REPO foi aprovado por Henrique no [#43](https://github.com/henriquegdc/grafos-transporte-bh/pull/43). A configuração remota de proteção/Kanban e a sessão coletiva de explicação têm situação própria em Pendências.
 
 ## Objetivo
 Repositório, hook, README de instalação e Kanban. Fecha:
@@ -32,15 +28,15 @@ Repositório, hook, README de instalação e Kanban. Fecha:
 | Interface | não aplicável | |
 | Testes | concluído | 05/11: `tests/scripts/test_verificar_imports.py`, 30 testes; suíte toda com 231 verdes |
 | Desempenho (tempo medido) | não aplicável | |
-| Guia (explicação e quiz) | em andamento | Rascunho de "Como funciona e por quê" e perguntas abaixo; falta revisão do Caio |
-| Relatório | não iniciado | |
+| Guia (explicação e quiz) | concluído | Explicação, comando do hook e perguntas sobre seu escopo integrados ao guia. |
+| Relatório | concluído | Parágrafo em `relatorio/secoes/implementacao.tex` distingue o hook e o pytest. |
 | Vídeo | não iniciado | |
 
 ## Especificação
 Hook em `.githooks/pre-commit`, ativado com `git config core.hooksPath .githooks`. `requirements.txt` com versões fixadas (Python 3.12, streamlit, streamlit-folium, folium, pandas, pytest, ruff; networkx só para `tests/` e `benchmarks/`). Proteção da `main` com 1 aprovação. README de instalação (`docs/fontes/plano-de-projeto.md` §14.2, item 5).
 
 ## Como funciona e por quê
-_Rascunho do agente em 05/11; o Caio revisa._
+Implementação conferida com o hook e o verificador de imports.
 
 **O problema.** Importar biblioteca de grafo em `src/` zera a nota (RNF-01). A regra não pode depender só da atenção de quem revisa.
 
@@ -69,62 +65,53 @@ _Rascunho do agente em 05/11; o Caio revisa._
 ## Critérios de aceite
 - [x] RNF-01: Nenhum módulo em `src/` importa biblioteca de grafo (networkx, igraph, graph_tool, rustworkx, scipy.sparse.csgraph, osmnx)
 - [ ] RNF-02: A `main` só recebe PR revisado e aprovado por outro integrante, com hook e pytest verdes
-- [ ] RNF-07: Reprodutibilidade: versões fixadas, dataset com data e origem registradas, script de download, sementes fixas
+- [x] RNF-07: Reprodutibilidade: versões fixadas, dataset com data e origem registradas, script de download, sementes fixas
 - [ ] RNF-09: Toda feature tem "Como funciona e por quê" e perguntas de verificação incorporadas ao `docs/GUIA.md`
 
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
+- [x] Código do hook integrado pelo #43 com aprovação do Henrique.
+- [x] Hook e pytest validados pela frente de fechamento documental.
+- [x] Cobertura do verificador em `tests/scripts/test_verificar_imports.py`; sem algoritmo de grafo nesta feature.
+- [x] Complexidade: não aplicável; a feature não implementa algoritmo de grafo (hook e verificador de imports).
+- [x] Tempo medido: não aplicável; não há consulta sobre a rede real a medir.
+- [x] Página na interface: não aplicável; a feature é de infraestrutura do repositório.
+- [x] Diagrama UML: não aplicável; o fluxo do hook (verificador e Ruff) é linear e está descrito no guia §7.
+- [x] Explicação e quiz do hook integrados ao guia §7 e §10.
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
+- [x] Parágrafo do hook na seção Implementação. Sem resultado experimental de grafo nesta feature.
 - [ ] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+- [x] Retomada, status e pendências atualizados.
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
 |---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+| 1 | Contrato (assinaturas com estado "planejado") | não aplicável: o verificador é script, não contrato consumido por outra feature |
+| 2 | Algoritmo com testes de corretude | concluída: verificador e testes em `tests/scripts/test_verificar_imports.py` (#43) |
+| 3 | Integração com a visão do grafo e com os dados reais | não aplicável |
+| 4 | Página na interface | não aplicável |
+| 5 | Tempo medido na rede real e complexidade justificada | não aplicável |
+| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | guia §7 e §10 e seção Implementação concluídos; diagrama não aplicável; roteiro pendente |
 
 ## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+Não há resultado experimental de grafo nesta feature. Execuções de verificação do repositório:
+
+| Data | Comando | Resultado |
+|---|---|---|
+| 20/11/2026 | `python scripts/verificar_imports.py` | nenhum import proibido |
+| 20/11/2026 | `python -m pytest` (main com o #68 mesclado, Python 3.12.10, Windows) | 1139 testes aprovados |
+| 20/11/2026 | `ruff check` | sem apontamentos |
 
 ## Roteiro do vídeo (2 a 2,5 min)
 1. O problema que a feature resolve. 2. A feature funcionando na interface.
 3. Algoritmo e complexidade. 4. Resultado e limitação.
 
 ## Pendências
-- **Proteção da `main` (RNF-02):** configurar no GitHub (Settings > Branches) a exigência de PR com 1 aprovação. O `gh` não está instalado; é preciso fazer pelo site, e só o dono do repositório (Henrique) ou um admin consegue.
-- **Kanban:** criar o GitHub Project com as issues do backlog.
-- **RNF-07:** a parte da P0-REPO (versões fixadas) está feita. Dataset com data e origem e o script de download são da P0-DADOS (Miguel).
-- **Python 3.12:** as versões do `requirements.txt` foram validadas num `.venv` com Python 3.14.4, a única versão nesta máquina. Todas declaram suporte ao 3.12 (`Requires-Python`), mas falta instalar num 3.12 real. O Thiago tem `.venv` 3.12.14 (P0-GRAFO).
-- **Avisar o Rafael (P0-AVAL) e o Thiago (P0-GRAFO):** o `PYTHONPATH=src` não é mais necessário; podem tirar a pendência dos arquivos deles.
-- **Fechamento de 15/11 (feito em 16/11):**
-  - **Interface (checklist §2.1, item 3):** na `main` só existem as páginas Espera e Baldeações (esta pelo #49, em 16/11). Trajetos e Eficiência estão em branches sem merge, e Centralidades e Falhas não existem. Proposta ao grupo: exceção ao congelamento até 18/11, só para páginas e integração.
-  - **Teste com timeout:** `tests/interface/test_integracao_dados.py::test_app_test_carrega_o_feed_e_renderiza_o_widget_do_mapa` estoura 30 s quando o feed real está em `dados/brutos/` (o `ler` leva cerca de 40 s num i5-1235U), e confere `dia == "2026-11-04"`, que muda quando a PBH atualiza o feed. Avisado o Arthur (P0-UI).
-  - **Thiago (P0-GRAFO e F-MET):** arquivos parados desde 05/11; faltam a página Centralidades, a medição no G_P real, o GUIA §4 e §5.4, as perguntas de verificação, o diagrama, a seção do relatório e o roteiro. Avisado.
-- **Lacunas do `docs/GUIA.md` (listadas em 17/11; prazo dos donos: 18/11, plano-de-projeto §7.3):**
-  - §1 Visão geral (Caio, integrador): só o esqueleto de 29/10; falta o problema, as seis perguntas e o caminho do dado com o diagrama de componentes.
-  - §3 Modelagem, parte geral (Henrique): falta a explicação de G_P, G_E, G_L e G_T e da espera esperada; só existe a subseção dos construtores.
-  - §4 Núcleo do grafo e heap (Thiago): só o esqueleto de 29/10.
-  - §5.4 Centralidades (Thiago): não existe.
-  - §5.5 Eficiência (Arthur): escrita na branch `feat/F-EFI-eficiencia`, ainda sem merge.
-  - §5.7 Desejáveis e opcionais (Caio): registrar quais foram feitas; nenhuma está na `main` em 17/11.
-  - §7 Como testamos (Rafael): falta a parte geral (gabarito à mão e comparação com o NetworkX); só existe a medição.
-  - §9 Glossário (Caio, integrador): vazio, só o título.
-  - §10 Perguntas: faltam P0-GRAFO e F-MET (Thiago), que não têm perguntas nem no arquivo da feature, e F-EFI (Arthur, na branch).
+
+- Em 20/11, a consulta pública ao endpoint GitHub `GET /repos/henriquegdc/grafos-transporte-bh/branches/main` retornou `protected: false`. O responsável pelo repositório deve conferir e aplicar a exigência de aprovação se ainda estiver desligada.
+- Confirmar o link do quadro Kanban que reúne as issues. O backlog está nas issues do GitHub. A definição da organização do Project pertence ao grupo.
+- Para o encerramento da issue ENT-GUIA, registrar a realização da explicação cruzada pelo grupo e incorporar eventuais lacunas apontadas.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -134,3 +121,6 @@ _Vazio até haver execução real. Todo número vem com o comando que o gerou._
 ### Fechamento 10/11/2026: `verificar_imports.py` rodado na `main` (`fbb330d`), sem import proibido. Proteção da `main` e Kanban seguem pendentes.
 ### Fechamento 15/11/2026 (feito em 16/11): na `main` (`cbb1f90`), nenhum import proibido, ruff limpo, pytest com 667 verdes e 1 falha por timeout. Alerta ao grupo sobre as páginas que faltam na interface (ver Pendências).
 ### Guia 17/11/2026: lacunas do `docs/GUIA.md` listadas por dono (ver Pendências); prazo 18/11.
+
+### Fechamento documental de 20/11/2026
+O guia passa a descrever o hook e o relatório explica sua execução. Conferidas as lacunas do guia e a proteção pública da branch principal.

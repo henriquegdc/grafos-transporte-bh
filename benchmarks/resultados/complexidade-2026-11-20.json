@@ -1,0 +1,374 @@
+{
+  "comando": "python benchmarks/complexidade_empirica.py",
+  "data": "2026-11-20",
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "python": "3.12.10"
+  },
+  "semente": 2026,
+  "grafo": "G_P de redes sintéticas em grade (transporte.dados.sinteticas)",
+  "figura": "relatorio/figuras/complexidade-empirica.png",
+  "algoritmos": [
+    {
+      "algoritmo": "BFS",
+      "complexidade_teorica": "O(V + E)",
+      "inclinacao_teorica": 1.0,
+      "inclinacao_medida": 1.0075762956564116,
+      "intercepto": -7.097190739374307,
+      "r2": 0.9997428794281258,
+      "pontos": [
+        {
+          "lado": 10,
+          "V": 100,
+          "E": 1038,
+          "V_mais_E": 1138,
+          "media_s": 0.00010075999998662155,
+          "desvio_s": 4.748999787231536e-06,
+          "repeticoes": 5,
+          "tempo": "100.760 µs ± 4.749 µs (n=5)"
+        },
+        {
+          "lado": 15,
+          "V": 225,
+          "E": 2456,
+          "V_mais_E": 2681,
+          "media_s": 0.00022252000017033424,
+          "desvio_s": 5.010688570249452e-06,
+          "repeticoes": 5,
+          "tempo": "222.520 µs ± 5.011 µs (n=5)"
+        },
+        {
+          "lado": 20,
+          "V": 400,
+          "E": 4456,
+          "V_mais_E": 4856,
+          "media_s": 0.00040608000017527957,
+          "desvio_s": 1.4662264248168882e-05,
+          "repeticoes": 5,
+          "tempo": "406.080 µs ± 14.662 µs (n=5)"
+        },
+        {
+          "lado": 30,
+          "V": 900,
+          "E": 10280,
+          "V_mais_E": 11180,
+          "media_s": 0.0009354800000437536,
+          "desvio_s": 4.704409616342526e-05,
+          "repeticoes": 5,
+          "tempo": "935.480 µs ± 47.044 µs (n=5)"
+        },
+        {
+          "lado": 40,
+          "V": 1600,
+          "E": 18466,
+          "V_mais_E": 20066,
+          "media_s": 0.001714160000483389,
+          "desvio_s": 0.00014839384442719202,
+          "repeticoes": 5,
+          "tempo": "1.714 ms ± 0.148 ms (n=5)"
+        },
+        {
+          "lado": 55,
+          "V": 3025,
+          "E": 35208,
+          "V_mais_E": 38233,
+          "media_s": 0.003316340001038043,
+          "desvio_s": 0.0001844458814265662,
+          "repeticoes": 5,
+          "tempo": "3.316 ms ± 0.184 ms (n=5)"
+        },
+        {
+          "lado": 70,
+          "V": 4900,
+          "E": 57396,
+          "V_mais_E": 62296,
+          "media_s": 0.005407480000212672,
+          "desvio_s": 0.0004194193981285513,
+          "repeticoes": 5,
+          "tempo": "5.407 ms ± 0.419 ms (n=5)"
+        },
+        {
+          "lado": 85,
+          "V": 7225,
+          "E": 84896,
+          "V_mais_E": 92121,
+          "media_s": 0.007928879999963102,
+          "desvio_s": 0.00028250439231949286,
+          "repeticoes": 5,
+          "tempo": "7.929 ms ± 0.283 ms (n=5)"
+        },
+        {
+          "lado": 100,
+          "V": 10000,
+          "E": 117702,
+          "V_mais_E": 127702,
+          "media_s": 0.011609220000173082,
+          "desvio_s": 0.000599426015033699,
+          "repeticoes": 5,
+          "tempo": "11.609 ms ± 0.599 ms (n=5)"
+        }
+      ]
+    },
+    {
+      "algoritmo": "Dijkstra",
+      "complexidade_teorica": "O((V + E) log V)",
+      "inclinacao_teorica": 1.0,
+      "inclinacao_medida": 1.0594728707414978,
+      "intercepto": -6.9170245280222495,
+      "r2": 0.999654295338939,
+      "pontos": [
+        {
+          "lado": 10,
+          "V": 100,
+          "E": 1038,
+          "V_mais_E": 1138,
+          "media_s": 0.00021846000017831103,
+          "desvio_s": 5.835494083186e-06,
+          "repeticoes": 5,
+          "tempo": "218.460 µs ± 5.835 µs (n=5)"
+        },
+        {
+          "lado": 15,
+          "V": 225,
+          "E": 2456,
+          "V_mais_E": 2681,
+          "media_s": 0.0005058600003394531,
+          "desvio_s": 5.443161516825166e-06,
+          "repeticoes": 5,
+          "tempo": "505.860 µs ± 5.443 µs (n=5)"
+        },
+        {
+          "lado": 20,
+          "V": 400,
+          "E": 4456,
+          "V_mais_E": 4856,
+          "media_s": 0.0009690799997770227,
+          "desvio_s": 2.7010960311157855e-05,
+          "repeticoes": 5,
+          "tempo": "969.080 µs ± 27.011 µs (n=5)"
+        },
+        {
+          "lado": 30,
+          "V": 900,
+          "E": 10280,
+          "V_mais_E": 11180,
+          "media_s": 0.002362679998987005,
+          "desvio_s": 5.284876513993824e-05,
+          "repeticoes": 5,
+          "tempo": "2.363 ms ± 0.053 ms (n=5)"
+        },
+        {
+          "lado": 40,
+          "V": 1600,
+          "E": 18466,
+          "V_mais_E": 20066,
+          "media_s": 0.004294659999504802,
+          "desvio_s": 7.424656918388051e-05,
+          "repeticoes": 5,
+          "tempo": "4.295 ms ± 0.074 ms (n=5)"
+        },
+        {
+          "lado": 55,
+          "V": 3025,
+          "E": 35208,
+          "V_mais_E": 38233,
+          "media_s": 0.00840100000059465,
+          "desvio_s": 6.504094894950022e-05,
+          "repeticoes": 5,
+          "tempo": "8.401 ms ± 0.065 ms (n=5)"
+        },
+        {
+          "lado": 70,
+          "V": 4900,
+          "E": 57396,
+          "V_mais_E": 62296,
+          "media_s": 0.013977440000599018,
+          "desvio_s": 0.000256703989462239,
+          "repeticoes": 5,
+          "tempo": "13.977 ms ± 0.257 ms (n=5)"
+        },
+        {
+          "lado": 85,
+          "V": 7225,
+          "E": 84896,
+          "V_mais_E": 92121,
+          "media_s": 0.02262878000001365,
+          "desvio_s": 0.0003862794678489747,
+          "repeticoes": 5,
+          "tempo": "22.629 ms ± 0.386 ms (n=5)"
+        },
+        {
+          "lado": 100,
+          "V": 10000,
+          "E": 117702,
+          "V_mais_E": 127702,
+          "media_s": 0.0326188800005184,
+          "desvio_s": 0.00030445268382339383,
+          "repeticoes": 5,
+          "tempo": "32.619 ms ± 0.304 ms (n=5)"
+        }
+      ]
+    },
+    {
+      "algoritmo": "Tarjan",
+      "complexidade_teorica": "O(V + E)",
+      "inclinacao_teorica": 1.0,
+      "inclinacao_medida": 1.0971308933000645,
+      "intercepto": -7.002613072793795,
+      "r2": 0.9992876976814952,
+      "pontos": [
+        {
+          "lado": 10,
+          "V": 100,
+          "E": 1038,
+          "V_mais_E": 1138,
+          "media_s": 0.00023188000013760757,
+          "desvio_s": 1.4551185745573855e-05,
+          "repeticoes": 5,
+          "tempo": "231.880 µs ± 14.551 µs (n=5)"
+        },
+        {
+          "lado": 15,
+          "V": 225,
+          "E": 2456,
+          "V_mais_E": 2681,
+          "media_s": 0.0005748800002038478,
+          "desvio_s": 7.815817250803476e-06,
+          "repeticoes": 5,
+          "tempo": "574.880 µs ± 7.816 µs (n=5)"
+        },
+        {
+          "lado": 20,
+          "V": 400,
+          "E": 4456,
+          "V_mais_E": 4856,
+          "media_s": 0.001062900000033551,
+          "desvio_s": 1.4712409756266087e-05,
+          "repeticoes": 5,
+          "tempo": "1.063 ms ± 0.015 ms (n=5)"
+        },
+        {
+          "lado": 30,
+          "V": 900,
+          "E": 10280,
+          "V_mais_E": 11180,
+          "media_s": 0.0025238799997168828,
+          "desvio_s": 7.326238427671901e-05,
+          "repeticoes": 5,
+          "tempo": "2.524 ms ± 0.073 ms (n=5)"
+        },
+        {
+          "lado": 40,
+          "V": 1600,
+          "E": 18466,
+          "V_mais_E": 20066,
+          "media_s": 0.0053870800002187025,
+          "desvio_s": 0.0018980705273732483,
+          "repeticoes": 5,
+          "tempo": "5.387 ms ± 1.898 ms (n=5)"
+        },
+        {
+          "lado": 55,
+          "V": 3025,
+          "E": 35208,
+          "V_mais_E": 38233,
+          "media_s": 0.01149816000033752,
+          "desvio_s": 0.0025730039618039003,
+          "repeticoes": 5,
+          "tempo": "11.498 ms ± 2.573 ms (n=5)"
+        },
+        {
+          "lado": 70,
+          "V": 4900,
+          "E": 57396,
+          "V_mais_E": 62296,
+          "media_s": 0.017860940000173287,
+          "desvio_s": 0.003274501339503185,
+          "repeticoes": 5,
+          "tempo": "17.861 ms ± 3.275 ms (n=5)"
+        },
+        {
+          "lado": 85,
+          "V": 7225,
+          "E": 84896,
+          "V_mais_E": 92121,
+          "media_s": 0.028170939999836265,
+          "desvio_s": 0.004950140019225059,
+          "repeticoes": 5,
+          "tempo": "28.171 ms ± 4.950 ms (n=5)"
+        },
+        {
+          "lado": 100,
+          "V": 10000,
+          "E": 117702,
+          "V_mais_E": 127702,
+          "media_s": 0.038586799999757206,
+          "desvio_s": 0.005864034403417888,
+          "repeticoes": 5,
+          "tempo": "38.587 ms ± 5.864 ms (n=5)"
+        }
+      ]
+    },
+    {
+      "algoritmo": "Brandes",
+      "complexidade_teorica": "O(V (V + E) log V)",
+      "inclinacao_teorica": 2.0,
+      "inclinacao_medida": 2.0438944444813165,
+      "intercepto": -8.051652804023115,
+      "r2": 0.999816985393245,
+      "pontos": [
+        {
+          "lado": 10,
+          "V": 100,
+          "E": 1038,
+          "V_mais_E": 1138,
+          "media_s": 0.016260966666474513,
+          "desvio_s": 0.0001379939610185008,
+          "repeticoes": 3,
+          "tempo": "16.261 ms ± 0.138 ms (n=3)"
+        },
+        {
+          "lado": 15,
+          "V": 225,
+          "E": 2456,
+          "V_mais_E": 2681,
+          "media_s": 0.08689193333278429,
+          "desvio_s": 0.0007527295150441381,
+          "repeticoes": 3,
+          "tempo": "86.892 ms ± 0.753 ms (n=3)"
+        },
+        {
+          "lado": 20,
+          "V": 400,
+          "E": 4456,
+          "V_mais_E": 4856,
+          "media_s": 0.2959095666659171,
+          "desvio_s": 0.0033422972780072537,
+          "repeticoes": 3,
+          "tempo": "295.910 ms ± 3.342 ms (n=3)"
+        },
+        {
+          "lado": 30,
+          "V": 900,
+          "E": 10280,
+          "V_mais_E": 11180,
+          "media_s": 1.6875122666666964,
+          "desvio_s": 0.0008054294836943745,
+          "repeticoes": 3,
+          "tempo": "1.688 s ± 0.001 s (n=3)"
+        },
+        {
+          "lado": 40,
+          "V": 1600,
+          "E": 18466,
+          "V_mais_E": 20066,
+          "media_s": 5.616182133333496,
+          "desvio_s": 0.017167615989748336,
+          "repeticoes": 3,
+          "tempo": "5.616 s ± 0.017 s (n=3)"
+        }
+      ]
+    }
+  ]
+}

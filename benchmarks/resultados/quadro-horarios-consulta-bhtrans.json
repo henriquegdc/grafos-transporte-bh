@@ -1,0 +1,170 @@
+{
+  "feed": "dados/brutos/bhtrans.zip",
+  "dia": "2026-11-04",
+  "maquina": "macOS-26.6.2-arm64-arm-64bit",
+  "processador": "arm",
+  "python": "3.12.13",
+  "V": 9659,
+  "E": 146563,
+  "origem": "14788851",
+  "destino": "14792190",
+  "saida_s": 28800,
+  "janela_min": 20,
+  "semente": 42,
+  "raio_m": 300.0,
+  "trajeto": {
+    "origem": "14788851",
+    "destino": "14792190",
+    "tempo_total_s": 1420.2765623946761,
+    "baldeacoes": 4,
+    "trechos": [
+      {
+        "tipo": "espera",
+        "paradas": [
+          "14788851"
+        ],
+        "tempo_s": 0,
+        "padrao": "561966:35314fa37f3d"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "14788851",
+          "14789835"
+        ],
+        "tempo_s": 29,
+        "padrao": "561966:35314fa37f3d"
+      },
+      {
+        "tipo": "espera",
+        "paradas": [
+          "14789835"
+        ],
+        "tempo_s": 32,
+        "padrao": "562132:e9860b725f47"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "14789835",
+          "14790158",
+          "21246554",
+          "14792165",
+          "14784533",
+          "14792864",
+          "14791705"
+        ],
+        "tempo_s": 278,
+        "padrao": "562132:e9860b725f47"
+      },
+      {
+        "tipo": "espera",
+        "paradas": [
+          "14791705"
+        ],
+        "tempo_s": 0,
+        "padrao": "561942:1231c14c4fac"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "14791705",
+          "14792898",
+          "14789583",
+          "14784534",
+          "14784930",
+          "14785997",
+          "14792357",
+          "14792961"
+        ],
+        "tempo_s": 270,
+        "padrao": "561942:1231c14c4fac"
+      },
+      {
+        "tipo": "caminhada",
+        "paradas": [
+          "14792961",
+          "14787745"
+        ],
+        "tempo_s": 83.4415828177589,
+        "padrao": null
+      },
+      {
+        "tipo": "espera",
+        "paradas": [
+          "14787745"
+        ],
+        "tempo_s": 36.5584171822411,
+        "padrao": "562032:9676fc6fd75b"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "14787745",
+          "14793195",
+          "14792089",
+          "14785715",
+          "14784531",
+          "14788247",
+          "14787102"
+        ],
+        "tempo_s": 206,
+        "padrao": "562032:9676fc6fd75b"
+      },
+      {
+        "tipo": "caminhada",
+        "paradas": [
+          "14787102",
+          "14785816"
+        ],
+        "tempo_s": 150.32097444915053,
+        "padrao": null
+      },
+      {
+        "tipo": "espera",
+        "paradas": [
+          "14785816"
+        ],
+        "tempo_s": 43.679025550849474,
+        "padrao": "561918:1fdf79595f16"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "14785816",
+          "14789053",
+          "14791908"
+        ],
+        "tempo_s": 119,
+        "padrao": "561918:1fdf79595f16"
+      },
+      {
+        "tipo": "caminhada",
+        "paradas": [
+          "14791908",
+          "14792190"
+        ],
+        "tempo_s": 172.27656239467615,
+        "padrao": null
+      }
+    ]
+  },
+  "parcelas_s": {
+    "caminhada": 406.0391196615856,
+    "espera": 112.23744273309057,
+    "viagem": 902.0
+  },
+  "estimativa_h2_s": {
+    "caminhada": 583.3544462408406,
+    "espera": 920.2380952380952,
+    "viagem": 911.0
+  },
+  "amostras": [
+    {
+      "saida_s": 29028,
+      "total_s": 1999.1224395890276,
+      "espera_s": 31.963641137284867
+    }
+  ],
+  "tempos": {}
+}

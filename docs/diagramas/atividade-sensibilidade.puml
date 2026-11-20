@@ -1,0 +1,9 @@
+@startuml
+start
+:Estimar intervalo por padrão e faixa;
+:Aplicar fator aos padrões estimáveis da linha;
+:Construir G_E original e alternativo com H/2;
+:Sortear pares sem reposição;
+:Comparar o menor tempo de cada par nas duas visões;
+stop
+@enduml

@@ -15,6 +15,8 @@ import networkx as nx
 import pytest
 
 from transporte.algoritmos.centralidade import (
+    ENTRADA,
+    SAIDA,
     EstimativaIntermediacao,
     Graus,
     _estimar_por_origens,
@@ -22,6 +24,7 @@ from transporte.algoritmos.centralidade import (
     estimar_intermediacao,
     graus,
     intermediacao,
+    proximidade,
     ranking,
 )
 from transporte.grafo.grafo import Grafo
@@ -407,3 +410,79 @@ def test_estimativa_normalizada_usa_mesma_escala_no_erro(g):
     norm = _estimar_por_origens(g, [0, 1], 5, 0, ponderado=True, normalizar=True)
     assert norm.valores == pytest.approx([x / 12 for x in bruto.valores])
     assert norm.erro_padrao == pytest.approx([x / 12 for x in bruto.erro_padrao])
+
+
+# --- proximidade (F-MET-2, RF-MET-04) -------------------------------------------------
+
+
+def test_proximidade_saida_gabarito(g):
+    # 0 alcança 1, 3 (1), 2 (2), 4 (3): r = 4, D = 7, (4/7)(4/4). 1 e 3 alcançam 2 (1) e
+    # 4 (2): (2/3)(2/4). 2 alcança 4: (1/1)(1/4). 4 não alcança ninguém.
+    assert proximidade(g) == pytest.approx([4 / 7, 1 / 3, 1 / 4, 1 / 3, 0])
+
+
+def test_proximidade_entrada_gabarito(g):
+    # 2 é alcançada por 1 e 3 (1) e 0 (2): (3/4)(3/4). 4 por 2 (1), 1 e 3 (2), 0 (3): (4/8)(4/4).
+    assert proximidade(g, ENTRADA) == pytest.approx([0, 1 / 4, 9 / 16, 1 / 4, 1 / 2])
+
+
+def test_proximidade_pesos_mudam_as_distancias():
+    g = novo_grafo(3, [(0, 1, 2), (1, 2, 2), (0, 2, 10)])
+    # 0 alcança 1 (2) e 2 (4, por 1): (2/6)(2/2).
+    assert proximidade(g)[0] == pytest.approx(1 / 3)
+
+
+def test_proximidade_respeita_vertice_desativado(g):
+    g.desativar_vertice(3)
+    # N = 4. 0 alcança 1 (1), 2 (2), 4 (3): (3/6)(3/3).
+    assert proximidade(g) == pytest.approx([1 / 2, 2 / 3 * 2 / 3, 1 / 3, 0, 0])
+
+
+def test_proximidade_bordas():
+    assert proximidade(novo_grafo(0, [])) == []
+    assert proximidade(novo_grafo(1, [])) == [0.0]
+    assert proximidade(novo_grafo(2, [(0, 1, 0)])) == [0.0, 0.0]  # D = 0: como o NetworkX
+    with pytest.raises(ValueError):
+        proximidade(novo_grafo(2, []), sentido="ida")
+    with pytest.raises(ValueError):
+        proximidade(novo_grafo(2, []), tamanho_amostra=0)
+
+
+def completo(n: int, peso: float) -> Grafo:
+    return novo_grafo(n, [(u, v, peso) for u in range(n) for v in range(n) if u != v])
+
+
+@pytest.mark.parametrize("k", [2, 3, 5, 6])
+def test_proximidade_amostrada_em_grafo_completo_e_exata(k):
+    # Todos a distância 2 de todos: com qualquer amostra, r_k / D_k = 1/2 e r_k = k_v.
+    g = completo(6, 2)
+    assert proximidade(g, tamanho_amostra=k, semente=7) == pytest.approx([0.5] * 6)
+
+
+def test_proximidade_com_uma_origem_zera_a_propria_origem():
+    # A única origem sorteada não tem outra origem para medir a distância: fica 0.
+    valores = proximidade(completo(6, 2), tamanho_amostra=1, semente=7)
+    assert sorted(valores) == pytest.approx([0.0] + [0.5] * 5)
+
+
+def test_proximidade_amostra_completa_e_o_exato(g):
+    assert proximidade(g, tamanho_amostra=5) == proximidade(g)
+    assert proximidade(g, tamanho_amostra=50) == proximidade(g)
+
+
+def test_proximidade_amostrada_reproduzivel_pela_semente():
+    g, _ = grafo_aleatorio(3)
+    a = proximidade(g, tamanho_amostra=5, semente=11)
+    assert a == proximidade(g, tamanho_amostra=5, semente=11)
+
+
+@pytest.mark.parametrize("semente", range(15))
+@pytest.mark.parametrize("peso_min", [0, 1])
+def test_proximidade_igual_ao_networkx(semente, peso_min):
+    # O NetworkX usa as distâncias de entrada em grafo dirigido; a de saída é a de
+    # entrada no grafo reverso.
+    g, ref = grafo_aleatorio(semente + 200, peso_min=peso_min)
+    entrada = nx.closeness_centrality(ref, distance="weight", wf_improved=True)
+    assert proximidade(g, ENTRADA) == pytest.approx(como_lista(g, entrada, 0.0), abs=1e-12)
+    saida = nx.closeness_centrality(ref.reverse(), distance="weight", wf_improved=True)
+    assert proximidade(g, SAIDA) == pytest.approx(como_lista(g, saida, 0.0), abs=1e-12)

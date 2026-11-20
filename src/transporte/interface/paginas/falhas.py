@@ -1,9 +1,12 @@
-"""Página Falhas: simula a saída de uma parada, de um trecho ou de uma linha (F-RES).
+"""Página Falhas: falha única (F-RES), ranking (F-RES-2) e falhas múltiplas (F-RES-OPC).
 
-RF-RES-01 a RF-RES-03 na interface: escolhe a falha, roda `simular_falha` sobre G_P e mostra
-as componentes fortemente conexas antes e depois, as paradas isoladas e desconectadas e a
-perda de eficiência, com um mapa. A eficiência usa amostra de origens com semente fixa:
-no feed real cada Dijkstra leva cerca de 0,14 s e a simulação roda dois por origem.
+Aba "Falha única", RF-RES-01 a RF-RES-03: escolhe a falha, roda `simular_falha` sobre G_P e
+mostra as componentes fortemente conexas antes e depois, as paradas isoladas e
+desconectadas e a perda de eficiência, com um mapa. Aba "Ranking", RF-RES-04: ordena as
+paradas mais centrais e as linhas pela perda que causam. Aba "Falhas múltiplas", RF-RES-05:
+falhas em sequência e remoção dirigida contra aleatória. A eficiência usa amostra de
+origens com semente fixa: no feed real cada Dijkstra leva cerca de 0,14 s, então as abas
+mostram o custo estimado antes de rodar e guardam os resultados na sessão.
 Segue o contrato `render(rede)` da P0-UI.
 
 estado: implementado
@@ -19,6 +22,7 @@ import folium
 import streamlit as st
 from streamlit_folium import st_folium
 
+from transporte.grafo.buscas import dijkstra
 from transporte.interface.mapa import atualizar_controle_camadas, criar_mapa
 from transporte.interface.protocolos import RedeUI
 from transporte.modelo.construtores import construir_gp
@@ -27,15 +31,30 @@ from transporte.simulacao.falhas import (
     Falha,
     ResultadoFalha,
     Trecho,
+    candidatos_criticidade,
     indexar_linhas,
+    ranking_criticidade,
+    sequencia_aleatoria,
+    sequencia_dirigida,
     simular_falha,
+    simular_falhas,
 )
 
 TITULO = "Falhas"
 CHAVE_GP = "f-res-gp"
 CHAVE_RESULTADO = "f-res-resultado"
+CHAVE_DIJKSTRA = "f-res-dijkstra"
+CHAVE_RANKING = "f-res-2-ranking"
+CHAVE_MULTIPLAS = "f-res-opc-multiplas"
 SEMENTE = 2026
 AMOSTRA_PADRAO = 30
+RANKING_PARADAS = 10
+RANKING_LINHAS = 10
+RANKING_AMOSTRA = 20
+AMOSTRA_INTERMEDIACAO = 50
+COMPARACAO_K = 5
+MODO_ESCOLHA = "Escolher falhas"
+MODO_COMPARACAO = "Dirigida x aleatória"
 PARADA = "parada"
 TRECHO = "trecho"
 LINHA = "linha"
@@ -235,6 +254,222 @@ def _escolher_falha(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]]
     return Falha(linhas=tuple(escolhidas)) if escolhidas else None
 
 
+def segundos_por_dijkstra(rede: RedeUI, visao: VisaoGP, cache: MutableMapping) -> float:
+    """Tempo de um Dijkstra em G_P medido nesta rede, para estimar o custo antes de rodar.
+
+    Mede uma vez por rede (a partir do vértice 0) e guarda em `cache` com `id(rede)`.
+    Complexidade: O((V + E) log V) na primeira vez, O(1) depois.
+    """
+    guardado = cache.get(CHAVE_DIJKSTRA)
+    if guardado is None or guardado[0] != id(rede):
+        inicio = perf_counter()
+        if visao.grafo.num_vertices():
+            dijkstra(visao.grafo, 0)
+        guardado = (id(rede), max(perf_counter() - inicio, 1e-6))
+        cache[CHAVE_DIJKSTRA] = guardado
+    return guardado[1]
+
+
+def dijkstras_ranking(n_candidatos: int, amostra: int, amostra_intermediacao: int,
+                      n_paradas: int) -> int:
+    """Dijkstras do ranking: a intermediação (se há paradas) e c + 1 eficiências. O(1)."""
+    brandes = amostra_intermediacao if n_paradas else 0
+    return brandes + (n_candidatos + 1) * amostra if n_candidatos else 0
+
+
+def tabela_ranking(rede: RedeUI, resultados: list[ResultadoFalha]) -> list[dict[str, object]]:
+    """Linhas da tabela do ranking, na ordem recebida. O(c)."""
+    linhas = []
+    for posicao, r in enumerate(resultados, start=1):
+        if r.falha.paradas:
+            tipo, alvo = "Parada", _nome_parada(rede, r.falha.paradas[0])
+        elif r.falha.linhas:
+            tipo, alvo = "Linha", _nome_linha(rede, r.falha.linhas[0])
+        else:
+            tipo, alvo = "Outra", descrever(rede, r.falha)
+        linhas.append({
+            "Posição": posicao,
+            "Tipo": tipo,
+            "Sai de operação": alvo,
+            "Perda de eficiência": f"{r.perda_eficiencia:.4%}",
+            "Fora da rede principal": len(r.paradas_desconectadas),
+            "Isoladas": len(r.paradas_isoladas),
+        })
+    return linhas
+
+
+def curva_eficiencia(passos: list[ResultadoFalha]) -> list[float]:
+    """Eficiência relativa (depois / antes) com 0, 1, ..., k falhas; começa em 1.0. O(k)."""
+    return [1.0] + [1.0 - p.perda_eficiencia for p in passos]
+
+
+def tabela_passos(rede: RedeUI, passos: list[ResultadoFalha]) -> list[dict[str, object]]:
+    """Uma linha por passo da sequência, com as medidas acumuladas. O(k)."""
+    return [
+        {
+            "Falhas": k,
+            "Saiu agora": descrever(rede, p.falha),
+            "Componentes": len(p.componentes_depois),
+            "Isoladas": len(p.paradas_isoladas),
+            "Fora da rede principal": len(p.paradas_desconectadas),
+            "Perda de eficiência": f"{p.perda_eficiencia:.4%}",
+        }
+        for k, p in enumerate(passos, start=1)
+    ]
+
+
+def _guardado(chave: str, rede: RedeUI) -> dict:
+    """Dicionário de resultados da sessão para a rede atual (parâmetros -> resultado)."""
+    guardado = st.session_state.get(chave)
+    if guardado is None or guardado[0] != id(rede):
+        guardado = (id(rede), {})
+        st.session_state[chave] = guardado
+    return guardado[1]
+
+
+def _estimativa(dijkstras: int, segundos: float) -> None:
+    st.caption(
+        f"Custo estimado: {dijkstras} Dijkstras, cerca de {dijkstras * segundos:.1f} s "
+        f"({segundos * 1000:.1f} ms por Dijkstra, medido nesta rede). Resultados ficam "
+        "guardados na sessão: repetir os mesmos parâmetros não recalcula."
+    )
+
+
+def _slider_positivo(ui, rotulo: str, limite: int, padrao: int, **opcoes) -> int:
+    """Mostra o valor fixo quando a rede tem uma única parada."""
+    if limite == 1:
+        ui.caption(f"{rotulo}: 1")
+        return 1
+    return ui.slider(rotulo, 1, limite, min(padrao, limite), **opcoes)
+
+
+def _aba_ranking(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]]) -> None:
+    """Aba Ranking (F-RES-2, RF-RES-04)."""
+    n = visao.grafo.num_vertices()
+    linhas = linhas_com_trecho(rede, indice)
+    st.caption(
+        "Simula, uma de cada vez, a falha das paradas de maior intermediação (F-MET) e das "
+        "linhas, todas com as mesmas origens sorteadas, e ordena pela perda de eficiência."
+    )
+    colunas = st.columns(2)
+    n_paradas = colunas[0].slider("Paradas candidatas (maior intermediação)", 0,
+                                  max(1, min(n, 50)), min(RANKING_PARADAS, n))
+    n_linhas = colunas[1].slider("Linhas candidatas (sorteadas)", 0, max(1, len(linhas)),
+                                 min(RANKING_LINHAS, len(linhas)))
+    colunas = st.columns(2)
+    amostra = _slider_positivo(
+        colunas[0], "Eficiência: origens sorteadas", min(n, 200), RANKING_AMOSTRA,
+        key="ranking-amostra",
+    )
+    amostra_int = _slider_positivo(
+        colunas[1], "Intermediação: origens sorteadas", min(n, 500), AMOSTRA_INTERMEDIACAO,
+        key="ranking-amostra-int",
+    )
+    total = n_paradas + n_linhas
+    _estimativa(dijkstras_ranking(total, amostra, amostra_int, n_paradas),
+                segundos_por_dijkstra(rede, visao, st.session_state))
+    resultados = _guardado(CHAVE_RANKING, rede)
+    parametros = (n_paradas, n_linhas, amostra, amostra_int)
+    clicou = st.button("Calcular ranking", type="primary", disabled=total == 0)
+    if clicou and parametros not in resultados:
+        with st.spinner("Simulando cada candidato..."):
+            inicio = perf_counter()
+            candidatos = candidatos_criticidade(
+                visao, n_paradas, indice, n_linhas, amostra_int, SEMENTE
+            )
+            ranking = ranking_criticidade(visao, candidatos, indice, amostra, SEMENTE)
+            resultados[parametros] = (ranking, perf_counter() - inicio)
+    if parametros not in resultados:
+        st.info("Escolha os candidatos e clique em Calcular ranking.")
+        return
+    ranking, segundos = resultados[parametros]
+    st.dataframe(tabela_ranking(rede, ranking), hide_index=True, width="stretch")
+    st.caption(
+        f"{len(ranking)} candidatos em {segundos:.1f} s; eficiência com {amostra} origens "
+        f"(semente {SEMENTE}). Perdas amostradas de falhas que tiram paradas da rede "
+        "principal variam com a amostra."
+    )
+
+
+def _aba_multiplas(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]]) -> None:
+    """Aba Falhas múltiplas (F-RES-OPC, RF-RES-05)."""
+    n = visao.grafo.num_vertices()
+    st.caption(
+        "Aplica as falhas uma depois da outra e mede a rede após cada uma (efeito "
+        "acumulado), ou compara a remoção dirigida (maior intermediação primeiro) com a "
+        "remoção aleatória."
+    )
+    modo = st.radio("Modo", [MODO_ESCOLHA, MODO_COMPARACAO], horizontal=True)
+    amostra = _slider_positivo(
+        st, "Eficiência: origens sorteadas", min(n, 200), RANKING_AMOSTRA,
+        key="multiplas-amostra",
+    )
+    segundos = segundos_por_dijkstra(rede, visao, st.session_state)
+    resultados = _guardado(CHAVE_MULTIPLAS, rede)
+    if modo == MODO_ESCOLHA:
+        paradas = st.multiselect(
+            "Paradas, na ordem da falha", list(visao.parada_do_vertice),
+            format_func=lambda p: _nome_parada(rede, p), key="multiplas-paradas",
+        )
+        linhas = st.multiselect(
+            "Linhas, depois das paradas", linhas_com_trecho(rede, indice),
+            format_func=lambda i: _nome_linha(rede, i), key="multiplas-linhas",
+        )
+        falhas = [Falha(paradas=(p,)) for p in paradas]
+        falhas += [Falha(linhas=(linha,)) for linha in linhas]
+        _estimativa((len(falhas) + 1) * amostra if falhas else 0, segundos)
+        parametros = ("escolha", tuple(falhas), amostra)
+        clicou = st.button("Simular sequência", type="primary", disabled=not falhas)
+        if clicou and parametros not in resultados:
+            with st.spinner("Simulando a sequência..."):
+                resultados[parametros] = simular_falhas(visao, falhas, indice, amostra, SEMENTE)
+        if parametros not in resultados:
+            st.info("Escolha as paradas ou linhas e clique em Simular sequência.")
+            return
+        passos = resultados[parametros]
+        st.line_chart(
+            {"Falhas": list(range(len(passos) + 1)),
+             "Eficiência relativa": curva_eficiencia(passos)},
+            x="Falhas", y="Eficiência relativa",
+        )
+        st.dataframe(tabela_passos(rede, passos), hide_index=True, width="stretch")
+        return
+
+    colunas = st.columns(2)
+    k = _slider_positivo(colunas[0], "Paradas removidas", min(n, 30), COMPARACAO_K)
+    amostra_int = _slider_positivo(
+        colunas[1], "Intermediação: origens sorteadas", min(n, 500), AMOSTRA_INTERMEDIACAO,
+        key="multiplas-amostra-int",
+    )
+    _estimativa(amostra_int + 2 * (k + 1) * amostra, segundos)
+    parametros = ("comparacao", k, amostra, amostra_int)
+    if st.button("Comparar remoções", type="primary") and parametros not in resultados:
+        with st.spinner("Removendo paradas em sequência..."):
+            dirigida = simular_falhas(
+                visao, sequencia_dirigida(visao, k, amostra_int, SEMENTE), indice,
+                amostra, SEMENTE,
+            )
+            aleatoria = simular_falhas(
+                visao, sequencia_aleatoria(visao, k, SEMENTE), indice, amostra, SEMENTE
+            )
+            resultados[parametros] = (dirigida, aleatoria)
+    if parametros not in resultados:
+        st.info("Escolha quantas paradas remover e clique em Comparar remoções.")
+        return
+    dirigida, aleatoria = resultados[parametros]
+    st.line_chart(
+        {"Falhas": list(range(len(dirigida) + 1)),
+         "Dirigida": curva_eficiencia(dirigida),
+         "Aleatória": curva_eficiencia(aleatoria)},
+        x="Falhas", y=["Dirigida", "Aleatória"],
+    )
+    st.caption(
+        f"Eficiência depois / antes, com {amostra} origens (semente {SEMENTE}). Dirigida: "
+        "paradas de maior intermediação primeiro, calculada uma vez na rede intacta. "
+        f"Aleatória: paradas sorteadas com a semente {SEMENTE}."
+    )
+
+
 def render(rede: RedeUI) -> None:
     """Página Falhas (contrato da P0-UI)."""
     st.title(TITULO)
@@ -248,14 +483,25 @@ def render(rede: RedeUI) -> None:
         return
     with st.spinner("Montando G_P..."):
         visao, indice, proximas = preparar(rede, st.session_state)
-    n = visao.grafo.num_vertices()
+    unica, aba_ranking, multiplas = st.tabs(["Falha única", "Ranking", "Falhas múltiplas"])
+    with unica:
+        _aba_falha_unica(rede, visao, indice, proximas)
+    with aba_ranking:
+        _aba_ranking(rede, visao, indice)
+    with multiplas:
+        _aba_multiplas(rede, visao, indice)
 
+
+def _aba_falha_unica(rede: RedeUI, visao: VisaoGP, indice: dict[Trecho, set[str]],
+                     proximas: dict[str, list[str]]) -> None:
+    """Aba Falha única (F-RES, RF-RES-01 a 03)."""
+    n = visao.grafo.num_vertices()
     falha = _escolher_falha(rede, visao, indice, proximas)
-    amostra = st.slider(
+    amostra = _slider_positivo(
+        st,
         "Eficiência: origens sorteadas",
-        min_value=1,
-        max_value=max(1, min(n, 200)),
-        value=min(AMOSTRA_PADRAO, n),
+        min(n, 200),
+        AMOSTRA_PADRAO,
         help=(
             "A eficiência roda um Dijkstra por origem, antes e depois da falha. No feed real "
             "cada um leva cerca de 0,14 s. As mesmas origens (semente fixa) valem nos dois."

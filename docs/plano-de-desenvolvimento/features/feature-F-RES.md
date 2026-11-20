@@ -9,12 +9,8 @@
 > Em conflito, o REQUISITOS.md vence.
 
 ## Retomada
-- **Última sessão:** 19/11/2026.
-- **Onde parou:** núcleo, testes, medição, diagrama, seção do relatório, roteiro e GUIA na `main` (PRs #47 e #53). Em 19/11, na branch `feat/F-RES-pagina`: página Falhas (`src/transporte/interface/paginas/falhas.py`, `render(rede)`, 8 testes) e troca da eficiência provisória pela `eficiencia_global` da F-EFI (#52), com os 89 testes da F-RES verdes e os mesmos números no feed real. Nova medição com a varredura de linhas (Resultados). A exceção ao congelamento para a página foi pedida pelo grupo (tabela de pendências de 19/11).
-- **Próximo passo:** (1) abrir o PR da branch `feat/F-RES-pagina` e pedir revisão. (2) Gravar o trecho do vídeo, se ainda não foi gravado; a linha 832 é um bom exemplo.
-- **Arquivos tocados:** `src/transporte/simulacao/falhas.py`, `src/transporte/interface/paginas/falhas.py`, `tests/simulacao/test_falhas.py`, `tests/interface/test_pagina_falhas.py`, `benchmarks/medir_falhas.py`, `docs/diagramas/sequencia-falhas.puml`, `relatorio/secoes/F-RES.tex`, `relatorio/secoes/conclusao.tex`, `docs/GUIA.md`, este arquivo.
-- **Como testar:** `pytest tests/simulacao tests/interface/test_pagina_falhas.py` (97 testes); `pytest` completo (862 verdes em 19/11; a única falha é o timeout conhecido do `test_integracao_dados.py` com o feed real na máquina); `streamlit run src/transporte/interface/app.py` e a página Falhas; `python benchmarks/medir_falhas.py`.
-- **Bloqueios:** nenhum.
+
+**Relatório e página concluídos.** O [#61](https://github.com/henriquegdc/grafos-transporte-bh/pull/61), aprovado pelo Henrique, integrou a página Falhas e a figura `falhas-linha-832.png`. A figura apresenta uma amostra e a legenda distingue a perda exata. O relatório e a subseção do guia usam a eficiência de F-EFI. Para validar a página: `python -m pytest tests/interface/test_pagina_falhas.py`. Próximo passo: gravar o trecho pelo roteiro.
 
 ## Objetivo
 Falhas e resiliência. Fecha:
@@ -26,14 +22,14 @@ Falhas e resiliência. Fecha:
 ## Status
 | Camada | Status | Observação (data, evidência, o que falta) |
 |---|---|---|
-| Núcleo (algoritmo) | concluído | 10/11: Tarjan iterativo, falhas de parada, trecho e linha, `simular_falha`; eficiência provisória até a F-EFI |
+| Núcleo (algoritmo) | concluído | Tarjan iterativo, falhas e eficiência compartilhada com F-EFI desde #61. |
 | Modelo e dados | concluído | 10/11: roda sobre `construir_gp` e `ler`; `indexar_linhas` liga trechos a linhas; integração testada na rede de teste e medida no feed real |
 | Interface | concluído | 19/11: página Falhas (parada, trecho ou linhas; cartões antes e depois, tabela e mapa); 8 testes, inclusive o shell da P0-UI; conferida no feed real (13 s por simulação com 30 origens) |
 | Testes | concluído | 10/11: 89 testes (gabarito à mão, 40 grafos aleatórios contra o NetworkX no Tarjan, 15 na eficiência, rede de teste ponta a ponta) |
 | Desempenho (tempo medido) | concluído | 10/11: `benchmarks/medir_falhas.py` no feed real (ver Resultados) |
 | Guia (explicação e quiz) | concluído | 16/11: GUIA §5.6 e §10; 17/11: as 3 decisões no GUIA §8 |
-| Relatório | em andamento | `relatorio/secoes/F-RES.tex` com resultado, complexidade e limitação; falta a figura da tela (depende da página) |
-| Vídeo | em andamento | Roteiro (rascunho) abaixo |
+| Relatório | concluído | Figura da remoção da linha 832 conferida em `relatorio/secoes/F-RES.tex`, com legenda, resultado e limitação. |
+| Vídeo | em andamento | Roteiro pronto abaixo; gravação pendente |
 
 ## Especificação
 Assinaturas públicas em `src/transporte/simulacao/falhas.py` (`estado: implementado`):
@@ -49,8 +45,6 @@ Algoritmos previstos (docs/fontes/modelagem.md §3.5):
 - Tarjan iterativo (componentes fortemente conexas) · visão G_P · O(V + E) · Iterativo por causa do limite de recursão
 
 ## Como funciona e por quê
-_Rascunho do agente em 10/11; o Caio revisa._
-
 **O problema.** O que acontece com a rede quando uma parada fecha, um trecho é interditado ou uma linha para? Queremos saber quem fica sem acesso e quanto a rede perde em rapidez.
 
 **A visão: G_P.** Um vértice por parada e arestas dirigidas de viagem (parada seguinte de alguma linha, com o tempo mediano) e de caminhada (até 300 m, nos dois sentidos). É a visão em que "parada" e "trecho" são vértice e aresta, então a falha é só desligar o que sai.
@@ -85,7 +79,7 @@ _Rascunho do agente em 10/11; o Caio revisa._
 ## Definition of Done
 Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
+- [x] Código integrado pelos PRs #47 e #61; #61 aprovado pelo Henrique.
 - [x] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
 - [x] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
 - [x] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
@@ -94,9 +88,9 @@ Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fi
 - [x] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
 - [x] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
 - [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
+- [x] Seção F-RES com captura da linha 832, perda e limitação da amostragem.
 - [x] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+- [x] Arquivo atualizado com retomada, status, pendências e timeline.
 
 ## Plano de implementação
 | Etapa | Escopo | Situação |
@@ -146,22 +140,17 @@ Os tempos subiram de 20 % a 110 % em relação a 10/11 com o mesmo código de Di
 | 300 (sementes 1 e 2) | 0,7652 % · 0,7444 % |
 | Todas (9.659), exata | **0,5040 %** (eficiência 6,208544 × 10⁻⁴ -> 6,177254 × 10⁻⁴ s⁻¹), em 1.330 s |
 
-**Leitura.** A perda amostrada de uma falha que desconecta poucas paradas tem cauda pesada. Sem nenhuma das 33 paradas desconectadas na amostra, ela fica perto de 0,25 %; quando uma delas é sorteada como origem, a contribuição dela despenca e a estimativa salta para 1 % a 3 %. O valor de 0,94 % de 10/11 era uma dessas amostras. Por isso o relatório usa o exato, e a página avisa quando a falha desconecta paradas e a perda é amostrada.
+**Leitura.** A perda amostrada de uma falha que desconecta poucas paradas tem cauda pesada. Sem nenhuma das 33 paradas desconectadas na amostra, ela fica perto de 0,25 %; quando uma delas é sorteada como origem, a contribuição dela despenca e a estimativa salta para 1 % a 3 %. O valor de 0,94 % de 19/11 era uma dessas amostras. Por isso o relatório usa o exato, e a página avisa quando a falha desconecta paradas e a perda é amostrada.
 
 ## Roteiro do vídeo (2 a 2,5 min)
-_Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só depois de conferidos em Resultados._
-
 1. **O problema (20 s).** "Se a parada mais movimentada de BH fecha, ou uma linha para, quem fica sem ônibus? E quanto a rede inteira fica mais lenta?" Mostrar o mapa com a rede.
 2. **Funcionando (50 s).** Na página Falhas, escolher a parada com mais saídas e simular. Mostrar o número de componentes antes e depois, as paradas isoladas no mapa e a perda de eficiência. Repetir com uma linha e comentar que só os trechos exclusivos dela saem, porque os trechos compartilhados continuam com as outras linhas. Se a página não existir na gravação, rodar `python benchmarks/medir_falhas.py` no terminal.
 3. **Algoritmo e complexidade (50 s).** A falha não reconstrói o grafo: só desliga vértices e arestas e religa no fim. Componentes fortemente conexas com o Tarjan, O(V + E). Mostrar `indice` e `low` no exemplo de 4 vértices do "Como funciona". É iterativo porque, no G_P real, a DFS chega a 4.657 níveis e o Python para em 1.000. Eficiência: média de 1/d, um Dijkstra por origem, O(s (V + E) log V), por isso a amostra com semente fixa.
-4. **Resultado e limitação (20 s).** Citar a perda medida para a parada e para a linha (Resultados). Limitação: o G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. E a eficiência é provisória até a F-EFI.
+4. **Resultado e limitação (20 s).** Citar a perda medida para a parada e para a linha (Resultados). Limitação: o G_P usa o tempo mediano, sem espera nem horário, então a perda é estrutural, não o tempo porta a porta. A eficiência vem da função compartilhada com F-EFI.
 
 ## Pendências
-- **Checkpoint de 07/11 perdido.** Nada da F-RES existia em 07/11. Pelo gatilho do plano-de-projeto §7.3, a feature foi reduzida ao mínimo dos RFs: núcleo, testes e medição em 10/11. A página e a etapa 6 ficam como pendência.
-- ~~**Eficiência da F-EFI (Arthur)**~~ **resolvido em 19/11:** a F-RES importa a `eficiencia_global` de `transporte.algoritmos.eficiencia` (#52); a provisória foi apagada. Os 89 testes passam e o feed real dá as mesmas perdas (0,0357 % e 0,0709 %).
-- ~~**Página Falhas**~~ **feita em 19/11** (branch `feat/F-RES-pagina`).
-- ~~**Decisões a confirmar pelo Caio**~~ **resolvido em 17/11:** denominador fixo na eficiência, definições de isolada e desconectada e trecho em um sentido só, registrados no `docs/GUIA.md` §8.
-- ~~**Etapa 6**~~ **feita em 19/11:** figura da página (`relatorio/figuras/falhas-linha-832.png`, capturada da própria página no feed real com o Chrome headless) e PNG do diagrama regenerado.
+
+- Gravar a demonstração da linha 832 usando o resultado exato e a estimativa identificados no relatório.
 
 ## Timeline
 ### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
@@ -172,3 +161,6 @@ _Rascunho do agente em 10/11; o Caio revisa e ajusta à fala dele. Números só 
 ### Revisão 17/11/2026: PR #53 rebaseado sobre a `main` com a F-BALD (#48 e #49); decisões no GUIA §8; pendências e DoD atualizados; prazo do vídeo corrigido para 18/11.
 ### Página 19/11/2026: página Falhas e troca pela eficiência da F-EFI na branch `feat/F-RES-pagina`; varredura das 291 linhas no feed real; conclusão do relatório (seção 9) escrita.
 ### Exata 19/11/2026: perda exata da linha 832 (0,504 %), variação da amostra medida (`benchmarks/variancia_falhas.py`), aviso na página, figura no relatório e PNG do diagrama regenerado.
+
+### Fechamento documental de 20/11/2026
+Confirmada a figura da linha 832 e seu uso na seção F-RES integrada pelo #61.
