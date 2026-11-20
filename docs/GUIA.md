@@ -263,6 +263,26 @@ Para N viagens, P padrões e F faixas: deduplicação e ordenação custam O(N l
 
 Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. Não há consulta à próxima partida exata nem Monte Carlo. A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
 
+#### Quadro de horários e Monte Carlo (F-ESPERA-2)
+
+Em **Espera → Quadro de horários**, escolha origem, destino e saída. O modo H/2 usa
+o intervalo médio da faixa. O quadro usa o instante em que você chega a cada parada.
+Se você perde o ônibus durante uma conexão, a espera vai até a próxima partida
+que permite chegar mais cedo. A caminhada usa a mesma distância e velocidade de G_P.
+
+Em G_T, o Dijkstra guarda o primeiro instante alcançável em cada parada. Para
+cada segmento de um padrão, uma busca binária localiza a primeira partida
+alcançável. O índice já descarta partidas ultrapassadas por outra que chega antes.
+Assim, chegar mais cedo à parada sempre permite esperar pela melhor conexão.
+Os trechos identificam a viagem, inclusive quando uma troca ocorre no mesmo padrão.
+
+O Monte Carlo sorteia segundos de saída uniformemente dentro da janela escolhida.
+Os dois histogramas mostram o total e a espera entre os sorteios com caminho.
+Confira também quantos sorteios tiveram caminho. Uma mesma semente permite repetir
+a comparação. As partidas representam o dia de serviço programado e podem passar
+da meia-noite. O leitor conserva um horário por parada e a simulação não estima
+atrasos ou permanência do veículo no ponto.
+
 ### 5.3 Menos baldeações (F-BALD)
 
 Dadas duas paradas, `menos_baldeacoes` acha o trajeto com o menor número de ônibus
@@ -1010,6 +1030,12 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 3. **Uma partida permite estimar H?** Não. Usa-se a espera provisória identificada na tela; sem partida não há embarque.
 4. **A saída às 08h59 usa a faixa seguinte durante a viagem?** Não: a versão essencial mantém a faixa da saída fixa; partidas exatas são da extensão G_T.
 5. **H/2 vale para intervalos muito irregulares?** É a aproximação essencial; a espera com chegadas ao acaso seria E[H²]/(2 E[H]).
+
+#### Quadro de horários e Monte Carlo (F-ESPERA-2)
+
+1. **Posso pegar uma partida no instante em que chego?** Sim. A busca inclui a igualdade entre o horário de chegada à parada e a partida.
+2. **Como o algoritmo trata um expresso que ultrapassa outro ônibus?** Ao indexar o segmento, descarta a partida cuja chegada seria pior que a de uma partida posterior. Chegar antes à parada permite aguardar o expresso.
+3. **Por que exibir a cobertura junto com o histograma?** Uma saída sem trajeto fica fora das durações. A cobertura permite identificar janelas em que só parte das saídas atende ao destino.
 
 ### 5.3 Menos baldeações (F-BALD)
 1. **Por que a G_L tem um vértice por padrão, e não por parada?** Porque baldeação é troca de
