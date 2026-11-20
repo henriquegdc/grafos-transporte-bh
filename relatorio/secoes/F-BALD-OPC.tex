@@ -1,0 +1,18 @@
+% Subseção da F-BALD-OPC (trajetos não dominados em tempo e baldeações). Dono: Henrique.
+% Fontes: docs/plano-de-desenvolvimento/features/feature-F-BALD-OPC.md; exemplo de
+% benchmarks/medir_nao_dominados.py --pares 5 --repeticoes 1 em 20/11/2026.
+\subsection{Trajetos não dominados}\label{sec:F-BALD-OPC}
+
+Em vez de um ponto da troca entre tempo e baldeações (Seção~\ref{sec:F-BALD-2}), a página
+Baldeações lista a \emph{fronteira de Pareto}: os trajetos para os quais nenhum outro é ao
+mesmo tempo mais rápido e com menos (ou iguais) baldeações. Com $B$ as baldeações do mais
+rápido em $G_E$, a busca com limite da Seção~\ref{sec:F-BALD-2} roda para
+$k = 0, \dots, B - 1$ e cada resultado só entra se reduz o tempo do anterior; o mais rápido
+fecha a lista. Como o tempo mínimo com até $k$ baldeações não cresce com $k$, a lista é
+exatamente a fronteira. São $B + 1$ buscas, $O(B^2 (V + E)\log(BV))$ no pior caso; a
+fronteira coincidiu com a força bruta do NetworkX (caminhos simples filtrados) em todos os
+pares de 20 redes aleatórias. No feed real, entre as paradas 14786076 e 14789446 no pico da
+manhã, a fronteira tem quatro pontos: 0, 1, 2 e 3 baldeações em $130{,}3$, $109{,}3$,
+$105{,}9$ e $105{,}7$~min. \pendente{tempo médio e máximo por par nos 200 pares
+(medir\_nao\_dominados.py).} \emph{Limitação:} um trajeto por ponto, com as esperas médias
+$H/2$ e sem horário de saída.
