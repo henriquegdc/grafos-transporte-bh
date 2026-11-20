@@ -121,7 +121,10 @@ def _buscar(
     """Busca de melhor primeiro de s a t, com f = g + h; h = 0 sem coordenadas (Dijkstra).
 
     Inserção preguiçosa, como o Dijkstra do núcleo: uma entrada é desatualizada quando o
-    seu g já foi melhorado; ela é descartada sem contar como expansão. Para ao extrair t.
+    seu g já foi melhorado; ela é descartada sem contar como expansão. Um conjunto de
+    fechados garante que cada vértice é expandido uma vez só, mesmo quando a tolerância do
+    teste de entrada desatualizada deixa passar duas entradas do mesmo vértice: a contagem
+    de expandidos é exata. Para ao extrair t.
     Respeita vértices e arestas desativados (só percorre Grafo.vizinhos).
     Saída: (custo, ids das arestas do caminho, vértices expandidos); custo INF e caminho
         vazio se t é inalcançável.
@@ -144,18 +147,22 @@ def _buscar(
     expandidos = 0
     if not g.vertice_ativo(s):
         return INF, [], 0
+    fechado = [False] * n
     dist[s] = 0.0
     heap = HeapMin()
     heap.inserir(heuristica(s), s)
     while not heap.vazio():
         f, u = heap.extrair_min()
-        if f - h[u] > dist[u] * (1 + _FOLGA) + _FOLGA:
-            continue  # entrada desatualizada
+        if fechado[u] or f - h[u] > dist[u] * (1 + _FOLGA) + _FOLGA:
+            continue  # já expandido, ou entrada desatualizada
+        fechado[u] = True
         expandidos += 1
         if u == t:
             break
         du = dist[u]
         for v, peso, a in g.vizinhos(u):
+            if fechado[v]:
+                continue  # com h consistente, o g de um fechado já é o ótimo
             nova = du + peso
             if nova < dist[v]:
                 dist[v] = nova
