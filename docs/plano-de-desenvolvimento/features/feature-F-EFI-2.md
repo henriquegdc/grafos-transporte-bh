@@ -65,14 +65,22 @@ Diagrama: [atividade](../../diagramas/atividade-extensoes-eficiencia.png) e
 
 ## Resultados para o relatório
 
-Feed BHTrans de serviço 04/11/2026 (SHA-256 e máquina completos no JSON).
-Máquina macOS 26.6.2 arm64, Python 3.12.13. A leitura do ZIP fica fora das medições.
+**Regerado em 20/11/2026 (vai para o relatório).** Feed oficial de 18/11 (SHA-256
+`8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026);
+Intel Core i5-13600KF, Windows 11 (10.0.26200), Python 3.12.10; mesmo comando e parâmetros
+(abaixo). JSON: `benchmarks/resultados/f-efi-2-bhtrans.json`. A leitura do ZIP fica fora das medições.
 
-Para a parada 14788851 no pico da manhã, G_E tinha V=46.100 e E=208.956.
-Em 15/30/45/60 min foram alcançadas 68/603/1.911/4.120 paradas. Com cinco
-repetições, a isócrona de 60 min levou 39,99 ± 0,58 ms e o cálculo dos desvios
-dos 12 pares levou 583,12 ± 11,40 ms (média e desvio amostral). O par de maior
-desvio na amostra foi 14793286 → 14785528, com razão 2,215 e 22,06 min/km.
+Para a parada 14788851 no pico da manhã, G_E tinha V=46.102 e E=209.025.
+Em 15/30/45/60 min foram alcançadas 68/603/1.912/4.121 paradas. Com cinco
+repetições, a isócrona de 60 min levou 55,18 ± 0,65 ms e o cálculo dos desvios
+dos 12 pares levou 759,06 ± 9,00 ms (média e desvio amostral). O par de maior
+desvio na amostra foi 14792221 → 14786004, com razão 1,548 (13,74 km percorridos para
+8,88 km em linha reta) e 6,74 min/km. Os 12 pares sorteados mudaram em relação à medição
+anterior porque o feed de 18/11 tem uma parada a mais.
+
+Medição anterior (substituída): serviço de 04/11 em macOS arm64, Python 3.12.13; 68/603/1.911/4.120
+paradas, isócrona 39,99 ± 0,58 ms, desvios 583,12 ± 11,40 ms, maior desvio 2,215
+(14793286 → 14785528).
 
 Comando sequencial que grava os JSON de ambas as features:
 

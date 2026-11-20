@@ -80,18 +80,22 @@ tempos **da rede de teste** estão em
 PYTHONPATH=src .venv/bin/python benchmarks/medir_quadro_horarios.py dados/rede-teste --origem A --destino C --saida-s 28860 --raio-m 0 --repeticoes 1
 ```
 
-Na página Espera, a consulta funcional no `bhtrans.zip` de 05/11 (serviço de
-04/11/2026), 14788851 → 14792190 às 08:00, retornou 23,67 min: 6,77 a pé,
-1,87 de espera e 15,03 de ônibus. A estimativa H/2 para o mesmo par e saída
-retornou 40,24 min, com 15,34 de espera. G_T teve 9.659 vértices e 146.563
-arestas. Esses valores descrevem o trajeto e o grafo. O desempenho foi medido em execução exclusiva com o mesmo par. Evidência funcional:
+**Regerado em 20/11/2026 no feed oficial de 18/11** (SHA-256
+`8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026;
+o JSON não grava o SHA, que fica registrado aqui), Intel Core i5-13600KF, Windows 11
+(10.0.26200), Python 3.12.10. A consulta 14788851 → 14792190 às 08:00 retornou 23,67 min:
+6,77 a pé, 1,87 de espera e 15,03 de ônibus, com 4 baldeações (uma delas com 0 s de espera,
+porque G_T não tem tempo mínimo de transferência). A estimativa H/2 para o mesmo par e saída
+retornou 40,24 min, com 15,34 de espera. G_T teve 9.660 vértices e 146.630 arestas. Os
+valores do trajeto são os mesmos da medição anterior, no `bhtrans.zip` de 05/11 (serviço de
+04/11, G_T com 9.659 vértices e 146.563 arestas). Esses valores descrevem o trajeto e o grafo. O desempenho foi medido em execução exclusiva com o mesmo par. Evidência funcional:
 `benchmarks/resultados/quadro-horarios-consulta-bhtrans.json`. Para reproduzir:
 
 ```sh
 PYTHONPATH=src .venv/bin/python benchmarks/medir_quadro_horarios.py dados/brutos/bhtrans.zip --origem 14788851 --destino 14792190 --amostras 1 --sem-medicao
 ```
 
-**Medição final** em 20/11, macOS arm64 e Python 3.12.13, com cinco repetições (média ± desvio amostral). Construção de G_T em 318,55 ± 11,29 ms, consulta em 6,98 ± 1,28 ms e Monte Carlo de 30 saídas em 279,31 ± 24,47 ms. JSON gravado em
+**Medição final (vai para o relatório)** em 20/11, feed oficial de 18/11 (SHA-256 acima), Intel Core i5-13600KF e Python 3.12.10, com cinco repetições (média ± desvio amostral). Construção de G_T em 455,04 ± 13,09 ms, consulta em 11,10 ± 1,13 ms e Monte Carlo de 30 saídas (todas com caminho) em 383,22 ± 4,17 ms. Medição anterior, substituída: serviço de 04/11 em macOS arm64, Python 3.12.13; 318,55 ± 11,29 ms, 6,98 ± 1,28 ms e 279,31 ± 24,47 ms. JSON gravado em
 `benchmarks/resultados/quadro-horarios-bhtrans.json`:
 
 ```sh

@@ -1,5 +1,5 @@
-% Subseção da F-ESPERA. Dono: Miguel. Números: benchmarks/resultados/espera-2026-11-11.json
-% (benchmarks/medir_espera.py). Condensada em 20/11 para o orçamento de 15 páginas; o
+% Subseção da F-ESPERA. Dono: Miguel. Números: benchmarks/resultados/espera-2026-11-20.json
+% (benchmarks/medir_espera.py, feed de 18/11, i5-13600KF, regerado em 20/11). Condensada em 20/11 para o orçamento de 15 páginas; o
 % diagrama de atividade (figuras/atividade-espera.png) segue em docs/diagramas/.
 \subsection{Espera e simulação por faixa horária}\label{sec:F-ESPERA}
 
@@ -12,9 +12,9 @@ reutiliza o Dijkstra da F-ROTA, separando caminhada, espera e viagem. Para $N$ v
 padrões e $F$ faixas, a estimativa custa $O(PF + FN + N\log N)$; a consulta acrescenta a
 construção de $G_E$ e o Dijkstra.
 
-No serviço de 04/11, o pico da manhã teve 481 padrões com estimativa e 20 com espera provisória
-($G_E$ com $V = 46.100$, $E = 208.956$). Em macOS arm64, estimar os intervalos levou 5,3~ms e a
-simulação completa chamada pela página, 248,7~ms (cinco repetições). A consulta
+No feed de 18/11, o pico da manhã teve 481 padrões com estimativa e 20 com espera provisória
+($G_E$ com $V = 46.102$, $E = 209.025$). No i5-13600KF, estimar os intervalos levou 7,6~ms e a
+simulação completa chamada pela página, 372,8~ms (cinco repetições). A consulta
 14788851 $\rightarrow$ 14792190 às 08h deu 40,24~min: 9,72 de caminhada, 15,34 de espera e
 15,18 de viagem. Limitações: $H/2$ supõe intervalos regulares, e com intervalos irregulares
 $E[H^2]/(2E[H])$ é maior; a faixa da saída vale para o percurso inteiro.

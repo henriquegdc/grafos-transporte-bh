@@ -62,14 +62,20 @@ Diagrama: [atividade](../../diagramas/atividade-extensoes-eficiencia.png) e
 
 ## Resultados para o relatório
 
-Feed BHTrans de serviço 04/11/2026 (SHA-256 e máquina completos no JSON).
-Máquina macOS 26.6.2 arm64, Python 3.12.13. A leitura do ZIP fica fora das medições.
+**Regerado em 20/11/2026 (vai para o relatório).** Feed oficial de 18/11 (SHA-256
+`8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6`, serviço de 18/11/2026);
+Intel Core i5-13600KF, Windows 11 (10.0.26200), Python 3.12.10; mesmo comando e parâmetros
+(abaixo). JSON: `benchmarks/resultados/f-efi-opc-bhtrans.json`.
 
-Com 12 pares alcançáveis em cada faixa, o tempo médio foi 57,48 min no pico
-da manhã, 60,66 no entrepico, 58,50 no pico da tarde e 62,36 à noite. As eficiências
-foram 3,566/3,308/3,464/3,431 × 10⁻⁴ s⁻¹, respectivamente. Cada visão teve
-46.100 vértices e 208.956/207.205/208.550/206.868 arestas. O cálculo das quatro
-faixas, incluindo construção e esperas, levou 3,277 ± 0,066 s em cinco repetições.
+Com 12 pares alcançáveis em cada faixa (semente 2026), o tempo médio foi 59,95 min no pico
+da manhã, 62,96 no entrepico, 60,08 no pico da tarde e 66,03 à noite (erro padrão de 5,02 a
+5,32 min). As eficiências foram 3,02/2,90/3,03/2,72 × 10⁻⁴ s⁻¹ (erro padrão de 0,24 a 0,29).
+As diferenças entre faixas são da ordem de um erro padrão: com 12 pares, a amostra não distingue
+as faixas. Cada visão teve 46.102 vértices e 209.025/207.274/208.619/206.937 arestas. O cálculo
+das quatro faixas, incluindo construção e esperas, levou 4,250 ± 0,047 s em cinco repetições.
+
+Medição anterior (substituída): serviço de 04/11 em macOS arm64, Python 3.12.13; tempos médios
+57,48/60,66/58,50/62,36 min, eficiências 3,566/3,308/3,464/3,431 × 10⁻⁴ s⁻¹, 3,277 ± 0,066 s.
 
 Comando sequencial que grava os JSON de ambas as features:
 

@@ -4,6 +4,7 @@
 % nos arquivos de feature (docs/plano-de-desenvolvimento/features/feature-<ID>.md):
 % F-ROTA-2/OPC: medir_rota_extensoes.py e medir_alternativos_linhas.py (20/11);
 % F-ESPERA-2: quadro-horarios-bhtrans.json; F-ESPERA-OPC: sensibilidade-bhtrans.json;
+% (F-ESPERA-2, F-EFI-2 e F-EFI-OPC regeradas no feed de 18/11 no i5-13600KF em 20/11)
 % F-BALD-2: medir_comparacao_baldeacoes.py (17/11); F-BALD-OPC: nao-dominados-2026-11-20.json;
 % F-MET-2/OPC: metricas-extensoes-2026-11-20.json; F-EFI-2: f-efi-2-bhtrans.json;
 % F-EFI-OPC: f-efi-opc-bhtrans.json; F-RES-2/OPC: falhas-extensoes-2026-11-20.json.
@@ -11,9 +12,8 @@
 \subsection{Extensões desejáveis e opcionais}\label{sec:extensoes}
 
 Cada pergunta ganhou uma extensão desejável e uma opcional, sobre as mesmas visões e o mesmo
-núcleo (Tabela~\ref{tab:extensoes}; tempos na Tabela~\ref{tab:desempenho}). F-ESPERA-2,
-F-EFI-2 e F-EFI-OPC foram medidas no serviço de 04/11; as demais, no feed de 18/11, exceto a
-F-BALD-2 (serviço de 04/11).
+núcleo (Tabela~\ref{tab:extensoes}; tempos na Tabela~\ref{tab:desempenho}). Todas foram
+medidas no feed de 18/11, exceto a F-BALD-2 (serviço de 04/11).
 
 \begin{table}[t]
 \centering
@@ -47,10 +47,10 @@ F-MET-2 & Proximidade de Wasserman e Faust, $k$ origens; $G_P$ & $O(k(V + E)\log
 F-MET-OPC & Propagação de rótulos e modularidade; $G_P$ não dirigido & $O(V + E)$ por
   iteração & 604 comunidades, $Q = 0{,}806$, igual ao NetworkX \\
 F-EFI-2 & Isócrona (Dijkstra limitado a $T$) e índice de desvio; $G_E$ &
-  $O((V' + E')\log E')$ na parte visitada & 68, 603, 1.911 e 4.120 paradas em 15, 30, 45 e
+  $O((V' + E')\log E')$ na parte visitada & 68, 603, 1.912 e 4.121 paradas em 15, 30, 45 e
   60~min \\
 F-EFI-OPC & Eficiência e tempo médio por faixa, mesmos pares; $G_E$ por faixa &
-  $O(F\,k(V + E)\log E)$ & Tempo médio de 57,5~min no pico da manhã a 62,4~min à noite \\
+  $O(F\,k(V + E)\log E)$ & Tempo médio de 60,0~min no pico da manhã a 66,0~min à noite \\
 F-RES-2 & Ranking: $N$ paradas mais centrais e linhas, cada uma falhando sozinha; $G_P$ &
   $O((c + 1)s(V + E)\log V)$ & 30 candidatos em 38,9~s; maior perda 1,11\% \\
 F-RES-OPC & Falhas em sequência; remoção dirigida contra aleatória; $G_P$ &
@@ -66,9 +66,9 @@ diferiam só no ponto de troca ou no trecho a pé, a página mostra um trajeto p
 linhas, tirando até $2k$ caminhos; ainda assim só 1 dos 8 pares ganhou uma segunda sequência,
 com cerca de 2,2 vezes o tempo do Yen puro.
 
-\textbf{Espera.} Em $G_T$, entre as paradas 14788851 e 14792190 às 08h do serviço de 04/11, o
+\textbf{Espera.} Em $G_T$, entre as paradas 14788851 e 14792190 às 08h, o
 quadro de horários deu 23,67~min de porta a porta, contra 40,24~min por $H/2$; cada modelo
-escolhe seu trajeto. $G_T$ não tem tempo mínimo de transferência: o trajeto do exemplo tem trocas
+escolhe seu trajeto. $G_T$ não tem tempo mínimo de transferência: o trajeto do exemplo tem uma troca
 com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade (feed de 18/11),
 com origens sorteadas entre as paradas da linha, só 3 de 100 pares ficaram mais lentos ao dobrar
 a linha 561787, em média 1,35~min; nos outros 97 o melhor trajeto não depende dela.
@@ -82,7 +82,10 @@ NetworkX em 20 redes aleatórias; a maior vai de 0 a 4 baldeações em 151,4 a 9
 \textbf{Centralidades e eficiência.} A proximidade coincidiu com a do NetworkX em 15 grafos
 aleatórios, mas a amostrada não traz erro padrão. As comunidades dependem da semente (587 a 608
 com cinco sementes) e saem pequenas: a maior tem 1,5\% das paradas. O maior índice de desvio em
-12 pares foi 2,22 (1,47~km percorridos para 0,67~km em linha reta, sem as curvas das ruas).
+12 pares foi 1,55 (13,7~km percorridos para 8,9~km em linha reta, sem as curvas das ruas). Entre
+as faixas, as diferenças de tempo médio (60,0 a 66,0~min) e de eficiência (2,72 a
+$3{,}03 \times 10^{-4}\,\mathrm{s}^{-1}$) são da ordem de um erro padrão (cerca de 5~min e
+$0{,}3 \times 10^{-4}$): com 12 pares, não distinguem as faixas.
 
 \textbf{Falhas.} O ranking simula só candidatos (10 paradas de maior intermediação e 20 linhas
 sorteadas) com as mesmas 30 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur e
