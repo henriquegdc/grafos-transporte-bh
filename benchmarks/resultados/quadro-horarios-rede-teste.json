@@ -1,0 +1,220 @@
+{
+  "feed": "dados/rede-teste",
+  "dia": "2026-11-04",
+  "maquina": "macOS-26.6.2-arm64-arm-64bit",
+  "processador": "arm",
+  "python": "3.12.13",
+  "V": 4,
+  "E": 3,
+  "origem": "A",
+  "destino": "C",
+  "saida_s": 28860,
+  "janela_min": 20,
+  "semente": 42,
+  "raio_m": 0.0,
+  "trajeto": {
+    "origem": "A",
+    "destino": "C",
+    "tempo_total_s": 1740,
+    "baldeacoes": 0,
+    "trechos": [
+      {
+        "tipo": "espera",
+        "paradas": [
+          "A"
+        ],
+        "tempo_s": 1140,
+        "padrao": "L1:5635f81ec946"
+      },
+      {
+        "tipo": "viagem",
+        "paradas": [
+          "A",
+          "B",
+          "C"
+        ],
+        "tempo_s": 600,
+        "padrao": "L1:5635f81ec946"
+      }
+    ]
+  },
+  "parcelas_s": {
+    "caminhada": 0.0,
+    "espera": 1140.0,
+    "viagem": 600.0
+  },
+  "estimativa_h2_s": {
+    "caminhada": 0.0,
+    "espera": 600.0,
+    "viagem": 600.0
+  },
+  "amostras": [
+    {
+      "saida_s": 29088,
+      "total_s": 1512,
+      "espera_s": 912.0
+    },
+    {
+      "saida_s": 28911,
+      "total_s": 1689,
+      "espera_s": 1089.0
+    },
+    {
+      "saida_s": 29423,
+      "total_s": 1177,
+      "espera_s": 577.0
+    },
+    {
+      "saida_s": 29361,
+      "total_s": 1239,
+      "espera_s": 639.0
+    },
+    {
+      "saida_s": 29317,
+      "total_s": 1283,
+      "espera_s": 683.0
+    },
+    {
+      "saida_s": 29145,
+      "total_s": 1455,
+      "espera_s": 855.0
+    },
+    {
+      "saida_s": 29069,
+      "total_s": 1531,
+      "espera_s": 931.0
+    },
+    {
+      "saida_s": 29976,
+      "total_s": 624,
+      "espera_s": 24.0
+    },
+    {
+      "saida_s": 29038,
+      "total_s": 1562,
+      "espera_s": 962.0
+    },
+    {
+      "saida_s": 29724,
+      "total_s": 876,
+      "espera_s": 276.0
+    },
+    {
+      "saida_s": 28925,
+      "total_s": 1675,
+      "espera_s": 1075.0
+    },
+    {
+      "saida_s": 28921,
+      "total_s": 1679,
+      "espera_s": 1079.0
+    },
+    {
+      "saida_s": 29051,
+      "total_s": 1549,
+      "espera_s": 949.0
+    },
+    {
+      "saida_s": 29307,
+      "total_s": 1293,
+      "espera_s": 693.0
+    },
+    {
+      "saida_s": 29336,
+      "total_s": 1264,
+      "espera_s": 664.0
+    },
+    {
+      "saida_s": 29894,
+      "total_s": 706,
+      "espera_s": 106.0
+    },
+    {
+      "saida_s": 28914,
+      "total_s": 1686,
+      "espera_s": 1086.0
+    },
+    {
+      "saida_s": 30009,
+      "total_s": 57591,
+      "espera_s": 56991.0
+    },
+    {
+      "saida_s": 29267,
+      "total_s": 1333,
+      "espera_s": 733.0
+    },
+    {
+      "saida_s": 29976,
+      "total_s": 624,
+      "espera_s": 24.0
+    },
+    {
+      "saida_s": 29719,
+      "total_s": 881,
+      "espera_s": 281.0
+    },
+    {
+      "saida_s": 29311,
+      "total_s": 1289,
+      "espera_s": 689.0
+    },
+    {
+      "saida_s": 29779,
+      "total_s": 821,
+      "espera_s": 221.0
+    },
+    {
+      "saida_s": 29429,
+      "total_s": 1171,
+      "espera_s": 571.0
+    },
+    {
+      "saida_s": 28873,
+      "total_s": 1727,
+      "espera_s": 1127.0
+    },
+    {
+      "saida_s": 29186,
+      "total_s": 1414,
+      "espera_s": 814.0
+    },
+    {
+      "saida_s": 29725,
+      "total_s": 875,
+      "espera_s": 275.0
+    },
+    {
+      "saida_s": 29556,
+      "total_s": 1044,
+      "espera_s": 444.0
+    },
+    {
+      "saida_s": 29429,
+      "total_s": 1171,
+      "espera_s": 571.0
+    },
+    {
+      "saida_s": 29178,
+      "total_s": 1422,
+      "espera_s": 822.0
+    }
+  ],
+  "tempos": {
+    "construir_gt": {
+      "media_s": 2.0209001377224922e-05,
+      "desvio_s": 0.0,
+      "repeticoes": 1
+    },
+    "chegada_mais_cedo": {
+      "media_s": 5.958019755780697e-06,
+      "desvio_s": 0.0,
+      "repeticoes": 1
+    },
+    "monte_carlo": {
+      "media_s": 0.00014687498332932591,
+      "desvio_s": 0.0,
+      "repeticoes": 1
+    }
+  }
+}
