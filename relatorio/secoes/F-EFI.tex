@@ -1,41 +1,25 @@
-% Seção: F-EFI · Eficiência da rede (RF-EFI-01 e RF-EFI-02)
+% Seção: F-EFI · Eficiência da rede (RF-EFI-01 e RF-EFI-02). Dono: Arthur.
 % Resultados experimentais no GTFS real; detalhes reprodutíveis em feature-F-EFI.md.
+% Condensada em 20/11 para o orçamento de 15 páginas.
 \subsection{Eficiência da rede}\label{sec:F-EFI}
 
-A eficiência estrutural é calculada em $G_P$, cuja unidade é a parada. Para cada origem,
-uma busca Dijkstra calcula as distâncias aos destinos; a eficiência global é a média de
-$1/d(i,j)$ sobre os pares ordenados distintos. Pares sem caminho contribuem zero:
-\[
-  E(G_P) = \frac{1}{n(n-1)}
-    \sum_{i \ne j,\ d(i,j) < \infty} \frac{1}{d(i,j)}.
-\]
-Como os pesos representam segundos, a unidade do resultado é $\mathrm{s}^{-1}$.
-Quando a métrica é amostrada, sorteiam-se origens uniformemente sem reposição; o erro
-padrão usa a variância amostral das contribuições e correção de população finita.
-Não se aplica a eficiência global diretamente a GE: suas arestas de desembarque têm peso
-zero, o que pode produzir distância zero e eficiência indefinida entre vértices distintos.
+A eficiência estrutural é calculada em $G_P$, cuja unidade é a parada: um Dijkstra por origem e
+a média de $1/d(i,j)$ sobre os pares ordenados distintos, com contribuição zero sem caminho,
+$E(G_P) = \frac{1}{n(n-1)} \sum_{i \ne j} 1/d(i,j)$, em $\mathrm{s}^{-1}$. Amostrada, sorteia
+origens sem reposição, com erro padrão corrigido para população finita. Ela não se aplica a
+$G_E$, cujas arestas de desembarque têm peso zero. O tempo médio de viagem usa $G_E$, com as
+esperas da F-ESPERA, sobre pares de paradas sorteados; pares sem trajeto são informados à parte.
 
-O tempo médio de viagem usa $G_E$, que soma caminhada, espera esperada e viagem de ônibus,
-como no contrato de F-ROTA. A página calcula as esperas com a F-ESPERA. A amostra contém
-pares ordenados distintos de paradas, não plataformas; uma busca por origem fornece os
-tempos aos destinos da amostra. Pares sem trajeto são informados separadamente e não são
-tratados como viagens de duração zero.
-
-\begin{figure}[ht]
+\begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{figuras/eficiencia.png}
-  \caption{Página de eficiência executada com o GTFS real de Belo Horizonte,
-  utilizando 100 origens, 100 pares OD e semente 2026.}
+  \includegraphics[width=0.5\linewidth]{figuras/eficiencia.png}
+  \caption{Página Eficiência com o GTFS real: 100 origens, 100 pares e semente 2026.}
   \label{fig:eficiencia}
 \end{figure}
 
-\textbf{Medição.} No GTFS de 18/11/2026, GP tem $V=9\,660$, $E=122\,799$ e GE do pico da
-manhã tem $V=46\,102$, $E=209\,025$. Com 100 origens e 100 pares, semente 2026 e três
-repetições, \texttt{medir} registrou eficiência: $8{,}696 \pm 0{,}130$ s; tempo médio:
-$26{,}321 \pm 0{,}125$ s. Nesse feed, a eficiência global estimada com 100 origens e
-semente 2026 é $5{,}884 \times 10^{-4}\,\mathrm{s}^{-1}$, o valor da Figura~\ref{fig:eficiencia}.
-Comando, SHA-256 e especificação da máquina estão em \texttt{feature-F-EFI.md}.
-
-\textbf{Limitações.} $G_P$ usa tempos medianos de viagem e caminhada, sem espera. Em $G_E$,
-esperas são calculadas pela F-ESPERA; padrões sem intervalo estimável usam o fallback de
-\texttt{Parametros}. O tempo médio estimado é condicional aos pares alcançáveis na amostra.
+No feed de 18/11 ($G_P$ com $V = 9.660$, $E = 122.799$; $G_E$ do pico com $V = 46.102$,
+$E = 209.025$), com 100 origens, 100 pares e semente 2026, a eficiência levou
+$8{,}696 \pm 0{,}130$~s e o tempo médio, $26{,}321 \pm 0{,}125$~s (três repetições, AMD Ryzen 7
+7730U). A eficiência global estimada é $5{,}884 \times 10^{-4}\,\mathrm{s}^{-1}$
+(Figura~\ref{fig:eficiencia}). \textbf{Limitações.} $G_P$ não tem espera; o tempo médio é
+condicional aos pares alcançáveis na amostra.

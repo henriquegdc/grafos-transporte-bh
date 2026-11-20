@@ -1,74 +1,44 @@
 % Seção: F-MET · Centralidades (RF-MET-01 a RF-MET-03; RNF-06)
 % Dono: Thiago · Números: docs/plano-de-desenvolvimento/features/feature-F-MET.md, Resultados
 % (comando: python benchmarks/medir_centralidade.py dados/brutos/bhtrans.zip --exato;
-% execução de 16/11/2026; JSON em benchmarks/resultados/).
+% execução de 16/11/2026; JSON em benchmarks/resultados/). Condensada em 20/11.
 \subsection{Centralidades}\label{sec:F-MET}
 
-A página Centralidades responde quais paradas mais importam para a rede, sobre $G_P$: o
-grau de entrada e de saída (quantas ligações chegam e saem) e a intermediação de
-Brandes~\cite{brandes2001}, a soma, sobre os pares de paradas, da fração dos caminhos
-mínimos por tempo que passam pela parada. A página mostra o ranking das mais centrais, a
-distribuição de graus e um mapa de calor. $G_P$ foi escolhida porque a pergunta é sobre a
-parada física: em $G_E$ a parada vira várias plataformas e a centralidade se dividiria
-entre elas. O grau conta só as arestas de viagem, porque a caminhada de até 300~m ligaria
-todas as paradas vizinhas.
+A página Centralidades responde quais paradas mais importam para a rede, sobre $G_P$: grau de
+entrada e de saída e intermediação de Brandes~\cite{brandes2001} por tempo, com ranking,
+distribuição de graus e mapa de calor (Figura~\ref{fig:centralidades}). $G_P$ foi escolhida
+porque em $G_E$ a parada vira várias plataformas e a centralidade se dividiria entre elas; o
+grau conta só as arestas de viagem. Os graus custam $O(V + E)$ e o Brandes exato,
+$O(V(V + E)\log V)$; a página usa a amostragem de Brandes e Pich~\cite{brandes2007} (RNF-06),
+com $k$ origens sorteadas com semente fixa e erro padrão $N s_v \sqrt{(N-k)/(Nk)}$ por parada.
+Os testes conferem graus e intermediação exata contra o NetworkX em grafos aleatórios e, em
+grafos pequenos, que a média da estimativa sobre todas as amostras é o valor exato.
+
+No feed de 11/11 ($V = 9{.}660$, $E = 122{.}799$), 75\% das paradas têm um único trecho de
+ônibus saindo delas. O Brandes exato levou 44~min; as cinco paradas mais centrais estão na
+Avenida Presidente Antônio Carlos e as cinco seguintes no Anel Rodoviário. Com 25, 50, 100 e
+200 origens sorteadas (semente 2026), a estimativa levou 5,2, 15,8, 23,0 e 45,6~s, e o erro
+relativo mediano nas 100 paradas mais centrais caiu de 18,6\% para 12,2\%, 8,5\% e 6,1\%, com o
+exato a até dois erros padrão em 97\% a 100\% delas; com 50 origens, o padrão da página, 9 das
+10 mais centrais coincidem com as do exato (Intel Core 5 120U). \textbf{Limitação.} A centralidade é da
+rede estrutural, sem espera nem horário. O erro padrão só é confiável nas paradas centrais: nas
+de valor pequeno o intervalo de dois erros padrão contém o exato em apenas 46\% das paradas com
+$k = 50$, por isso a página mostra o erro só no ranking.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.55\linewidth]{centralidades}
-\caption{Página Centralidades no feed real: intermediação estimada com 50 origens, ranking
-com o erro padrão e mapa de calor dos 10\% de paradas mais centrais. Os círculos são as dez
-primeiras, na Avenida Presidente Antônio Carlos e no Anel Rodoviário.}
-\label{fig:centralidades}
+\begin{minipage}[t]{0.47\linewidth}
+  \centering
+  \includegraphics[width=0.8\linewidth]{centralidades}
+  \caption{Página Centralidades: intermediação estimada com 50 origens e mapa de calor dos 10\%
+  mais centrais; os círculos são as dez primeiras.}
+  \label{fig:centralidades}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.47\linewidth}
+  \centering
+  \includegraphics[width=\linewidth]{figuras/falhas-linha-832.png}
+  \caption{Página Falhas: retirada da linha 832 (30 origens). As 33 paradas em laranja saem da
+  rede principal; a perda exibida (0,22\%) é amostrada, e a exata é 0,50\%.}
+  \label{fig:falhas}
+\end{minipage}
 \end{figure}
-
-A Figura~\ref{fig:centralidades} mostra a página no feed real.
-
-Os graus custam $O(V + E)$. O Brandes faz um Dijkstra com contagem de caminhos mínimos
-por origem e uma passada de volta acumulando dependências, em $O(V(V + E)\log V)$. A
-intermediação ponderada recusa peso zero, que tornaria a contagem de caminhos incorreta;
-por isso $G_P$ tem piso de 1~s nas arestas. Como o exato exige um Dijkstra por parada, a
-página usa a amostragem de origens de Brandes e Pich~\cite{brandes2007} (RNF-06): soma as
-dependências de $k$ origens sorteadas com semente fixa e multiplica por $N/k$, a $k/N$ do
-custo. A estimativa é não viesada, e cada parada vem com o erro padrão
-$N s_v \sqrt{(N-k)/(Nk)}$, em que $s_v$ é o desvio das $k$ dependências. Os testes
-conferem graus e intermediação exata contra o NetworkX~\cite{hagberg2008} em grafos
-aleatórios com falhas e, enumerando todas as amostras de grafos pequenos, que a média da
-estimativa é o valor exato.
-
-No feed da BHTrans (serviço de 11/11/2026; $V = 9{.}660$, $E = 122{.}799$), 75\% das
-paradas têm um único trecho de ônibus saindo delas, e a de maior grau de saída tem 20.
-O Brandes exato levou 44~min; as cinco paradas mais centrais estão na Avenida Presidente
-Antônio Carlos e as cinco seguintes no Anel Rodoviário, os corredores que ligam as
-regiões da cidade. A Tabela~\ref{tab:fmet-amostra} compara a amostragem com o exato.
-Com 50 origens, o padrão da página (cerca de 15~s), 9 das 10 paradas mais centrais
-coincidem com as do exato, o erro relativo mediano nas 100 primeiras é de 12\%, e o
-intervalo de dois erros padrão contém o valor exato em 97\% delas. Medições em um Intel
-Core 5 120U, com Python 3.12.
-
-\begin{table}[htbp]
-\centering
-\caption{Intermediação amostrada com $k$ origens contra a exata no $G_P$ real (semente
-2026; tempo médio de 3 execuções). Top 10: paradas em comum com o top 10 exato. Erro e
-cobertura nas 100 paradas mais centrais: erro relativo mediano e fração em que o exato
-fica a até dois erros padrão da estimativa.}
-\label{tab:fmet-amostra}
-\small
-\begin{tabular}{@{}rrccc@{}}
-\toprule
-$k$ & Tempo (s) & Top 10 & Erro & Cobertura \\
-\midrule
-25  & 5,2  & 5 & 18,6\% & 100\% \\
-50  & 15,8 & 9 & 12,2\% & 97\%  \\
-100 & 23,0 & 8 & 8,5\%  & 100\% \\
-200 & 45,6 & 8 & 6,1\%  & 100\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{Limitação.} $G_P$ não tem espera nem horário: a centralidade é da rede
-estrutural, não do serviço numa faixa horária, e a caminhada é em linha reta. O erro
-padrão só é confiável nas paradas centrais: nas de valor pequeno quase todas as origens
-sorteadas contribuem com zero, a variância observada fica baixa e o intervalo de dois
-erros padrão contém o exato em apenas 46\% das paradas com $k = 50$. Por isso a página
-mostra o erro apenas no ranking.

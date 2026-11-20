@@ -1,98 +1,70 @@
 % Seção: Avaliação de desempenho
 % Dono: Rafael · Orçamento: 1 página · docs/fontes/plano-de-projeto.md §14.1
-% Conteúdo: complexidade teórica e tempos medidos de cada algoritmo; comparação com
-% NetworkX só se a etapa opcional (F-AVAL-OPC) acontecer.
-% A tabela é preenchida na F-AVAL (RF-AVA-02) com os números registrados nos arquivos
-% de feature. Nenhum número entra aqui sem o comando que o gerou.
+% Conteúdo: complexidade teórica e tempos medidos de cada algoritmo (F-AVAL, RF-AVA-02) e
+% comparação com o NetworkX e complexidade empírica (F-AVAL-OPC).
+% A tabela tab:desempenho é gerada por benchmarks/consolidar.py (secoes/tabela-desempenho.tex).
+% Condensada em 20/11 para o orçamento de 15 páginas.
 \section{Avaliação de desempenho}\label{sec:avaliacao}
 
-\subsection{Metodologia de medição}
+Todos os tempos foram obtidos com a mesma função, \texttt{medir}, que executa o algoritmo $N$
+vezes e cronometra cada execução com \texttt{time.perf\_counter}, o relógio monotônico de maior
+resolução do Python~\cite{python-perf-counter}; a leitura do GTFS e a construção do grafo ficam
+fora do intervalo. O resultado é a média e o desvio padrão amostral (divisor $N - 1$, pois as
+execuções são uma amostra). A Tabela~\ref{tab:desempenho}, gerada por
+\texttt{benchmarks/consolidar.py} a partir dos JSON de \texttt{benchmarks/resultados/} e, onde não
+há JSON, do arquivo da feature, consolida a complexidade teórica (das docstrings) e o tempo de
+cada algoritmo. As medições vêm de cinco máquinas e de pelo menos quatro instantâneos do feed, e
+tempo de parede só se compara dentro do mesmo grupo. Em cada grupo, as buscas únicas ficam em
+dezenas a centenas de milissegundos, e o que multiplica buscas (Brandes, eficiência, falhas, Yen)
+vai a segundos, como prevê a complexidade.
 
-Todos os tempos deste relatório foram obtidos com a mesma função,
-\texttt{medir}, do módulo \texttt{transporte.util.medicao}. Ela executa o
-algoritmo $N$ vezes com os mesmos argumentos (por padrão, $N = 5$) e
-cronometra cada execução isoladamente com \texttt{time.perf\_counter}, o
-relógio monotônico de maior resolução do Python~\cite{python-perf-counter}.
-Só a chamada do algoritmo fica dentro do intervalo medido: a leitura do GTFS e
-a construção do grafo são medidas à parte, quando interessam. O resultado é a
-média $\bar{t}$ e o desvio padrão amostral
-\[
-  s = \sqrt{\frac{1}{N-1}\sum_{i=1}^{N}(t_i - \bar{t})^2},
-\]
-com divisor $N - 1$ porque as $N$ execuções são uma amostra do tempo do
-algoritmo naquela máquina, e não a população inteira. Com $N = 1$, o desvio é
-reportado como zero.
+\input{secoes/tabela-desempenho}
 
-Cada tempo é acompanhado do tamanho do grafo ($|V|$ e $|E|$ da visão usada) e
-da máquina em que foi medido, porque tempo de parede só é comparável dentro da
-mesma máquina e da mesma rede. A complexidade teórica de cada algoritmo vem da
-docstring da função correspondente, justificada no arquivo da feature.
+\textbf{Comparação com o NetworkX e complexidade empírica.} O script
+\texttt{benchmarks/comparar\_networkx.py} roda, no mesmo $G_P$, a nossa implementação e a do
+NetworkX~\cite{hagberg2008}: BFS e Dijkstra a partir das mesmas 20 origens, intermediação de
+Brandes (também com 20 origens, via \texttt{betweenness\_centrality\_subset}) e Tarjan, com as
+arestas paralelas reduzidas à de menor peso, como no nosso Brandes. Além do tempo, confere que
+distâncias, intermediações (tolerância relativa $10^{-6}$) e componentes coincidem; na execução
+final (20/11, $N = 3$) todos coincidiram, no feed real e em redes sintéticas
+(Tabela~\ref{tab:networkx}).
 
-\subsection{Complexidade e tempos medidos}
-
-\pendente{Tabela consolidada (F-AVAL, RF-AVA-02): algoritmo, visão, complexidade
-teórica, $|V|$, $|E|$, tempo médio $\pm$ desvio e $N$, com os números
-registrados por cada dono na rede real.}
-
-\subsection{Comparação com o NetworkX e complexidade empírica}
-
-O script \texttt{benchmarks/comparar\_networkx.py} roda, no mesmo $G_P$, a nossa
-implementação e a equivalente do NetworkX~\cite{hagberg2008}: BFS e Dijkstra a partir
-das mesmas 20 origens sorteadas, intermediação de Brandes e componentes fortemente
-conexas (Tarjan). O grafo do NetworkX é montado uma vez, fora da medição, com as
-arestas paralelas reduzidas à de menor peso, a mesma simplificação do nosso Brandes.
-Acima de 1.000 vértices o Brandes exato custaria dezenas de minutos dos dois lados,
-então ambos partem das mesmas 20 origens (a soma das dependências origem a origem
-continua comparável, com \texttt{betweenness\_centrality\_subset}). Além do tempo, o
-script confere que distâncias, intermediações (tolerância relativa $10^{-6}$) e
-componentes coincidem. Na execução final (20/11/2026, $N = 3$), todos os resultados
-coincidiram, no feed real e nas sintéticas. A Tabela~\ref{tab:networkx} traz o feed real.
-
-\begin{table}[ht]
+\begin{table}[t]
   \centering
-  \caption{Nosso tempo contra o do NetworkX no $G_P$ do feed real
-  ($|V| = 9{.}660$, $|E| = 122{.}799$), média $\pm$ desvio de 3 execuções.}
+  \caption{Nosso tempo contra o do NetworkX no $G_P$ do feed de 18/11 ($|V| = 9{.}660$,
+  $|E| = 122{.}799$; i5-13600KF), média $\pm$ desvio de 3 execuções.}
   \label{tab:networkx}
-  \small
+  \footnotesize
   \begin{tabular}{llrrr}
-    \hline
+    \toprule
     Algoritmo & Escopo & Nosso & NetworkX & Razão \\
-    \hline
+    \midrule
     BFS & 20 origens & 274 $\pm$ 2 ms & 131 $\pm$ 4 ms & 2,09 \\
     Dijkstra & 20 origens & 770 $\pm$ 3 ms & 575 $\pm$ 3 ms & 1,34 \\
     Brandes & 20 origens & 864 $\pm$ 12 ms & 1{.}036 $\pm$ 6 ms & 0,83 \\
     Tarjan & grafo inteiro & 48 $\pm$ 20 ms & 25 $\pm$ 19 ms & 1,91 \\
-    \hline
+    \bottomrule
   \end{tabular}
 \end{table}
 
-Nas sintéticas de lado 10, 30 e 60, a razão ficou entre 1,81 e 1,92 no Dijkstra, entre
-3,46 e 4,36 na BFS, entre 4,04 e 7,40 no Tarjan e entre 0,74 e 0,85 no Brandes. O nosso
-Brandes é o único mais rápido que o do NetworkX; nos outros, o NetworkX ganha por
-operar direto sobre dicionários, enquanto o nosso \texttt{Grafo} monta a lista de
-vizinhos ativos a cada visita.
+Nas sintéticas de lado 10, 30 e 60, a razão ficou entre 1,81 e 1,92 no Dijkstra, 3,46 e 4,36 na
+BFS, 4,04 e 7,40 no Tarjan e 0,74 e 0,85 no Brandes. O nosso Brandes é o único mais rápido; nos
+outros, o NetworkX ganha por operar direto sobre dicionários, enquanto o nosso \texttt{Grafo}
+monta a lista de vizinhos ativos a cada visita. Para a complexidade empírica,
+\texttt{transporte.dados.sinteticas} gera grades de $n \times n$ paradas com uma linha em cada
+fileira e coluna e caminhada entre vizinhas ($|E| \approx 12\,|V|$, como no feed real), e
+\texttt{benchmarks/complexidade\_empirica.py} mede cada algoritmo para $n$ de 10 a 100 e ajusta
+$\log t = a + b \log(|V| + |E|)$. O esperado é $b \approx 1$ para BFS e Tarjan, pouco acima de 1
+para o Dijkstra e $b \approx 2$ para o Brandes, já que $V(V + E) \sim (V + E)^2$ com $E$
+proporcional a $V$. As inclinações medidas (Figura~\ref{fig:complexidade}) foram 1,01 (BFS),
+1,06 (Dijkstra), 1,10 (Tarjan) e 2,04 (Brandes), com $R^2 \geq 0{,}999$, o que confirma as
+complexidades declaradas. A razão entre os tempos é mais estável que os valores absolutos, e
+as inclinações em tamanhos pequenos sofrem com o custo fixo de cada chamada.
 
-Para a complexidade empírica, \texttt{transporte.dados.sinteticas} gera redes em grade
-de $n \times n$ paradas com uma linha em cada fileira e coluna (ida e volta) e caminhada
-entre vizinhas, no mesmo formato da rede lida do GTFS; $|E|$ de $G_P$ fica perto de
-$12\,|V|$, como no feed real. O script \texttt{benchmarks/complexidade\_empirica.py} mede
-cada algoritmo para $n$ de 10 a 100 ($|V|$ de 100 a 10.000; o Brandes exato só até
-$n = 40$) e ajusta por mínimos quadrados $\log t = a + b \log(|V| + |E|)$. A inclinação
-$b$ é o expoente empírico: o esperado é $b \approx 1$ para BFS e Tarjan, um pouco acima
-de 1 para o Dijkstra (o fator $\log V$) e $b \approx 2$ para o Brandes, já que
-$V(V + E) \sim (V + E)^2$ quando $E$ é proporcional a $V$.
-As inclinações medidas (Figura~\ref{fig:complexidade}) foram $b = 1{,}01$ na BFS,
-$1{,}06$ no Dijkstra, $1{,}10$ no Tarjan e $2{,}04$ no Brandes, com $R^2 \geq 0{,}999$ em
-todos, o que confirma as complexidades declaradas.
-
-\begin{figure}[ht]
+\begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\linewidth]{figuras/complexidade-empirica.png}
-  \caption{Tempo médio contra $|V| + |E|$ do $G_P$ sintético, em escala log-log, com a
-  reta ajustada e a inclinação $b$ de cada algoritmo.}
+  \includegraphics[width=0.42\linewidth]{figuras/complexidade-empirica.png}
+  \caption{Tempo médio contra $|V| + |E|$ do $G_P$ sintético, em log-log, com a reta ajustada e
+  a inclinação $b$ de cada algoritmo.}
   \label{fig:complexidade}
 \end{figure}
-
-A limitação principal é que tempo de parede depende da máquina e da carga dela: a razão
-entre o nosso tempo e o do NetworkX é mais estável que os valores absolutos, e as
-inclinações em tamanhos pequenos sofrem com o custo fixo de cada chamada.
