@@ -15,3 +15,6 @@ ruff==0.17.3
 
 # Só em tests/ e benchmarks/, para comparar resultados. Proibido em src/ (o hook barra).
 networkx==3.7
+
+# Só em benchmarks/, para a figura de complexidade empírica (F-AVAL-OPC, RF-AVA-04).
+matplotlib==3.11.2

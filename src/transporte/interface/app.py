@@ -31,6 +31,7 @@ PAGINAS = {
     "Centralidades": "transporte.interface.paginas.centralidades",
     "Eficiência": "transporte.interface.paginas.eficiencia",
     "Falhas": "transporte.interface.paginas.falhas",
+    "Desempenho": "transporte.interface.paginas.desempenho",
 }
 _RAIZ = Path(__file__).resolve().parents[3]
 _FONTES_PADRAO = (_RAIZ / "dados" / "rede-teste", _RAIZ / "dados" / "brutos")
