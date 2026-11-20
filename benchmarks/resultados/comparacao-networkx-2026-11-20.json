@@ -1,0 +1,255 @@
+{
+  "comando": "python benchmarks/comparar_networkx.py --feed C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip",
+  "data": "2026-11-20",
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "python": "3.12.10"
+  },
+  "semente": 2026,
+  "repeticoes": 3,
+  "networkx": "3.7",
+  "grafos": [
+    {
+      "grafo": "G_P (feed real)",
+      "V": 9660,
+      "E": 122799,
+      "algoritmos": [
+        {
+          "algoritmo": "BFS",
+          "complexidade": "O(V + E) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.27417023333388596,
+          "nosso_desvio_s": 0.0024215739532742852,
+          "nosso": "274.170 ms ± 2.422 ms (n=3)",
+          "networkx_media_s": 0.13101090000054683,
+          "networkx_desvio_s": 0.004323877209995095,
+          "networkx": "131.011 ms ± 4.324 ms (n=3)",
+          "razao_nosso_sobre_networkx": 2.092728416740451,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Dijkstra",
+          "complexidade": "O((V + E) log V) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.7696388333327681,
+          "nosso_desvio_s": 0.002727990646930056,
+          "nosso": "769.639 ms ± 2.728 ms (n=3)",
+          "networkx_media_s": 0.5746221000002455,
+          "networkx_desvio_s": 0.0031926237469390014,
+          "networkx": "574.622 ms ± 3.193 ms (n=3)",
+          "razao_nosso_sobre_networkx": 1.339382584367081,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Brandes (intermediação)",
+          "complexidade": "O(V (V + E) log V) exato; O(k (V + E) log V) com k origens",
+          "escopo": "20 origens sorteadas",
+          "nosso_media_s": 0.8641892333331876,
+          "nosso_desvio_s": 0.011944860143578985,
+          "nosso": "864.189 ms ± 11.945 ms (n=3)",
+          "networkx_media_s": 1.0357675333337586,
+          "networkx_desvio_s": 0.005555103679407669,
+          "networkx": "1.036 s ± 0.006 s (n=3)",
+          "razao_nosso_sobre_networkx": 0.8343467095861531,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Tarjan (componentes fortes)",
+          "complexidade": "O(V + E)",
+          "escopo": "grafo inteiro",
+          "nosso_media_s": 0.04755486666605672,
+          "nosso_desvio_s": 0.020443781882643636,
+          "nosso": "47.555 ms ± 20.444 ms (n=3)",
+          "networkx_media_s": 0.024861299999732484,
+          "networkx_desvio_s": 0.018562408356465037,
+          "networkx": "24.861 ms ± 18.562 ms (n=3)",
+          "razao_nosso_sobre_networkx": 1.9128069194518558,
+          "resultados_iguais": true
+        }
+      ]
+    },
+    {
+      "grafo": "G_P sintética 10x10",
+      "V": 100,
+      "E": 1038,
+      "algoritmos": [
+        {
+          "algoritmo": "BFS",
+          "complexidade": "O(V + E) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.0019720000000233995,
+          "nosso_desvio_s": 4.476639446983928e-05,
+          "nosso": "1.972 ms ± 0.045 ms (n=3)",
+          "networkx_media_s": 0.0004528000002513484,
+          "networkx_desvio_s": 3.00514552290913e-05,
+          "networkx": "452.800 µs ± 30.051 µs (n=3)",
+          "razao_nosso_sobre_networkx": 4.355123672545817,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Dijkstra",
+          "complexidade": "O((V + E) log V) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.004475066666297304,
+          "nosso_desvio_s": 7.860409291070191e-05,
+          "nosso": "4.475 ms ± 0.079 ms (n=3)",
+          "networkx_media_s": 0.002362600000196835,
+          "networkx_desvio_s": 0.00011735258834631757,
+          "networkx": "2.363 ms ± 0.117 ms (n=3)",
+          "razao_nosso_sobre_networkx": 1.8941279378330964,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Brandes (intermediação)",
+          "complexidade": "O(V (V + E) log V) exato; O(k (V + E) log V) com k origens",
+          "escopo": "exato (todas as origens)",
+          "nosso_media_s": 0.016383999999864802,
+          "nosso_desvio_s": 7.77933797533005e-05,
+          "nosso": "16.384 ms ± 0.078 ms (n=3)",
+          "networkx_media_s": 0.022022533333559597,
+          "networkx_desvio_s": 0.000325743707808542,
+          "networkx": "22.023 ms ± 0.326 ms (n=3)",
+          "razao_nosso_sobre_networkx": 0.7439652719198125,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Tarjan (componentes fortes)",
+          "complexidade": "O(V + E)",
+          "escopo": "grafo inteiro",
+          "nosso_media_s": 0.00022933333396698194,
+          "nosso_desvio_s": 1.4788621930671401e-05,
+          "nosso": "229.333 µs ± 14.789 µs (n=3)",
+          "networkx_media_s": 5.6799999583745375e-05,
+          "networkx_desvio_s": 6.921705072848644e-06,
+          "networkx": "56.800 µs ± 6.922 µs (n=3)",
+          "razao_nosso_sobre_networkx": 4.037558726190747,
+          "resultados_iguais": true
+        }
+      ]
+    },
+    {
+      "grafo": "G_P sintética 30x30",
+      "V": 900,
+      "E": 10280,
+      "algoritmos": [
+        {
+          "algoritmo": "BFS",
+          "complexidade": "O(V + E) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.019828866666406004,
+          "nosso_desvio_s": 0.00023542923169279475,
+          "nosso": "19.829 ms ± 0.235 ms (n=3)",
+          "networkx_media_s": 0.004765766666120423,
+          "networkx_desvio_s": 0.00012538474077448286,
+          "networkx": "4.766 ms ± 0.125 ms (n=3)",
+          "razao_nosso_sobre_networkx": 4.160687682711859,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Dijkstra",
+          "complexidade": "O((V + E) log V) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.04992589999953149,
+          "nosso_desvio_s": 0.00015729561407029383,
+          "nosso": "49.926 ms ± 0.157 ms (n=3)",
+          "networkx_media_s": 0.026064333333124523,
+          "networkx_desvio_s": 0.00014145085152617875,
+          "networkx": "26.064 ms ± 0.141 ms (n=3)",
+          "razao_nosso_sobre_networkx": 1.9154873198341844,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Brandes (intermediação)",
+          "complexidade": "O(V (V + E) log V) exato; O(k (V + E) log V) com k origens",
+          "escopo": "exato (todas as origens)",
+          "nosso_media_s": 1.757385133333931,
+          "nosso_desvio_s": 0.014517593344364981,
+          "nosso": "1.757 s ± 0.015 s (n=3)",
+          "networkx_media_s": 2.351035099999232,
+          "networkx_desvio_s": 0.02775500555721309,
+          "networkx": "2.351 s ± 0.028 s (n=3)",
+          "razao_nosso_sobre_networkx": 0.7474942136484926,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Tarjan (componentes fortes)",
+          "complexidade": "O(V + E)",
+          "escopo": "grafo inteiro",
+          "nosso_media_s": 0.0025703666663806266,
+          "nosso_desvio_s": 9.273970661718632e-05,
+          "nosso": "2.570 ms ± 0.093 ms (n=3)",
+          "networkx_media_s": 0.0005418000000645407,
+          "networkx_desvio_s": 1.465230338277031e-05,
+          "networkx": "541.800 µs ± 14.652 µs (n=3)",
+          "razao_nosso_sobre_networkx": 4.744124522101214,
+          "resultados_iguais": true
+        }
+      ]
+    },
+    {
+      "grafo": "G_P sintética 60x60",
+      "V": 3600,
+      "E": 42026,
+      "algoritmos": [
+        {
+          "algoritmo": "BFS",
+          "complexidade": "O(V + E) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.0775012000000667,
+          "nosso_desvio_s": 0.0022596741091991898,
+          "nosso": "77.501 ms ± 2.260 ms (n=3)",
+          "networkx_media_s": 0.022400866666430375,
+          "networkx_desvio_s": 0.0003553328626606618,
+          "networkx": "22.401 ms ± 0.355 ms (n=3)",
+          "razao_nosso_sobre_networkx": 3.4597411410072323,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Dijkstra",
+          "complexidade": "O((V + E) log V) por origem",
+          "escopo": "20 origens",
+          "nosso_media_s": 0.2129943666671655,
+          "nosso_desvio_s": 0.0009463915802677488,
+          "nosso": "212.994 ms ± 0.946 ms (n=3)",
+          "networkx_media_s": 0.11772879999989527,
+          "networkx_desvio_s": 0.0016061112410035796,
+          "networkx": "117.729 ms ± 1.606 ms (n=3)",
+          "razao_nosso_sobre_networkx": 1.8091950879254268,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Brandes (intermediação)",
+          "complexidade": "O(V (V + E) log V) exato; O(k (V + E) log V) com k origens",
+          "escopo": "20 origens sorteadas",
+          "nosso_media_s": 0.20404830000006768,
+          "nosso_desvio_s": 0.0015082991447970234,
+          "nosso": "204.048 ms ± 1.508 ms (n=3)",
+          "networkx_media_s": 0.2405848666670257,
+          "networkx_desvio_s": 0.012863841094162214,
+          "networkx": "240.585 ms ± 12.864 ms (n=3)",
+          "razao_nosso_sobre_networkx": 0.8481343936003866,
+          "resultados_iguais": true
+        },
+        {
+          "algoritmo": "Tarjan (componentes fortes)",
+          "complexidade": "O(V + E)",
+          "escopo": "grafo inteiro",
+          "nosso_media_s": 0.01785993333335985,
+          "nosso_desvio_s": 0.012336161289895784,
+          "nosso": "17.860 ms ± 12.336 ms (n=3)",
+          "networkx_media_s": 0.0024137666666016835,
+          "networkx_desvio_s": 0.00011804678446278268,
+          "networkx": "2.414 ms ± 0.118 ms (n=3)",
+          "razao_nosso_sobre_networkx": 7.399196277121791,
+          "resultados_iguais": true
+        }
+      ]
+    }
+  ],
+  "feed": {
+    "caminho": "C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip",
+    "sha256": "8cb0a498b90b227221d0234e3b6386a7dfbe375a2cb2e52e86238010be05f6d6"
+  },
+  "todos_iguais": true
+}

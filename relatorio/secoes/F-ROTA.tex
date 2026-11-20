@@ -1,0 +1,44 @@
+% Subseção da F-ROTA (trajeto mais rápido), com as extensões F-ROTA-2 (A* e ponto no mapa) e
+% F-ROTA-OPC (Yen) para caber no orçamento de páginas. Dono: Henrique.
+% Fontes: docs/plano-de-desenvolvimento/features/feature-F-ROTA.md, feature-F-ROTA-2.md e
+% feature-F-ROTA-OPC.md (Como funciona e Resultados); números de
+% benchmarks/medir_modelo_rota.py em 18/11/2026 e de benchmarks/medir_rota_extensoes.py e
+% benchmarks/medir_alternativos_linhas.py (teto 2k) em 20/11/2026, com a máquina livre. Detalhes do A*: docs/GUIA.md §8.
+% Figura: mapa da página Trajetos (mapa_trajeto) para dois pontos escolhidos por coordenadas.
+\subsection{Trajeto mais rápido}\label{sec:F-ROTA}
+
+Dadas duas paradas e uma faixa horária, a ferramenta acha o trajeto que chega mais cedo em
+média, somando caminhada, espera e viagem, e o mostra no mapa por trecho
+(Figura~\ref{fig:trajetos-mapa}). A visão é $G_E$: trocar de linha obriga a desembarcar e
+pagar um novo embarque, que pesa a espera $H/2$ da nova linha (F-ESPERA), então a baldeação
+vira custo comum do caminho e basta um Dijkstra com o heap próprio, sem penalidade
+arbitrária, em $O((V + E)\log V)$ por consulta.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.38\linewidth]{trajetos-mapa}
+\caption{Trajeto do centro a Venda Nova no $G_E$ do pico da manhã, escolhido por
+coordenadas: linha 4103, troca a pé (círculo laranja) e linha 63; 50~min~09~s entre as
+paradas e 51~min~29~s de porta a porta.}
+\label{fig:trajetos-mapa}
+\end{figure}
+
+No feed real (18/11/2026), o $G_E$ do pico da manhã tem $V = 46.102$ e $E = 209.025$. Em 200
+pares sorteados, a consulta com o Dijkstra da F-ROTA levou $65{,}9$~ms em média e
+$129{,}6$~ms no pior caso (Intel Core i5-13600KF), dentro do limite de 1~s do RNF-05; o
+custo coincidiu com o do NetworkX nos 200.
+
+\emph{Ponto no mapa e A*.} Um clique é ligado à parada mais próxima por varredura linear,
+$O(V)$. O A* usa $h$ = distância em linha reta $/\,v_{\max}$, consistente pela desigualdade
+triangular, e devolveu o mesmo custo do Dijkstra nos 200 pares, mas expandiu 99,7\% dos
+vértices (mediana) e, numa segunda medição com as duas buscas contadas, teve mediana de
+81,0~ms contra 64,1~ms do Dijkstra: 181 trechos com horário repetido no GTFS ficam no piso
+de 1~s e levam $v_{\max}$ a 1.258~m/s, o que deixa $h$ quase nula.
+
+\emph{Trajetos alternativos.} O Yen, com desvios em A* e as arestas desligadas pela API de
+falhas, lista os $k$ trajetos sem ciclo de menor tempo em $O(k\,n\,(V + E)\log V)$. No feed
+real, com $k = 5$ em 8 pares sorteados, os 5 caminhos usaram a mesma sequência de linhas em
+todos os pares, mudando só onde trocar ou o trecho a pé; a página mostra então um trajeto
+por sequência de linhas, tirando até $2k$ caminhos do Yen, e mesmo assim só 1 dos 8 pares
+ganhou uma segunda sequência, com cerca de 2,2 vezes o tempo do Yen puro. Limitações: o tempo é o esperado para quem chega num
+instante qualquer da faixa ($H/2$), e a caminhada é em linha reta.

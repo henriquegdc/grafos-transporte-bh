@@ -232,17 +232,24 @@ trajeto seria um trecho a pé só.
 
 **Complexidade.** O((V + E) log V) do Dijkstra com heap binário e inserção preguiçosa (O(V + E)
 entradas no heap, cada uma O(log V)), mais O(V + k) da reconstrução; espaço O(V + E). No feed
-real (05/11, `feature-F-ROTA.md`), no G_E com V = 46.100 e E = 208.956: 75,8 ms por consulta em
-média e 162,2 ms no pior caso de 200 consultas, com 0 divergências contra o NetworkX.
+real com as esperas da F-ESPERA (18/11, `feature-F-ROTA.md`), no G_E com V = 46.102 e
+E = 209.025: 65,9 ms por consulta em média e 129,6 ms no pior caso de 200 consultas, tempo
+mediano de 61,1 min e 0 divergências contra o NetworkX.
+
+**A página Trajetos** (`interface/paginas/trajetos.py`, `docs/diagramas/sequencia-trajetos-pagina.png`)
+monta o G_E de cada faixa uma vez por sessão, com as esperas da F-ESPERA, e mostra as métricas
+(tempo total, a pé, espera, ônibus, baldeações), a tabela de trechos e o mapa com cada trecho
+numa camada. A origem e o destino vêm de uma lista de paradas ou de um ponto no mapa (F-ROTA-2,
+seção 5.7); a mesma página compara Dijkstra e A\* e lista os alternativos do Yen.
 
 Por quê: função em `algoritmos/` e não método da visão, para o A\* e o Yen entrarem no mesmo
 módulo (R1); trechos em vez de arestas cruas, porque é o que a página desenha (R2); None em vez
 de erro, porque não haver trajeto é normal numa rede com falhas (R3).
 
 Limitações: o tempo é o esperado para quem chega à parada num instante qualquer da faixa (espera
-H/2), não o de um horário de saída exato; enquanto a F-ESPERA não publica a tabela de esperas,
-toda espera é 300 s, e baldear sai barato (31 de 200 trajetos medidos tinham 3 ou mais baldeações);
-caminhada em linha reta, só entre paradas.
+H/2), não o de um horário de saída exato; caminhada em linha reta. Com a espera fixa de 300 s
+de antes da F-ESPERA, baldear saía barato (31 de 200 trajetos com 3 ou mais baldeações em 05/11);
+com H/2 de cada linha, caíram para 16 de 200.
 
 ### 5.2 Espera e simulação por faixa (F-ESPERA)
 
@@ -255,6 +262,26 @@ Com duas ou mais partidas distintas, publica H e calcula H/2. Com uma partida, o
 Para N viagens, P padrões e F faixas: deduplicação e ordenação custam O(N log N), filtragem por faixa O(FN + PF); espaço O(N + PF). Simular acrescenta a construção de G_E e o Dijkstra O((V + E) log V), com espaço O(N + PF + V + E). A tabela da página custa O(PF + FN). O mapa recebe apenas as paradas do trajeto, sem alterar a rede original.
 
 Limitações: espera H/2 supõe chegada ao acaso e intervalos regulares. Com intervalos irregulares, E[H²]/(2 E[H]) pode ser maior; a versão essencial não aplica essa correção. A faixa da saída vale para o percurso inteiro, inclusive após cruzar outra faixa. Não há consulta à próxima partida exata nem Monte Carlo. A regra D10 pode omitir serviço em parada intermediária quando a viagem começou em outra faixa. As limitações de linhas circulares e da caminhada em linha reta de G_E permanecem.
+
+#### Quadro de horários e Monte Carlo (F-ESPERA-2)
+
+Em **Espera → Quadro de horários**, escolha origem, destino e saída. O modo H/2 usa
+o intervalo médio da faixa. O quadro usa o instante em que você chega a cada parada.
+Se você perde o ônibus durante uma conexão, a espera vai até a próxima partida
+que permite chegar mais cedo. A caminhada usa a mesma distância e velocidade de G_P.
+
+Em G_T, o Dijkstra guarda o primeiro instante alcançável em cada parada. Para
+cada segmento de um padrão, uma busca binária localiza a primeira partida
+alcançável. O índice já descarta partidas ultrapassadas por outra que chega antes.
+Assim, chegar mais cedo à parada sempre permite esperar pela melhor conexão.
+Os trechos identificam a viagem, inclusive quando uma troca ocorre no mesmo padrão.
+
+O Monte Carlo sorteia segundos de saída uniformemente dentro da janela escolhida.
+Os dois histogramas mostram o total e a espera entre os sorteios com caminho.
+Confira também quantos sorteios tiveram caminho. Uma mesma semente permite repetir
+a comparação. As partidas representam o dia de serviço programado e podem passar
+da meia-noite. O leitor conserva um horário por parada e a simulação não estima
+atrasos ou permanência do veículo no ponto.
 
 ### 5.3 Menos baldeações (F-BALD)
 
@@ -352,6 +379,56 @@ Limitações: herda as da F-ROTA (espera média H/2, faixa fixa pela saída) e a
 compara numa faixa, porque no dia inteiro não há G_E; mostra um ponto da troca (k
 baldeações), não todos os trajetos não dominados, que são a F-BALD-OPC.
 
+#### Trajetos não dominados (F-BALD-OPC)
+
+A F-BALD-2 mostra um ponto da troca entre tempo e baldeações; a F-BALD-OPC mostra todos. Um
+trajeto **domina** outro quando não é pior em nenhum dos dois critérios e é melhor em pelo
+menos um. `trajetos_nao_dominados` devolve a **fronteira de Pareto**: um trajeto para cada
+número de baldeações que ainda compra tempo, do que troca menos ao mais rápido. Aparece na
+página Baldeações, numa faixa, com uma tabela e um mapa do trajeto escolhido.
+
+```python
+from transporte.algoritmos.comparacao_baldeacoes import trajetos_nao_dominados
+
+f = trajetos_nao_dominados(ge, "A", "D")  # [] se não há trajeto
+[(t.baldeacoes, t.tempo_total_s) for t in f]  # baldeações sobem, tempo cai
+```
+
+**O algoritmo.** Roda a F-ROTA e lê as B baldeações do mais rápido: nada com mais de B entra,
+porque o mais rápido domina. Para k = 0, 1, ..., B - 1 chama `mais_rapido_com_limite(k)` da
+F-BALD-2 e guarda o resultado só se ele reduz o tempo do último guardado; o mais rápido fecha a
+lista. Exemplo (teste `test_fronteira_com_tres_pontos`): de A a D há uma linha direta de
+3.300 s, Q1 + R3 em 1.360 s com uma baldeação e Q1 + Q2 + Q3 em 1.080 s com duas; os três
+ficam. Se o resultado com k já tem o tempo do mais rápido, a lista para ali: o de mais
+baldeações seria dominado (empate fica com o de menos baldeações).
+
+**Por que é exatamente a fronteira.** O tempo mínimo com até k baldeações não cresce com k.
+Qualquer trajeto com b baldeações tem tempo maior ou igual ao da busca com limite b, então é
+dominado ou empata com o guardado dessa busca (ou com um anterior, se ele não foi guardado por
+não reduzir o tempo). E cada guardado reduz o tempo do anterior com mais baldeações, então
+nenhum guardado domina outro.
+
+**Por que começar em k = 0 e não no mínimo da G_L.** No G_E as caminhadas se encadeiam (B3 da
+F-BALD), então pode haver trajeto com menos baldeações que o mínimo da G_L; começar nele
+perderia esses pontos. Buscas com k abaixo do mínimo real só devolvem None.
+
+**Complexidade.** B + 1 buscas: O((V + E) log V) da F-ROTA mais, para cada k < B,
+O((k + 2)(V + E) log((k + 2) V)); somando, O(B² (V + E) log(B V)) no pior caso. Espaço da maior
+busca, O((B + 1)(V + E)). O custo cresce com B². No feed real (20/11,
+`benchmarks/resultados/nao-dominados-2026-11-20.json`), no G_E do pico da manhã (V = 46.102,
+E = 209.025), nos 200 pares sorteados: 164,6 ms por par em média, mediana 127,7 ms, p95
+447,6 ms e máximo 892,7 ms. B foi 0/1/2/3/4 em 30/89/65/14/2 pares; a fronteira teve 1/2/3/4/5
+pontos em 30/89/65/15/1 pares, e o último ponto coincidiu com o mais rápido em todos.
+
+**Testes.** Gabaritos à mão (três pontos, empate, sem linha direta, origem = destino,
+inalcançável, falhas) e comparação com força bruta: em 20 redes pequenas aleatórias, para todos
+os pares, o NetworkX enumera os caminhos simples do G_E, o teste filtra os não dominados e
+compara com a fronteira.
+
+Limitações: herda as da F-BALD-2 (espera média H/2, uma faixa, sem horário de saída); só um
+trajeto por ponto da fronteira, mesmo quando há outros com o mesmo tempo e as mesmas
+baldeações.
+
 ### 5.4 Centralidades (F-MET)
 
 Quais paradas mais importam para a rede: as com mais ligações (grau) e as por onde passam mais
@@ -398,6 +475,86 @@ amostrado O(k (V + E) log V). Espaço O(V + E). Ranking O(V log V).
 Limitações: G_P não tem espera nem horário (rede estrutural); caminhada em linha reta até
 300 m; a estimativa é mais precisa nas paradas mais centrais do que nas de valor pequeno.
 
+#### Proximidade (F-MET-2)
+
+Quão perto, em tempo, uma parada está das outras. Aparece como a métrica "Proximidade" na
+página Centralidades, com o mesmo controle de origens sorteadas da intermediação.
+
+```python
+from transporte.algoritmos.centralidade import proximidade, SAIDA, ENTRADA
+
+c = proximidade(g)                                   # exata, sentido de saída
+c = proximidade(g, ENTRADA)                          # o sentido do NetworkX
+c = proximidade(g, tamanho_amostra=50, semente=2026) # estimada com 50 origens
+```
+
+**Por que Wasserman e Faust.** A fórmula clássica (N − 1) / soma das distâncias supõe que v
+alcança todo mundo. G_P não é fortemente conexo: uma parada que alcança só três vizinhas, todas
+a 2 min, ficaria no topo. Com r = paradas alcançadas e D = soma dos tempos até elas,
+C(v) = (r / D) · (r / (N − 1)): o primeiro fator é o inverso do tempo médio até quem v alcança,
+o segundo é a fração da rede que v alcança. É o `wf_improved=True` do NetworkX.
+
+**Sentido.** Escolhemos a saída (de v para as outras: "daqui chego rápido à cidade?"). O
+NetworkX usa a entrada em grafo dirigido; a saída de v em G é a entrada de v no grafo reverso.
+Um Dijkstra a partir da origem s dá d(s, v) para todo v, que é a distância de entrada de v;
+por isso a saída roda os Dijkstras em `g.reverso()`.
+
+**Amostragem.** O exato faz um Dijkstra por parada. Com k origens, r e D somam só as origens
+sorteadas; como r / D não muda se r e D forem multiplicados pelo mesmo fator, a estimativa é
+(r_k / D_k) · (r_k / k_v), com k_v = origens sorteadas diferentes de v. Com k = N é a exata.
+Não há erro padrão: é uma razão, e serve para ordenar.
+
+**Exemplo** (0→1→2→4 e 0→3→2, pesos 1, N = 5): 0 alcança 1 e 3 (1), 2 (2) e 4 (3); r = 4,
+D = 7, C(0) = (4/7)(4/4) = 4/7. 2 só alcança 4: C(2) = (1/1)(1/4) = 1/4.
+
+**Complexidade.** Exata O(V (V + E) log V); com k origens O(k (V + E) log V), mais O(V + E) do
+grafo reverso. Espaço O(V + E).
+
+**No feed real** (G_P com V = 9.660 e E = 122.799; `benchmarks/medir_metricas_extensoes.py`,
+20/11, média de 3): 1,1 s com k = 25, 2,2 s com 50 (o padrão da página), 4,2 s com 100 e 8,6 s
+com 200, linear em k. As cinco primeiras com k = 50 ficam na Avenida Presidente Antônio Carlos.
+
+Limitações: sem erro padrão na estimativa; peso 0 é aceito (diferente do Brandes), e uma parada
+que só alcança outras a distância 0 fica com 0, como no NetworkX.
+
+#### Comunidades (F-MET-OPC)
+
+Grupos de paradas mais ligadas entre si do que com o resto. Aba "Comunidades" da página
+Centralidades: número de comunidades, modularidade, tabela das maiores e mapa com uma cor por
+comunidade.
+
+```python
+from transporte.algoritmos.comunidades import propagar_rotulos, modularidade
+
+c = propagar_rotulos(g, semente=2026)   # c.rotulos, c.quantidade, c.iteracoes, c.convergiu
+modularidade(g, c.rotulos)              # Q da partição
+c.tamanhos()                            # paradas por comunidade
+```
+
+**Propagação de rótulos** (Raghavan, Albert e Kumara, 2007). G_P é tratado como não dirigido e
+sem pesos (u e v são vizinhos se há aresta u → v ou v → u). Cada parada começa com o próprio
+rótulo. Em cada iteração, numa ordem embaralhada com `random.Random(semente)`, a parada adota o
+rótulo mais frequente entre as vizinhas, já vendo as mudanças desta iteração. Empate: se o
+rótulo atual está entre os mais frequentes, ele fica; senão vence o menor. Para quando uma
+iteração não muda nada ou em `max_iter` (100). Manter o atual no empate é o critério de parada
+do artigo; desempatar sempre pelo menor poderia oscilar entre dois rótulos empatados.
+
+**Modularidade.** Q = Σ_c [L_c / m − (d_c / 2m)²]: L_c = arestas dentro de c, d_c = soma dos
+graus de c, m = total de arestas. O segundo termo é a fração esperada ao acaso; Q = 0 quando
+tudo é uma comunidade só. Exemplo: dois triângulos ligados por uma aresta, m = 7: cada lado tem
+L = 3 e d = 7, Q = 2 (3/7 − 1/4) = 6/7 − 1/2 ≈ 0,36.
+
+**Complexidade.** O(V + E log E) para montar a vizinhança não dirigida (listas ordenadas, para
+o resultado não depender da ordem das arestas) e O(V + E) por iteração. Modularidade
+O(V + E log E). Espaço O(V + E).
+
+**No feed real** (mesmo script, 20/11, média de 3): com a semente 2026, 11 iterações em 140 ms
+e modularidade em 71 ms; 604 comunidades, a maior com 141 paradas, Q = 0,806 (igual ao
+NetworkX). Com as sementes 2026 a 2030, de 587 a 608 comunidades e Q entre 0,806 e 0,815.
+
+Limitações: o resultado depende da semente (a ordem de visita muda quem "ganha"); ignora o tempo
+das ligações; a caminhada liga paradas vizinhas e pode fundir comunidades próximas.
+
 ### 5.5 Eficiência da rede (F-EFI)
 
 A eficiência estrutural usa G_P, um vértice por parada e pesos em segundos. Para cada origem,
@@ -441,6 +598,33 @@ Limitações: o tempo médio é condicional aos pares alcançáveis na amostra; 
 utiliza a primeira faixa horária disponível, portanto os resultados
 de tempo dependem dessa faixa.
 
+#### 5.5.1 Alcance e desvio (F-EFI-2)
+
+Na página **Eficiência**, a isócrona responde quais paradas se atingem dentro do
+orçamento de tempo escolhido. Em G_E, a busca passa pelas plataformas e só insere
+no heap chegadas dentro do limite. O resultado inclui a origem ativa. As cores do
+mapa mostram em qual intervalo de minutos cada parada é alcançada. São pontos de
+embarque ou desembarque; a área entre eles pode conter barreiras físicas.
+
+No modo **Índice de desvio**, cada par sorteado usa o trajeto de menor tempo.
+O comprimento soma as distâncias em linha reta entre paradas sucessivas da caminhada
+e do ônibus. Dividir esse comprimento pela distância direta entre origem e destino
+mede o desvio geométrico; dividir a duração pela distância direta revela os minutos
+por quilômetro de deslocamento. Os índices ficam indefinidos para coordenadas
+coincidentes e para pares sem trajeto. A tabela agrupa as origens pelos quadrantes
+formados no centro do retângulo das paradas para oferecer uma leitura espacial
+reproduzível, sem depender de limites administrativos externos.
+
+#### 5.5.2 Comparação por faixa (F-EFI-OPC)
+
+O modo **Comparar faixas** fixa os pares e a semente. Cada faixa reconstrói G_E
+com os embarques disponíveis e a espera H/2 correspondente. Para uma origem
+sorteada, um Dijkstra fornece os tempos até os destinos consultados. A média
+de tempo usa os pares alcançáveis; a eficiência amostrada divide a soma de 1/t
+por todos os pares. A contagem de alcançáveis ajuda a interpretar mudanças na
+composição da média. O erro padrão da eficiência inclui a correção para população finita;
+o do tempo usa as durações alcançáveis, como na análise essencial. A comparação representa a programação do dia carregado.
+
 ### 5.6 Falhas e resiliência (F-RES)
 
 A F-RES responde o que acontece quando uma parada fecha, um trecho é interditado ou uma linha para: quem fica sem acesso e quanto a rede perde em rapidez. Usa G_P, onde "parada" e "trecho" já são vértice e aresta.
@@ -469,7 +653,140 @@ Limitações: G_P usa o tempo mediano, sem espera nem horário, então a perda �
 
 **Na interface**, a página Falhas escolhe paradas, um trecho (origem e próxima parada de ônibus) ou linhas, roda `simular_falha` com 30 origens por padrão e mostra as componentes antes e depois, as paradas isoladas e fora da rede principal e a perda, com um mapa: preto para o que saiu, vermelho para as isoladas e laranja para as que saíram da rede principal.
 
+#### Ranking de criticidade (F-RES-2)
 
+Responde "quais falhas mais pioram a rede?" (RF-RES-04). Simular a falha de cada uma das V paradas custaria V simulações, então o ranking só simula candidatos: as N paradas de maior intermediação (F-MET, §5.4), por onde passam mais caminhos mínimos, e as linhas (todas ou uma amostra sorteada).
+
+```python
+from transporte.simulacao.falhas import candidatos_criticidade, ranking_criticidade
+
+candidatos = candidatos_criticidade(gp, 10, indice, n_linhas=20, amostra_intermediacao=100, semente=2026)
+ranking = ranking_criticidade(gp, candidatos, indice, amostra=30, semente=2026)
+[(r.falha, r.perda_eficiencia) for r in ranking[:3]]
+```
+
+**Como funciona.** Mede a linha de base (Tarjan e eficiência com as s origens sorteadas) uma vez; para cada candidato aplica a falha sobre a rede intacta, mede, desfaz e passa ao próximo. Todos usam as mesmas origens e o mesmo denominador, então as perdas são comparáveis, e cada uma é igual à de `simular_falha` com os mesmos parâmetros (testado). Ordena pela perda; empate pelo número de paradas desconectadas. Exemplo: triângulo A-B-C, com C-D e D-E em fila (tudo nos dois sentidos, 60 s). C e D são articulações: sem C sobram só A-B e D-E e a perda é 31/43; sem D, 25/43; sem A ou B, 17/43; sem E, 13/43. O ranking sai C, D, A, B, E.
+
+**Complexidade.** O((c + 1) s (V + E) log V) para c candidatos (uma eficiência por candidato e a de base), mais o Brandes amostrado da escolha das paradas. Medir a base uma vez, em vez de chamar `simular_falha` c vezes, corta quase metade dos Dijkstras.
+
+**Na interface**, a aba Ranking da página Falhas deixa escolher N, quantas linhas sortear e as amostras; antes de rodar mostra o custo estimado (Dijkstras vezes o tempo de um Dijkstra medido na própria rede) e guarda os resultados na sessão por parâmetros.
+
+Limitação: a intermediação é um filtro, não garantia; uma parada pouco central que desconecta um ramal pode ficar fora dos candidatos. **No feed real** (20/11, `benchmarks/medir_falhas_extensoes.py`, V = 9.660, E = 122.799): com as 10 paradas mais centrais, 20 linhas sorteadas e 30 origens, o ranking dos 30 candidatos levou 38,9 s, mais 4,0 s do Brandes com 100 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur, 173, e Rua das Canárias, 1105 e 729), com 1,11 %, 1,07 % e 0,89 %; a linha mais crítica, a 9550, fica em 5.º (0,40 %). Nenhum candidato desconectou paradas, e a parada de maior intermediação causa só 0,14 %: centralidade e criticidade não são a mesma coisa.
+
+#### Falhas múltiplas e em sequência (F-RES-OPC)
+
+Responde "e se várias coisas falharem, uma depois da outra?" (RF-RES-05). `simular_falhas` aplica as falhas em ordem e mede a rede depois de cada passo, sempre contra a rede intacta e com as mesmas origens; no fim desfaz tudo na ordem inversa, inclusive se der erro.
+
+```python
+from transporte.simulacao.falhas import sequencia_aleatoria, sequencia_dirigida, simular_falhas
+
+passos = simular_falhas(gp, sequencia_dirigida(gp, 10, 100, 2026), indice, amostra=30, semente=2026)
+[p.perda_eficiencia for p in passos]  # perda acumulada após 1, 2, ..., 10 falhas
+```
+
+**Linhas se acumulam.** O trecho B -> C usado pelas linhas L1 e L2 continua quando L1 falha, mas cai quando L2 também falha. Por isso cada passo aplica as suas paradas e trechos junto com todas as linhas que já falharam, e o estado final é igual ao de uma falha única com tudo junto (testado em grafos aleatórios). A perda nunca diminui de um passo para o outro: tirar mais coisa não encurta caminho e o denominador é fixo.
+
+**Dirigida contra aleatória.** A dirigida remove as paradas de maior intermediação primeiro, calculada uma vez na rede intacta (recalcular a cada passo custaria k Brandes). A aleatória sorteia k paradas com um gerador derivado da semente: com `random.Random(semente)`, igual ao das origens, as paradas sorteadas seriam as próprias primeiras origens da eficiência, e a curva aleatória cairia a zero por artefato (visto num teste rápido no feed real e corrigido).
+
+**Complexidade.** O((k + 1) s (V + E) log V + k (V + E)) para k passos.
+
+**Na interface**, a aba Falhas múltiplas tem dois modos: escolher paradas e linhas (tabela por passo e gráfico da eficiência relativa) e comparar dirigida e aleatória num mesmo gráfico (`st.line_chart`). **No feed real** (20/11, mesmo script, 30 origens): 10 remoções dirigidas custam 1,73 % de eficiência, contra 0,24 % de 10 aleatórias, sem desconectar paradas; cada sequência levou 13,7 s.
+
+
+
+### 5.7 Desejáveis e opcionais
+
+#### 5.7.1 A\* e ponto no mapa (F-ROTA-2)
+
+Escolher origem e destino em qualquer ponto do mapa (RF-ROT-03) e calcular o trajeto com A\*,
+comparando com o Dijkstra em vértices expandidos e tempo (RF-ROT-04). Mesma visão G_E da F-ROTA:
+a comparação só é justa no mesmo grafo e com o mesmo custo.
+
+```python
+from transporte.algoritmos.a_estrela import (
+    comparar, coordenadas_ge, parada_mais_proxima, velocidade_maxima)
+
+coords = coordenadas_ge(ge, rede.paradas)      # O(V), uma vez por G_E
+vmax = velocidade_maxima(ge, coords)           # O(E), uma vez por G_E
+parada, metros = parada_mais_proxima(rede.paradas, -19.9245, -43.9352)
+c = comparar(ge, coords, vmax, origem, destino)
+c.dijkstra.expandidos, c.a_estrela.expandidos, c.a_estrela.trajeto
+```
+
+**Ponto no mapa.** `parada_mais_proxima` percorre as paradas e devolve a de menor distância
+haversine (empate pelo menor id), em O(V): 4,90 ms por ponto no feed real. A caminhada até ela,
+em linha reta a 1,2 m/s, entra só no "Tempo porta a porta". Uma k-d tree seria mais rápida, mas é
+uma consulta por clique.
+
+**A\*.** O Dijkstra fecha vértices em ordem de g(v), o custo já percorrido; o A\* em ordem de
+f(v) = g(v) + h(v), em que h(v) estima o que falta. Aqui h(v) = distância em linha reta até o
+destino / vmax, e vmax é a maior distância / peso entre as arestas de viagem e caminhada. A
+plataforma usa as coordenadas da sua parada. Com h = 0 a mesma função é o Dijkstra
+(`dijkstra_contado`). Exemplo hipotético: destino 10 km ao norte, vmax = 10 m/s; N, 1 km ao norte,
+com g = 200 s, tem f = 1.100 s; S, 1 km ao sul, com g = 150 s, tem f = 1.250 s. O Dijkstra expande
+S antes, o A\* expande N.
+
+**Por que dá o ótimo.** A h é consistente: h(u) ≤ w + h(v) em toda aresta, porque
+d(u, t) ≤ d(u, v) + d(v, t) e d(u, v) / w ≤ vmax. Logo nunca superestima o custo restante.
+O((V + E) log V) no pior caso, como o Dijkstra; o A\* só reduz quantos vértices expande.
+
+**No feed real** (18/11, `benchmarks/medir_rota_extensoes.py`, 200 pares): o A\* expandiu 99,7%
+dos vértices do Dijkstra (mediana) e levou 90,8 ms contra 72,3 ms, com o mesmo custo nos 200.
+Duas causas: 181 trechos com o mesmo horário no GTFS ficam no piso de 1 s (M2), e um deles cobre
+1.258 m, então vmax = 1.258 m/s e a h fica minúscula; e a h não enxerga as esperas. Por isso o A\*
+paga uma haversine por vértice sem podar quase nada.
+
+Por quê: vmax calculado do próprio grafo, para ser admissível em qualquer feed; A\* admissível
+mantido mesmo com ganho baixo (seção 8, 18/11), porque uma velocidade realista tiraria a garantia
+de ótimo da comparação.
+
+Limitações: ganho quase nulo no feed de BH; o ponto é ligado só à parada mais próxima, em linha reta.
+
+#### 5.7.2 Trajetos alternativos (F-ROTA-OPC)
+
+Listar os k trajetos de menor tempo, do mais rápido ao mais lento (RF-ROT-05).
+
+```python
+from transporte.algoritmos.alternativos import trajetos_alternativos
+
+ts = trajetos_alternativos(ge, origem, destino, 3, coords, vmax)   # lista de Trajeto
+```
+
+**Yen.** O primeiro é o trajeto mais rápido. Para o i-ésimo, cada vértice do (i-1)-ésimo vira,
+um por vez, ponto de desvio: mantém a raiz (da origem até ele), desativa as arestas que os
+caminhos aceitos usam logo depois da mesma raiz e os vértices da raiz menos o desvio (sem
+ciclo), roda um A\* do desvio ao destino e reativa tudo. Os candidatos ficam num `HeapMin`, e o
+menor vira o próximo caminho. Exemplo (o do teste): de A a C há a troca em B (800 s) e a linha
+lenta (2.300 s); com k = 5 a função devolve só esses dois.
+
+O(k · n · (V + E) log V), n = vértices do maior caminho aceito: uma busca por desvio. No feed real
+(18/11, 20 pares): mediana de 2,3 s com k = 3 e 4,6 s com k = 5, até 25,4 s; por isso a página só
+calcula no botão.
+
+Por quê: desativar pela API de falhas do núcleo em vez de copiar o grafo (O(V + E) por desvio);
+reativar só o que a função desativou, num `finally`, para não desfazer uma falha da F-RES; A\* nos
+desvios, porque remover arestas não aumenta a velocidade de nenhuma restante e a h continua
+consistente.
+
+**Filtro por sequência de linhas** (20/11, revisão do #57). Para o Yen, caminhos diferentes em uma
+aresta de G_E são distintos, e no feed real os k primeiros costumam ser o mesmo trajeto com a troca
+uma parada antes ou outro trecho a pé. A página usa `alternativos_por_linhas`, que consome o Yen
+como gerador e guarda o mais rápido de cada sequência de `linha_id`, até k sequências ou 2·k
+caminhos (teto padrão, decisão de 20/11 no §8); a coluna "Variantes" conta os caminhos repetidos.
+
+```python
+from transporte.algoritmos.alternativos import alternativos_por_linhas
+
+linha_do_padrao = {pid: p.linha_id for pid, p in rede.padroes.items()}
+alts = alternativos_por_linhas(ge, origem, destino, 5, linha_do_padrao, coords, vmax)
+```
+
+Limitação medida (20/11, k = 5, 8 pares, `benchmarks/medir_alternativos_linhas.py`): o Yen puro deu
+uma só sequência de linhas nos 8 pares. Com teto de 20 caminhos (4·k), o filtro achou uma segunda em
+2 pares, a 4,4 a 4,9 vezes o tempo do Yen puro; com o teto atual de 10 (2·k), em 1 par, a 2,1 a 2,3
+vezes (pior par: 45,4 s contra 20,4 s). Enumerar em ordem de custo passa por
+muitas variantes antes da primeira linha diferente; proibir a linha já usada acharia outras opções
+mais rápido, mas é outro algoritmo (trabalho futuro).
 
 ## 6. Interface (Arthur)
 
@@ -565,6 +882,57 @@ memória. O custo fixo de uma medição é de cerca de 0,08 µs, desprezível pa
 Os testes trocam `medicao._relogio` por um relógio falso de leituras conhecidas, o que permite
 um gabarito exato para média e desvio sem depender da velocidade da máquina.
 
+### Comparação com o NetworkX, complexidade empírica e página Desempenho (F-AVAL-OPC)
+
+**Redes sintéticas (RF-DAD-05).** `transporte.dados.sinteticas.gerar_rede_sintetica(lado,
+semente)` monta uma grade `lado x lado` de paradas a 200 m umas das outras, com uma linha reta
+em cada fileira e em cada coluna (ida e volta, 4 viagens por padrão) e coordenadas perto de BH.
+Sai no formato da `Rede` de P0-DADOS, então passa por `construir_gp` e `construir_ge` sem
+adaptação. Com o raio de caminhada de 300 m, cada parada caminha até as 8 vizinhas (200 m nas
+retas, 283 m nas diagonais), e o G_P fica com cerca de 12 arestas por parada (lado 100 com semente 1:
+V = 10.000, E = 117.748), perto das 12,7 do G_P real. A semente controla um deslocamento de até
+10 m nas coordenadas, o tempo de cada trecho (60 a 180 s) e as partidas.
+
+Por que uma grade: o tamanho cresce de forma controlada e a forma local é a mesma em todos os
+tamanhos. Assim, a inclinação da regressão mede o algoritmo e não uma mudança de estrutura.
+Alternativa descartada: recortar o feed real em caixas crescentes. Daria redes "reais", mas a
+densidade muda entre o centro e a periferia, e o tamanho máximo é o próprio feed.
+
+**Comparação com o NetworkX (RF-AVA-03).** `benchmarks/comparar_networkx.py` converte o
+nosso `Grafo` num `nx.DiGraph` uma vez, fora da medição (arestas paralelas viram a de menor
+peso, como no nosso Brandes), e mede com `medir`, no mesmo grafo, BFS e Dijkstra a partir das
+mesmas origens, Brandes e Tarjan. Depois confere os resultados: distâncias iguais,
+intermediação igual com tolerância relativa de 1e-6 e o mesmo conjunto de componentes. Acima de
+1.000 vértices o Brandes exato levaria dezenas de minutos (o nosso exato no feed real levou
+2.632 s, `feature-F-MET.md`), então os dois lados partem das mesmas k origens: o nosso
+`estimar_intermediacao` (sem o fator N/k) contra `nx.betweenness_centrality_subset` com essas
+origens e todos os destinos, que somam exatamente as mesmas dependências. Para incluir a
+proximidade e a propagação de rótulos basta acrescentar uma `Comparacao` à lista
+`COMPARACOES` do script.
+
+**Complexidade empírica (RF-AVA-04).** `benchmarks/complexidade_empirica.py` mede cada
+algoritmo no G_P das redes sintéticas e ajusta, por mínimos quadrados, `log t = a + b log(V +
+E)`. Se t ~ (V + E)^b, dobrar o tamanho multiplica o tempo por 2^b; então b é o expoente
+empírico. Esperado: b ≈ 1 para BFS e Tarjan, um pouco acima de 1 para o Dijkstra (o log V) e
+b ≈ 2 para o Brandes, porque V (V + E) ~ (V + E)² quando E é proporcional a V. A figura vai para
+`relatorio/figuras/complexidade-empirica.png` (matplotlib, só em `benchmarks/`).
+
+**Página Desempenho (RF-AVA-05).** Não mede nada: lê o JSON mais recente de cada script em
+`benchmarks/resultados/` e mostra as tabelas, o gráfico log-log (`st.line_chart`) e os demais
+JSON da pasta. Medir dentro da interface misturaria o tempo do Streamlit com o do algoritmo e
+travaria a página. JSON ausente ou inválido vira aviso.
+
+Limitações: tempo de parede depende da máquina e da carga; a razão nosso/NetworkX é mais
+estável que os valores absolutos. Em grafos pequenos o custo fixo de cada chamada achata a
+inclinação.
+
+Resultado (20/11/2026, N = 3, detalhes em `feature-F-AVAL-OPC.md`): todos os resultados
+coincidem com os do NetworkX. No G_P real (V = 9.660, E = 122.799), nosso tempo / NetworkX deu
+2,09 na BFS, 1,34 no Dijkstra, 0,83 no Brandes (20 origens) e 1,91 no Tarjan: só o Brandes,
+que monta a adjacência simplificada uma vez, é mais rápido; nos outros, `Grafo.vizinhos`
+monta a lista de vizinhos ativos a cada visita. Inclinações nas sintéticas: BFS 1,01, Dijkstra
+1,06, Tarjan 1,10 e Brandes 2,04, todas com R² ≥ 0,999.
+
 ## 8. Registro de decisões
 
 Lugar canônico de toda decisão do grupo. Nova decisão: uma linha aqui e a mudança na fonte, no mesmo commit.
@@ -640,7 +1008,10 @@ As referências "seção N" apontam para `docs/fontes/plano-de-projeto.md` ou pa
 | 17/11 | Dijkstra com o número de embarques no estado, camadas implícitas e descarte de estado dominado (C2, F-BALD-2) | Exato, usa o HeapMin do núcleo e não copia o G_E: cada vértice fecha no máximo k + 2 vezes | Montar o G_E em k + 2 camadas a cada consulta; busca lexicográfica (baldeações, tempo), que acharia o mínimo do G_E, não o da G_L |
 | 17/11 | O limite k vem da G_L, mas a busca no G_E encadeia caminhadas como a F-ROTA; se o mais rápido já faz até k baldeações, ele é a resposta (C3, F-BALD-2) | Mantém o mesmo modelo de tempo nos dois trajetos comparados, e tempo a mais e baldeações evitadas nunca ficam negativos | Restringir a caminhada a uma por vez no G_E, que mudaria o modelo de tempo da F-ROTA |
 | 17/11 | Comparação só numa faixa, com o G_E montado com as esperas H/2 da F-ESPERA, num bloco da página Baldeações (C4, F-BALD-2) | O tempo depende das esperas e das linhas que circulam na faixa; as esperas são as mesmas da página Espera | Comparar também no dia inteiro; espera fixa de 300 s; página separada |
+| 18/11 | A\* da F-ROTA-2 com h = distância em linha reta / vmax, vmax = maior velocidade entre as arestas de G_E, mesmo com ganho quase nulo no feed real (mediana de 99,7% dos vértices do Dijkstra expandidos; busca com mediana de 90,8 ms contra 72,3 ms do Dijkstra, porque o A\* paga uma haversine por vértice) | A RF-ROT-04 compara A\* e Dijkstra, e a comparação só vale se os dois devolvem o ótimo. O ganho baixo tem duas causas: 181 trechos com horário repetido no GTFS ficam no piso de 1 s e levam vmax a 1.258 m/s (sem eles, 43,4 m/s, ainda muito acima da mediana de 5,6 m/s das arestas de viagem); e a h não enxerga as esperas, que são boa parte do custo. É relatado como resultado | vmax realista (perde a garantia de ótimo); somar a espera mínima à h; interpolar os horários repetidos no P0-MODELO (muda M2 e os números das outras features depois do congelamento; fica como trabalho futuro); ALT |
 | 19/11 | Exceção ao congelamento de 15/11 para a F-BALD-2 (RF-BAL-03, desejável), feita em 17/11 e aprovada pelo grupo | A feature ficou completa, com testes, medição e documentação, e só acrescenta um bloco à página Baldeações, sem mudar o que já estava na `main` | Deixar a F-BALD-2 fora do escopo e registrar o RF-BAL-03 como limitação no relatório (plano-de-projeto §7.3) |
+| 20/11 | Congelamento suspenso; todas as desejáveis e opcionais entram, inclusive F-ROTA-2 (A\* e ponto no mapa) e F-ROTA-OPC (Yen), decisão do grupo | Decisão do grupo em 20/11, em vez de exceções uma a uma; para o PR #57, o voto do revisor citou código testado que não mexe em `src/` de outras features | Pedir exceção feature a feature, como na F-BALD-2; deixar as desejáveis e opcionais como limitação no relatório |
+| 20/11 | Teto padrão de 2·k caminhos do Yen no filtro por sequência de linhas da F-ROTA-OPC (decisão do Henrique) | Com 4·k, o filtro quase não achava sequências novas no feed real (segunda sequência em 2 de 8 pares) e custava 4 a 5 vezes o Yen puro; com 2·k, segunda sequência em 1 de 8 pares, a 2,1 a 2,3 vezes o Yen puro (pior par 45,4 s), k = 5 | 4·k, sugestão da revisão do #57 (pior par 100,8 s com a máquina carregada); sem filtro, só o Yen puro |
 
 ## 9. Glossário
 
@@ -726,6 +1097,12 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 4. **A saída às 08h59 usa a faixa seguinte durante a viagem?** Não: a versão essencial mantém a faixa da saída fixa; partidas exatas são da extensão G_T.
 5. **H/2 vale para intervalos muito irregulares?** É a aproximação essencial; a espera com chegadas ao acaso seria E[H²]/(2 E[H]).
 
+#### Quadro de horários e Monte Carlo (F-ESPERA-2)
+
+1. **Posso pegar uma partida no instante em que chego?** Sim. A busca inclui a igualdade entre o horário de chegada à parada e a partida.
+2. **Como o algoritmo trata um expresso que ultrapassa outro ônibus?** Ao indexar o segmento, descarta a partida cuja chegada seria pior que a de uma partida posterior. Chegar antes à parada permite aguardar o expresso.
+3. **Por que exibir a cobertura junto com o histograma?** Uma saída sem trajeto fica fora das durações. A cobertura permite identificar janelas em que só parte das saídas atende ao destino.
+
 ### 5.3 Menos baldeações (F-BALD)
 1. **Por que a G_L tem um vértice por padrão, e não por parada?** Porque baldeação é troca de
    linha: cada camada da busca em largura é um ônibus a mais, e as paradas percorridas não importam.
@@ -752,6 +1129,16 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 5. **Por que a comparação só aparece numa faixa?** Porque o tempo depende das esperas e das
    linhas que circulam na faixa, e o G_E existe só por faixa.
 
+#### Trajetos não dominados (F-BALD-OPC)
+1. **O que é um trajeto não dominado?** Um para o qual não existe outro com tempo menor ou
+   igual e baldeações menores ou iguais, sendo melhor em pelo menos um dos dois.
+2. **Por que basta testar k de 0 até as baldeações do mais rápido?** Acima disso o mais rápido
+   domina tudo; e, como o tempo mínimo com até k baldeações não cresce com k, o mais rápido com
+   limite k representa todos os trajetos com k baldeações.
+3. **Por que não começar no mínimo de baldeações da G_L?** Porque no G_E as caminhadas se
+   encadeiam e pode haver trajeto com menos baldeações que esse mínimo; começar nele perderia
+   pontos da fronteira.
+
 ### 5.4 Centralidades (F-MET)
 1. **Por que não contar, para cada par, se o caminho mínimo passa por v?** São V² pares e pode
    haver vários caminhos por par; o Brandes acumula as dependências por origem, com um Dijkstra
@@ -766,6 +1153,22 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 5. **Por que G_P e não G_E?** A pergunta é sobre a parada física; em G_E a parada vira várias
    plataformas.
 
+#### Proximidade (F-MET-2)
+1. **Por que não usar (N − 1) / soma das distâncias?** G_P não é fortemente conexo; quem alcança
+   poucas paradas, todas perto, ficaria no topo. Wasserman e Faust multiplica por r / (N − 1).
+2. **Qual a diferença entre saída e entrada, e qual o NetworkX usa?** Saída: tempos de v até as
+   outras; entrada: das outras até v. O NetworkX usa a entrada; a saída é a entrada no reverso.
+3. **Por que a estimativa com k origens não precisa multiplicar por N/k?** Porque r / D é uma
+   razão: o fator some. Só o r / (N − 1) vira r_k / k_v.
+
+#### Comunidades (F-MET-OPC)
+1. **Por que manter o rótulo atual no empate?** É o critério de parada de Raghavan et al.;
+   desempatar sempre pelo menor poderia oscilar e nunca parar.
+2. **O que a modularidade mede?** Quanto as arestas dentro das comunidades passam da fração
+   esperada ao acaso; 0 com uma comunidade só.
+3. **Por que o resultado depende da semente?** A ordem de visita decide quem adota o rótulo
+   primeiro; com a mesma semente o resultado é sempre o mesmo.
+
 ### 5.5 Eficiência da rede (F-EFI)
 1. **Por que a eficiência global usa G_P?** Para medir a estrutura entre paradas sem incluir
    plataformas nem arestas de desembarque de peso zero; isso também alinha a API compartilhada com a F-RES.
@@ -778,12 +1181,57 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
 5. **O que o erro padrão informa?** A dispersão estimada da média amostrada; a página mostra a
    amostra e a semente para reproduzir o cálculo.
 
+#### Isócronas e desvios
+
+1. **A parada no limite exato de tempo entra?** Sim. O relaxamento aceita custo menor ou igual ao orçamento.
+2. **Qual percurso define o desvio?** O trajeto de menor tempo. Somam-se distâncias entre paradas consecutivas, inclusive a pé.
+3. **E se os extremos têm coordenadas iguais?** A distância direta é zero, então ambas as razões ficam indefinidas.
+
+#### Comparação por faixa
+
+1. **Por que sorteamos apenas uma vez?** Para comparar os mesmos deslocamentos sob diferentes ofertas.
+2. **O que muda no grafo?** Os embarques com serviço e a espera por padrão na faixa; a caminhada usa os mesmos parâmetros.
+3. **O que acontece quando uma conexão deixa de existir?** Um par inalcançável contribui zero para a eficiência e sai da média de tempo. A tabela informa quantos pares tiveram caminho.
+
 ### 5.6 Falhas e resiliência (F-RES)
 1. **Por que o Tarjan é iterativo?** Porque a recursão vai tão fundo quanto o caminho da DFS, e no G_P real esse caminho chega a 4.657 níveis, acima do limite de recursão do Python (1.000).
 2. **Remover uma linha remove as paradas dela?** Não. Saem só os trechos de viagem que nenhuma outra linha usa; as paradas continuam, porque outras linhas e a caminhada as atendem.
 3. **Qual a diferença entre parada isolada e desconectada?** Isolada ficou sozinha na componente (não vai e volta de nenhuma outra). Desconectada saiu da maior componente, mas pode estar num grupo pequeno com outras.
 4. **Por que a eficiência depois da falha usa o n de antes?** Para que remover parada nunca aumente a eficiência: os pares da parada removida contam 0 em vez de sumir da média.
 5. **Por que a simulação não estraga o G_P para a próxima consulta?** Ela só desativa, e no fim religa exatamente o que desligou, inclusive se der erro.
+
+#### Ranking de criticidade (F-RES-2)
+1. **Por que o ranking não simula todas as paradas?** Seriam V simulações (9.659 no feed real), cada uma com s Dijkstras; a intermediação escolhe as N paradas por onde passam mais caminhos mínimos.
+2. **Por que todos os candidatos usam as mesmas origens?** Para que as perdas sejam comparáveis: com origens diferentes, a diferença de amostra se misturaria com a diferença entre as falhas.
+3. **O que o ranking economiza em relação a chamar `simular_falha` para cada candidato?** A eficiência de antes é medida uma vez, não uma por candidato: c + 1 eficiências em vez de 2c.
+
+#### Falhas múltiplas (F-RES-OPC)
+1. **Tirar L1 e depois L2 é o mesmo que tirar as duas de uma vez?** Sim: as linhas se acumulam, e o trecho que só L1 e L2 usavam cai no segundo passo.
+2. **Por que a perda nunca diminui ao longo da sequência?** Remover mais vértices ou arestas não encurta nenhum caminho, e o denominador é o n da rede intacta.
+3. **Por que a remoção aleatória não usa `random.Random(semente)` direto?** Porque é o mesmo gerador das origens da eficiência: as paradas removidas seriam as próprias origens e a perda seria inflada por artefato (num teste rápido no feed real, com 2 origens e 2 remoções, deu 100 %).
+
+### 5.7.1 A\* e ponto no mapa (F-ROTA-2)
+1. **Qual a diferença entre o A\* e o Dijkstra?** O Dijkstra escolhe o próximo vértice por g(v);
+   o A\* por g(v) + h(v), uma estimativa do que falta. Com h = 0 os dois são iguais.
+2. **Por que o A\* devolve o mesmo custo do Dijkstra?** Porque a h é consistente
+   (h(u) ≤ w + h(v) em toda aresta), logo nunca superestima o custo restante.
+3. **Por que a h usa a velocidade máxima da rede, e não uma típica?** Com uma velocidade menor que
+   a de alguma aresta, a h passaria do custo real nela e o A\* poderia devolver um trajeto pior.
+4. **Por que o A\* quase não ganhou no feed de BH?** O vmax de 1.258 m/s, de trechos de 1 s no
+   GTFS, deixa a h muito pequena, e ela não conta as esperas.
+5. **Como um clique no mapa vira origem do trajeto?** `parada_mais_proxima` acha a parada mais
+   próxima em O(V); a caminhada até ela entra só no tempo porta a porta.
+
+### 5.7.2 Trajetos alternativos (F-ROTA-OPC)
+1. **O que o Yen devolve?** Até k caminhos sem ciclo, em ordem crescente de custo; o primeiro é o
+   trajeto mais rápido.
+2. **O que é o ponto de desvio?** Um vértice do caminho anterior: mantém-se o trecho até ele e
+   procura-se outra continuação, com as saídas já usadas desativadas.
+3. **Por que desativar os vértices da raiz?** Para o novo caminho não voltar a eles e formar ciclo.
+4. **Por que o Yen é muito mais lento que uma busca?** Faz uma busca por vértice do caminho
+   anterior, para cada um dos k caminhos: O(k · n · (V + E) log V).
+5. **Como o Yen não estraga uma falha simulada pela F-RES?** Só reativa o que ele mesmo desativou,
+   num `finally`.
 
 ### 7. Medição de tempo (P0-AVAL)
 1. **Por que `perf_counter` e não `time.time()`?** Porque é monotônico e tem a maior resolução;
@@ -797,6 +1245,17 @@ Use as perguntas para reproduzir uma decisão de modelagem ou justificar um resu
    média 2 e desvio 1).
 5. **Como uma feature entra no relatório?** Criando `relatorio/secoes/<ID>.tex` com
    `\subsection{...}`; o `funcionalidades.tex` a inclui sozinho.
+
+### 7. Comparação com o NetworkX e complexidade empírica (F-AVAL-OPC)
+1. **Por que o grafo do NetworkX é montado fora da medição?** Porque o nosso grafo também já
+   está pronto quando o cronômetro começa; medir a conversão compararia construção com
+   algoritmo.
+2. **Por que, no feed real, o Brandes é comparado a partir de k origens e não exato?** O exato
+   custa O(V (V + E) log V), dezenas de minutos dos dois lados. Com as mesmas k origens,
+   `betweenness_centrality_subset` soma exatamente as mesmas dependências que o nosso
+   `estimar_intermediacao` antes do fator N/k, então a conferência continua valendo.
+3. **O que a inclinação b do gráfico log-log diz?** Que o tempo cresce como (V + E)^b: b ≈ 1 é
+   linear (BFS, Tarjan), b ≈ 2 é quadrático (Brandes, V buscas de custo V + E).
 
 ### 6. Interface (P0-UI)
 1. **Por que a interface não interpreta o GTFS diretamente?** A leitura, validação e

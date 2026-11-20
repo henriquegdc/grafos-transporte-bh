@@ -1,94 +1,125 @@
 # F-ESPERA-2 · Quadro de horários e Monte Carlo
 
-**Período:** 2 · Desejáveis (12/11 a 15/11) · **Classe:** desejável
-**Dono:** Miguel (@Miguelgdn1) · **Issue:** #14 · **Visões do grafo:** G_T
-**Depende de:** F-ESPERA · **Bloqueia:** nada
-**Prazo:** 15/11
-
-> Fonte de verdade: docs/fontes/REQUISITOS.md (RF-ESP-04, RF-ESP-05). Modelagem: docs/fontes/modelagem.md.
-> Em conflito, o REQUISITOS.md vence.
+**Dono:** Miguel (@Miguelgdn1) · **Issue:** #14 · **Visão:** G_T · **Classe:** desejável.
+Depende de F-ESPERA. RF-ESP-04 e RF-ESP-05 em `docs/fontes/REQUISITOS.md`.
+Prazo do plano de finalização: 20/11/2026.
 
 ## Retomada
-- **Última sessão:** planejamento e corte de escopo em 11/11/2026; sem implementação.
-- **Onde parou:** não iniciado.
-- **Próximo passo:** Adiada neste ciclo para fechar F-ESPERA e P0-DADOS até o congelamento. Não iniciar implementação nesta entrega.
-- **Arquivos tocados:** nenhum.
-- **Como testar:** ainda não há testes.
-- **Bloqueios:** depende de F-ESPERA.
 
-## Objetivo
-Quadro de horários e Monte Carlo. Fecha:
+Em 20/11, Miguel retomou M1 na branch `feat/F-ESPERA-2-horarios`, sobre a main
+`1b4edcf`. O modo **Quadro de horários** passou no AppTest com a rede de teste
+e em uma consulta funcional com o mapa no GTFS de BH. A medição final foi executada em sequência. O próximo passo é a revisão do PR e a integração em main. O arquivo local `plano.md`
+fica fora do commit.
 
-- **RF-ESP-04** (D): Simular o trajeto com o quadro de horários (G_T, chegada mais cedo)
-- **RF-ESP-05** (D): Sortear horários de saída (Monte Carlo) e mostrar a distribuição do tempo total e da parcela de espera
+## Objetivo e critérios de aceite
+
+- [x] RF-ESP-04. Simular o trajeto pelo quadro de horários, com mapa e decomposição.
+- [x] RF-ESP-05. Sortear saídas e mostrar distribuições de tempo total e de espera, com contagem de saídas sem trajeto.
 
 ## Status
-| Camada | Status | Observação (data, evidência, o que falta) |
+
+| Camada | Situação em 20/11 | Evidência |
 |---|---|---|
-| Núcleo (algoritmo) | não iniciado | |
-| Modelo e dados | não iniciado | |
-| Interface | não iniciado | |
-| Testes | não iniciado | |
-| Desempenho (tempo medido) | não iniciado | |
-| Guia (explicação e quiz) | não iniciado | |
-| Relatório | não iniciado | |
-| Vídeo | não iniciado | |
+| Modelo e algoritmo | Implementados na branch | `modelo/horarios.py`, `algoritmos/chegada_mais_cedo.py` |
+| Interface | Validada | Página Espera, modo Quadro de horários, comparação H/2 e histogramas |
+| Testes | Validados | Gabarito, dez redes com oráculo NetworkX, bordas e AppTest |
+| Desempenho | Concluído | JSON do feed de BH com cinco repetições |
+| Guia e relatório | Escritos, aguardam revisão | Guia §5.2 e §10, `relatorio/secoes/F-ESPERA-2.tex` |
+| Vídeo | Roteiro pronto | Gravação prevista para 20/11 |
+| Integração | Pendente | Revisão de Miguel, commit, PR e aprovação |
 
-## Especificação
-Assinaturas públicas: a definir na etapa 1 do plano de implementação e publicadas com `estado: planejado` antes de qualquer consumidor depender delas.
+## Especificação e dependências
 
-Algoritmos previstos (docs/fontes/modelagem.md §3.5):
-- Dijkstra de chegada mais cedo · visão G_T · O((V + E) log V + E log k) · k: maior número de partidas numa aresta (busca binária)
-- Monte Carlo de horários de saída · visão G_T · O(S × custo de uma consulta) · S amostras, semente fixa
+Contrato implementado. Todos os horários são segundos desde o início do dia de serviço.
+
+- `construir_gt(rede, params=None) -> VisaoGT`: reaproveita o grafo próprio e a construção das caminhadas de G_P. Cada posição servida do padrão mantém seu quadro por ID de aresta, inclusive se o padrão revisitar a mesma parada.
+- `chegada_mais_cedo(gt, origem, destino, saida_s) -> Trajeto | None`: devolve trechos no contrato de F-ROTA. Sem caminho devolve `None`, origem igual ao destino dá duração zero e ID ausente levanta `KeyError`.
+- `monte_carlo(gt, origem, destino, inicio_s, fim_s, amostras, semente) -> list[Amostra]`: guarda saída, total e espera de cada sorteio. Uma saída inalcançável tem durações ausentes.
 
 ## Como funciona e por quê
-_A escrever a cada etapa concluída do plano de implementação, para um colega que não viu o código: o problema, a visão do grafo e por que ela, o algoritmo passo a passo com um exemplo pequeno, a complexidade com a justificativa, as decisões com as alternativas descartadas e as limitações._
+
+O leitor já expande as frequências do dia carregado. Para cada segmento, G_T
+ordena os eventos de viagem por partida. Uma varredura de trás para frente
+descarta uma partida se houver outra posterior com chegada estritamente melhor.
+Quem chega antes ao ponto pode esperar e usar a mesma opção disponível a quem
+chega depois. Esse requisito FIFO permite fechar uma parada pelo menor horário
+no heap. Cada relaxamento busca a primeira partida ainda alcançável no quadro
+filtrado ou soma o tempo fixo de caminhada. A reconstrução usa a identidade da
+viagem expandida para distinguir permanecer no veículo de trocar de ônibus.
+
+Para V paradas, E arestas, k eventos no maior quadro, N eventos ao todo e L
+posições dos padrões, o índice custa O(V+E+L+N log(k+1)) em tempo esperado
+com a grade espacial, cuja vizinhança pode exigir O(V²) comparações. Seu espaço
+é O(V+E+L+N). Uma consulta faz até E relaxamentos e inserções preguiçosas no
+heap; custa O((V+E) log(E+2) + E log(k+1)) e usa O(V+E) de espaço auxiliar.
+O Monte Carlo faz S consultas com o índice pronto e usa O(S+V+E) de espaço
+auxiliar. A janela inclui o início e exclui o fim. A cobertura acompanha os
+histogramas porque as saídas sem caminho também são resultados do sorteio.
+
+O modelo usa um horário programado por parada, sem distinguir a permanência
+no ponto, e admite transferência imediata. O dia de serviço pode passar de
+24h, mas a consulta não carrega o serviço do dia seguinte.
+
+Diagrama de atividade: [fonte](../../diagramas/atividade-quadro-horarios.puml) e
+[imagem](../../diagramas/atividade-quadro-horarios.png).
 
 ## Perguntas de verificação
-_3 a 5 perguntas que qualquer integrante deve saber responder, cada uma com a resposta curta._
 
-## Critérios de aceite
-- [ ] RF-ESP-04: Simular o trajeto com o quadro de horários (G_T, chegada mais cedo)
-- [ ] RF-ESP-05: Sortear horários de saída (Monte Carlo) e mostrar a distribuição do tempo total e da parcela de espera
+1. **É possível embarcar ao chegar no instante da partida?** Sim. A busca inclui a igualdade.
+2. **Por que filtrar uma partida ultrapassada?** Quem poderia embarcar nela pode aguardar a posterior e chegar antes.
+3. **Como interpretar o histograma se algumas saídas não atendem ao destino?** A distribuição descreve as saídas alcançáveis. A contagem informa quantas entraram nela.
 
-## Definition of Done
-Lista-base de `docs/fontes/plano-de-projeto.md` §11. Item que não se aplica fica marcado como "não aplicável", com o motivo.
+## Resultados e reprodução
 
-- [ ] Código integrado na `main` por PR aprovado por outro integrante
-- [ ] Hook verde (nenhuma biblioteca de grafo em `src/`, ruff limpo) e pytest verde
-- [ ] Testes de corretude com gabarito à mão, inclusive casos de borda; comparação de resultado com o NetworkX quando houver equivalente
-- [ ] Complexidade de tempo e de espaço declarada na docstring e justificada no arquivo da feature
-- [ ] Tempo medido na rede real com `medir`, registrado no arquivo da feature com V, E e a máquina
-- [ ] Página ou bloco na interface funcionando com o dataset real
-- [ ] Diagrama UML da feature (sequência ou atividade) em `docs/diagramas/`
-- [ ] "Como funciona e por quê" e perguntas de verificação escritas no arquivo da feature e incorporadas ao `docs/GUIA.md`
-- [ ] O revisor do PR consegue explicar o que o código faz
-- [ ] Seção do relatório em `relatorio/secoes/<feature>.tex`, com figura, resultado e limitação
-- [ ] Roteiro do vídeo escrito no arquivo da feature
-- [ ] Arquivo da feature atualizado: retomada ("concluída"), status, pendências e timeline
+Na rede de teste, A → C às 08:01, sem caminhada, resultou em 19 min de espera
+e 10 min de viagem, contra 10 min de espera por H/2. Gabarito, amostras e
+tempos **da rede de teste** estão em
+`benchmarks/resultados/quadro-horarios-rede-teste.json`. Comando a partir da raiz:
 
-## Plano de implementação
-| Etapa | Escopo | Situação |
-|---|---|---|
-| 1 | Contrato (assinaturas com estado "planejado") | |
-| 2 | Algoritmo com testes de corretude | |
-| 3 | Integração com a visão do grafo e com os dados reais | |
-| 4 | Página na interface | |
-| 5 | Tempo medido na rede real e complexidade justificada | |
-| 6 | Como funciona e por quê, perguntas de verificação, diagrama UML, seção do relatório e roteiro do vídeo | |
+```sh
+PYTHONPATH=src .venv/bin/python benchmarks/medir_quadro_horarios.py dados/rede-teste --origem A --destino C --saida-s 28860 --raio-m 0 --repeticoes 1
+```
 
-## Resultados para o relatório
-_Vazio até haver execução real. Todo número vem com o comando que o gerou._
+Na página Espera, a consulta funcional no `bhtrans.zip` de 05/11 (serviço de
+04/11/2026), 14788851 → 14792190 às 08:00, retornou 23,67 min: 6,77 a pé,
+1,87 de espera e 15,03 de ônibus. A estimativa H/2 para o mesmo par e saída
+retornou 40,24 min, com 15,34 de espera. G_T teve 9.659 vértices e 146.563
+arestas. Esses valores descrevem o trajeto e o grafo. O desempenho foi medido em execução exclusiva com o mesmo par. Evidência funcional:
+`benchmarks/resultados/quadro-horarios-consulta-bhtrans.json`. Para reproduzir:
 
-## Roteiro do vídeo (2 a 2,5 min)
-1. O problema que a feature resolve. 2. A feature funcionando na interface.
-3. Algoritmo e complexidade. 4. Resultado e limitação.
+```sh
+PYTHONPATH=src .venv/bin/python benchmarks/medir_quadro_horarios.py dados/brutos/bhtrans.zip --origem 14788851 --destino 14792190 --amostras 1 --sem-medicao
+```
 
-## Pendências
-- Nenhuma.
+**Medição final** em 20/11, macOS arm64 e Python 3.12.13, com cinco repetições (média ± desvio amostral). Construção de G_T em 318,55 ± 11,29 ms, consulta em 6,98 ± 1,28 ms e Monte Carlo de 30 saídas em 279,31 ± 24,47 ms. JSON gravado em
+`benchmarks/resultados/quadro-horarios-bhtrans.json`:
+
+```sh
+PYTHONPATH=src .venv/bin/python benchmarks/medir_quadro_horarios.py dados/brutos/bhtrans.zip --origem 14788851 --destino 14792190 --saida-s 28800
+```
+
+**Validação:** `sh .githooks/pre-commit` e `.venv/bin/python -m pytest -q`.
+A suíte compara as chegadas para todos os pares em dez redes sem caminhada com
+um grafo NetworkX expandido por evento, usando arestas de viagem e espera.
+Há testes separados de caminhada fracionária, ultrapassagem, frequência,
+viagem após meia-noite e ausência de caminho.
+
+## Roteiro do vídeo (30 s)
+
+- **0–10 s:** abrir Espera → Quadro de horários. Selecionar o par do feed real acima, às 08h, e simular.
+- **10–20 s:** apontar no mapa onde ocorre uma troca. Mostrar o tempo total e a espera, depois ler a estimativa H/2 para a mesma saída.
+- **20–30 s:** mostrar a janela e os dois histogramas. Explicar que perder uma partida muda a espera e que os sorteios usam o horário programado.
+
+## Definition of Done e pendências
+
+- [x] Contratos, código, docstrings, testes e hook.
+- [x] Interface com mapa, validação no feed real, guia, relatório, diagrama e roteiro.
+- [x] Medição final serial no GTFS de BH, JSON e registro dos tempos.
+- [ ] Revisão do conteúdo pelo dono e PR para main com aprovação de outro integrante.
+- [ ] Gravação do trecho do vídeo.
 
 ## Timeline
-### Criação 29/10/2026: gerado a partir do plano aprovado pelo grupo.
-### Dono 29/10/2026: feature atribuída a Miguel.
 
-### Planejamento 11/11/2026: Adiada neste ciclo para fechar F-ESPERA e P0-DADOS até o congelamento. Decisão confirmada por Miguel no plano aprovado; prazo de congelamento permanece 15/11 às 23:59.
+- 29/10/2026: feature criada e atribuída a Miguel.
+- 11/11/2026: adiada para priorizar F-ESPERA e P0-DADOS.
+- 20/11/2026: retomada pelo plano de finalização. Implementados índice temporal, consulta, Monte Carlo e interface. Consulta funcional em BH e validação automatizada concluídas. Medição final executada em sequência e registrada no JSON de BH.

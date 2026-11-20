@@ -10,12 +10,17 @@ from __future__ import annotations
 
 import math
 import random
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
+from transporte.algoritmos.trajeto import trajeto_mais_rapido
+from transporte.dados.modelo import Rede
 from transporte.grafo.buscas import INF, dijkstra
 from transporte.grafo.grafo import Grafo
+from transporte.modelo.construtores import _distancia_m, construir_ge
+from transporte.modelo.parametros import Parametros
 from transporte.modelo.visoes import VisaoGE
+from transporte.simulacao.espera import calcular_esperas, estimar_intervalos
 
 
 @dataclass(frozen=True)
@@ -225,16 +230,8 @@ def tempo_medio_viagem(
         return Estimativa(None, None, 0, 0, 0)
 
     populacao = len(paradas) * (len(paradas) - 1)
-    if tamanho_amostra > populacao:
-        raise ValueError("tamanho_amostra não pode exceder o número de pares OD possíveis")
-    rng = random.Random(semente)
     destinos_por_origem: dict[int, list[int]] = {}
-    for indice in rng.sample(range(populacao), tamanho_amostra):
-        origem_indice, destino_indice = divmod(indice, len(paradas) - 1)
-        if destino_indice >= origem_indice:
-            destino_indice += 1
-        origem = paradas[origem_indice]
-        destino = paradas[destino_indice]
+    for origem, destino in sortear_pares(paradas, tamanho_amostra, semente):
         destinos_por_origem.setdefault(origem, []).append(destino)
 
     tempos = []
@@ -245,3 +242,182 @@ def tempo_medio_viagem(
     valor = sum(tempos) / len(tempos) if tempos else None
     erro = 0.0 if tamanho_amostra == populacao and tempos else _erro_padrao(tempos)
     return Estimativa(valor, erro, tamanho_amostra, populacao, len(tempos))
+
+
+def sortear_pares[T](paradas: Sequence[T], tamanho_amostra: int, semente: int) -> list[tuple[T, T]]:
+    """Amostra pares ordenados de IDs distintos, uniformemente e sem reposição.
+
+    Menos de duas paradas dá lista vazia. Amostra excessiva ou não positiva
+    gera ValueError. Mesmo conjunto na mesma ordem e semente repetem os pares.
+    Tempo e espaço O(m) para m pares, sem materializar a população quadrática.
+    """
+    _inteiro_positivo("tamanho_amostra", tamanho_amostra)
+    _semente_valida(semente)
+    n = len(paradas)
+    if n < 2:
+        return []
+    if tamanho_amostra > n * (n - 1):
+        raise ValueError("tamanho_amostra não pode exceder o número de pares OD possíveis")
+    indices = random.Random(semente).sample(range(n * (n - 1)), tamanho_amostra)
+    pares = []
+    for indice in indices:
+        i, j = divmod(indice, n - 1)
+        if j >= i:
+            j += 1
+        pares.append((paradas[i], paradas[j]))
+    return pares
+
+
+@dataclass(frozen=True)
+class DesvioPar:
+    origem: str
+    destino: str
+    quadrante: str
+    direta_m: float
+    percorrida_m: float | None
+    tempo_s: float | None
+
+    @property
+    def desvio(self) -> float | None:
+        if not self.direta_m or self.percorrida_m is None:
+            return None
+        return self.percorrida_m / self.direta_m
+
+    @property
+    def min_por_km(self) -> float | None:
+        if not self.direta_m or self.tempo_s is None:
+            return None
+        return self.tempo_s / 60 / (self.direta_m / 1000)
+
+
+def indices_desvio(
+    rede: Rede, ge: VisaoGE, tamanho_amostra: int, semente: int = 0
+) -> list[DesvioPar]:
+    """Calcula desvios nos trajetos de menor tempo em G_E para pares sorteados.
+
+    Soma haversine entre paradas consecutivas caminhadas e de ônibus. O
+    quadrante da origem usa o centro do retângulo das paradas ativas da visão.
+    Preserva pares sem caminho ou com distância direta zero (razões None).
+    Com menos de duas paradas devolve []. Para m pares, tempo O(V+m(V+E)log(E+2))
+    e espaço auxiliar O(V+E+m), incluindo as reconstruções de F-ROTA.
+    """
+    paradas = [p for p, v in ge.vertice_da_parada.items() if ge.grafo.vertice_ativo(v)]
+    pares = sortear_pares(paradas, tamanho_amostra, semente)
+    if not pares:
+        return []
+    lats = [rede.paradas[p].lat for p in paradas]
+    lons = [rede.paradas[p].lon for p in paradas]
+    centro_lat = (min(lats) + max(lats)) / 2
+    centro_lon = (min(lons) + max(lons)) / 2
+
+    def distancia(a: str, b: str) -> float:
+        p, q = rede.paradas[a], rede.paradas[b]
+        return _distancia_m(p.lat, p.lon, q.lat, q.lon)
+
+    resultado = []
+    for origem, destino in pares:
+        ponto = rede.paradas[origem]
+        quadrante = ("N" if ponto.lat >= centro_lat else "S") + (
+            "L" if ponto.lon >= centro_lon else "O"
+        )
+        trajeto = trajeto_mais_rapido(ge, origem, destino)
+        percorrida = tempo = None
+        if trajeto is not None:
+            tempo = trajeto.tempo_total_s
+            percorrida = sum(
+                distancia(a, b)
+                for trecho in trajeto.trechos
+                for a, b in zip(trecho.paradas, trecho.paradas[1:])
+            )
+        resultado.append(
+            DesvioPar(origem, destino, quadrante, distancia(origem, destino), percorrida, tempo)
+        )
+    return resultado
+
+
+@dataclass(frozen=True)
+class IndicadoresFaixa:
+    faixa: str
+    pares: int
+    alcancaveis: int
+    eficiencia_por_s: float | None
+    tempo_medio_s: float | None
+    erro_eficiencia_por_s: float | None
+    erro_tempo_medio_s: float | None
+    vertices: int
+    arestas: int
+
+
+def comparar_faixas(
+    rede: Rede, tamanho_amostra: int, semente: int = 0, params: Parametros | None = None
+) -> list[IndicadoresFaixa]:
+    """Compara tempo e eficiência entre os mesmos pares de paradas nas faixas.
+
+    Constrói G_E por faixa com as esperas da F-ESPERA. Divide a soma de 1/t
+    por todos os pares e a soma dos tempos só pelos alcançáveis. Sem pares
+    ambas as médias são None; com pares e nenhum alcançável a eficiência é
+    zero. Erro padrão amostral na eficiência com correção populacional; na
+    duração, usa os alcançáveis como em tempo_medio_viagem. Censo tem erro
+    zero para estimativas definidas. Tempo O(F·(construção de G_E + k(V+E)log(E+2)+m)) para F faixas,
+    m pares e k origens distintas, mais a estimação inicial das esperas.
+    Espaço O(V+E+m+F) além da tabela de esperas e do trabalho dos construtores.
+    """
+    params = params or Parametros()
+    pares = sortear_pares(list(rede.paradas), tamanho_amostra, semente)
+    destinos_por_origem: dict[str, list[str]] = {}
+    for origem, destino in pares:
+        destinos_por_origem.setdefault(origem, []).append(destino)
+    esperas = calcular_esperas(estimar_intervalos(rede, params))
+    resultado = []
+    populacao = len(rede.paradas) * (len(rede.paradas) - 1)
+    for faixa in params.faixas:
+        ge = construir_ge(rede, faixa.nome, params, esperas=esperas)
+        tempos = []
+        for origem, destinos in destinos_por_origem.items():
+            v_origem = ge.vertice_da_parada[origem]
+            ultimo = ge.vertice_da_parada[destinos[0]] if len(destinos) == 1 else None
+            dist = dijkstra(ge.grafo, v_origem, ultimo).dist
+            for destino in destinos:
+                tempo = dist[ge.vertice_da_parada[destino]]
+                if tempo != INF:
+                    if tempo == 0:
+                        raise ValueError(
+                            "Duração zero entre paradas distintas: eficiência infinita."
+                        )
+                    tempos.append(tempo)
+        inversos = [1 / t for t in tempos] + [0.0] * (len(pares) - len(tempos))
+        erro_eficiencia = _erro_padrao(inversos)
+        erro_tempo = _erro_padrao(tempos)
+        if pares and len(pares) == populacao:
+            erro_eficiencia = 0.0
+            erro_tempo = 0.0 if tempos else None
+        elif erro_eficiencia is not None:
+            erro_eficiencia *= math.sqrt(1 - len(pares) / populacao)
+        resultado.append(
+            IndicadoresFaixa(
+                faixa.nome,
+                len(pares),
+                len(tempos),
+                sum(inversos) / len(pares) if pares else None,
+                sum(tempos) / len(tempos) if tempos else None,
+                erro_eficiencia,
+                erro_tempo,
+                ge.grafo.num_vertices(),
+                ge.grafo.num_arestas(),
+            )
+        )
+    return resultado
+
+
+def medias_por_quadrante(desvios: Sequence[DesvioPar]) -> dict[str, float]:
+    """Média das razões definidas por quadrante de origem. Sem observações, {}.
+
+    Tempo O(m) nos m pares, espaço O(1) para os quatro quadrantes.
+    """
+    somas: dict[str, float] = {}
+    contagens: dict[str, int] = {}
+    for par in desvios:
+        if par.desvio is not None:
+            somas[par.quadrante] = somas.get(par.quadrante, 0.0) + par.desvio
+            contagens[par.quadrante] = contagens.get(par.quadrante, 0) + 1
+    return {q: soma / contagens[q] for q, soma in sorted(somas.items())}

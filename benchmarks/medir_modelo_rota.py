@@ -19,6 +19,7 @@ import networkx as nx
 from transporte.algoritmos.trajeto import trajeto_mais_rapido
 from transporte.modelo.construtores import construir_ge, construir_gp
 from transporte.modelo.parametros import Parametros
+from transporte.simulacao.espera import calcular_esperas, estimar_intervalos
 from transporte.util.medicao import medir
 
 REPETICOES = 5
@@ -57,7 +58,10 @@ def main(caminho: str) -> None:
             f"E={ge.grafo.num_arestas()} {m.formatar()}"
         )
 
-    ge = ges[FAIXA_CONSULTAS]
+    # Consultas com as esperas da F-ESPERA (H/2 por padrão e faixa), como na página Trajetos.
+    esperas = calcular_esperas(estimar_intervalos(rede))
+    ge = construir_ge(rede, FAIXA_CONSULTAS, esperas=esperas)
+    print(f"G_E das consultas, com esperas: V={ge.grafo.num_vertices()} E={ge.grafo.num_arestas()}")
     rng = random.Random(SEMENTE)
     paradas = sorted(rede.paradas)
     pares = [tuple(rng.sample(paradas, 2)) for _ in range(N_CONSULTAS)]

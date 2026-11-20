@@ -1,0 +1,183 @@
+{
+  "comando": "python benchmarks/medir_metricas_extensoes.py C:/Users/GDC/Documents/Projetos/grafos-transporte-bh/dados/brutos/bhtrans.zip --repeticoes 3",
+  "maquina": {
+    "plataforma": "Windows-11-10.0.26200-SP0",
+    "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "python": "3.12.10"
+  },
+  "rede": {
+    "dia": "2026-11-18",
+    "paradas": 9660,
+    "padroes": 698
+  },
+  "G_P": {
+    "V": 9660,
+    "E": 122799
+  },
+  "semente": 2026,
+  "repeticoes": 3,
+  "proximidade_amostrada": {
+    "25": {
+      "tempo": "1.149 s ± 0.039 s (n=3)",
+      "top5": [
+        [
+          "14791822",
+          "Avenida Presidente Antonio Carlos 561",
+          0.0006955244081098963
+        ],
+        [
+          "14791788",
+          "Avenida Presidente Antonio Carlos 584",
+          0.0006944151538303348
+        ],
+        [
+          "14791789",
+          "Avenida Presidente Antonio Carlos 583",
+          0.0006941621614074406
+        ],
+        [
+          "14791783",
+          "Avenida Presidente Antonio Carlos 582",
+          0.0006921044072947443
+        ],
+        [
+          "14788964",
+          "Avenida Presidente Antonio Carlos 883",
+          0.0006895624314561965
+        ]
+      ]
+    },
+    "50": {
+      "tempo": "2.183 s ± 0.013 s (n=3)",
+      "top5": [
+        [
+          "14791822",
+          "Avenida Presidente Antonio Carlos 561",
+          0.00067911584523942
+        ],
+        [
+          "14791789",
+          "Avenida Presidente Antonio Carlos 583",
+          0.0006765418455492976
+        ],
+        [
+          "14791788",
+          "Avenida Presidente Antonio Carlos 584",
+          0.000676316082958959
+        ],
+        [
+          "14791783",
+          "Avenida Presidente Antonio Carlos 582",
+          0.0006752848108168111
+        ],
+        [
+          "14789921",
+          "Avenida Presidente Antonio Carlos 955",
+          0.0006696380272566664
+        ]
+      ]
+    },
+    "100": {
+      "tempo": "4.235 s ± 0.012 s (n=3)",
+      "top5": [
+        [
+          "14791822",
+          "Avenida Presidente Antonio Carlos 561",
+          0.0006119692418394959
+        ],
+        [
+          "14791788",
+          "Avenida Presidente Antonio Carlos 584",
+          0.0006104100199717329
+        ],
+        [
+          "14791789",
+          "Avenida Presidente Antonio Carlos 583",
+          0.0006099793743500155
+        ],
+        [
+          "14791783",
+          "Avenida Presidente Antonio Carlos 582",
+          0.0006083294115444625
+        ],
+        [
+          "14790563",
+          "Avenida Presidente Antonio Carlos 618",
+          0.0006053836624848712
+        ]
+      ]
+    },
+    "200": {
+      "tempo": "8.588 s ± 0.071 s (n=3)",
+      "top5": [
+        [
+          "14791822",
+          "Avenida Presidente Antonio Carlos 561",
+          0.0006158780454763319
+        ],
+        [
+          "14791788",
+          "Avenida Presidente Antonio Carlos 584",
+          0.0006146101507692882
+        ],
+        [
+          "14791789",
+          "Avenida Presidente Antonio Carlos 583",
+          0.0006140779262143749
+        ],
+        [
+          "14791783",
+          "Avenida Presidente Antonio Carlos 582",
+          0.0006124363875502182
+        ],
+        [
+          "14790563",
+          "Avenida Presidente Antonio Carlos 618",
+          0.0006099884180139094
+        ]
+      ]
+    }
+  },
+  "comunidades": {
+    "tempo_propagacao": "140.139 ms ± 3.118 ms (n=3)",
+    "tempo_modularidade": "71.176 ms ± 23.068 ms (n=3)",
+    "quantidade": 604,
+    "iteracoes": 11,
+    "convergiu": true,
+    "modularidade": 0.8062106516399192,
+    "modularidade_networkx": 0.8062106516399192,
+    "maiores_10": [
+      141,
+      71,
+      67,
+      67,
+      63,
+      62,
+      62,
+      60,
+      59,
+      55
+    ],
+    "unitarias": 3,
+    "variacao_5_sementes": {
+      "sementes": [
+        2026,
+        2030
+      ],
+      "quantidade": [
+        604,
+        602,
+        587,
+        608,
+        607
+      ],
+      "modularidade": [
+        0.8062106516399192,
+        0.8150699430067938,
+        0.8097901477550388,
+        0.8078045165065583,
+        0.8132852784109555
+      ]
+    }
+  }
+}
