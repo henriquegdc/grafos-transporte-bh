@@ -1,0 +1,60 @@
+@startuml sequencia-trajetos-pagina
+' Diagrama de sequência da página Trajetos (F-ROTA RF-ROT-02, F-ROTA-2 RF-ROT-03 e
+' RF-ROT-04, F-ROTA-OPC RF-ROT-05). Estado: implementado.
+' Código: src/transporte/interface/paginas/trajetos.py, src/transporte/algoritmos/a_estrela.py,
+' src/transporte/algoritmos/alternativos.py.
+!pragma teoz true
+skinparam dpi 150
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+title Sequência · página Trajetos
+hide footbox
+
+actor "Usuário" as U
+participant "trajetos.render\n(página)" as P
+participant "ge_da_faixa\n(cache na sessão)" as C
+participant "a_estrela" as A
+participant "alternativos\n(Yen)" as Y
+participant "mapa\n(P0-UI)" as M
+
+U -> P : faixa
+P -> C : ge_da_faixa(rede, faixa)
+note right of C
+  1ª vez: esperas da F-ESPERA (por rede)
+  e construir_ge (por faixa);
+  coordenadas_ge e velocidade_maxima
+end note
+C --> P : GEPreparado(ge, coords, vmax)
+
+alt modo "Lista de paradas"
+  U -> P : origem, destino
+else modo "Mapa ou coordenadas"
+  U -> P : clique no mapa ou lat, lon
+  P -> A : parada_mais_proxima(paradas, lat, lon)
+  note right of A : varredura linear O(V)
+  A --> P : (parada, metros); caminhada = metros / 1,2 m/s
+end
+
+P -> A : comparar(ge, coords, vmax, origem, destino)
+A -> A : dijkstra_contado (h = 0)
+A -> A : trajeto_a_estrela (h = d / vmax)
+A --> P : Comparacao(dijkstra, a_estrela)
+alt sem trajeto
+  P --> U : aviso "sem trajeto"
+else com trajeto
+  P -> M : mapa_trajeto(rede, trajeto, pontos)
+  M --> P : mapa com trechos, origem, destino e trocas
+  P --> U : métricas, trechos, mapa, tabela Dijkstra × A*
+end
+
+opt botão "Listar trajetos alternativos" (k de 2 a 5)
+  U -> P : k
+  P -> Y : trajetos_alternativos(ge, origem, destino, k, coords, vmax)
+  note right of Y
+    um A* por ponto de desvio;
+    desativa e reativa só o que desativou
+  end note
+  Y --> P : até k trajetos, do mais rápido ao mais lento
+  P --> U : tabela e mapa do trajeto escolhido
+end
+@enduml
