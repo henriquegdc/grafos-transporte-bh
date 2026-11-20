@@ -86,6 +86,19 @@ def test_pagina_com_resultados(tmp_path: Path) -> None:
     assert len(at.get("vega_lite_chart")) == 1  # st.line_chart
 
 
+def test_pagina_ignora_resultados_com_estrutura_invalida(tmp_path: Path) -> None:
+    _gravar(tmp_path, "comparacao-networkx-2026-11-20.json", COMPARACAO)
+    _gravar(tmp_path, "comparacao-networkx-2026-11-21.json", {"grafos": [None]})
+    _gravar(tmp_path, "complexidade-2026-11-20.json", COMPLEXIDADE)
+    _gravar(tmp_path, "complexidade-2026-11-21.json", {"algoritmos": [{"pontos": None}]})
+    at = AppTest.from_string(_CODIGO)
+    at.session_state["dir"] = str(tmp_path)
+    at.run(timeout=30)
+    assert not at.exception
+    assert len(at.dataframe) == 2
+    assert sum("2026-11-20.json" in c.value for c in at.caption) == 2
+
+
 def test_pagina_sem_resultados(tmp_path: Path) -> None:
     at = AppTest.from_string(_CODIGO)
     at.session_state["dir"] = str(tmp_path / "vazia")
