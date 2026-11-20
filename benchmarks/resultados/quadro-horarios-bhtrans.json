@@ -1,11 +1,11 @@
 {
-  "feed": "dados/brutos/bhtrans.zip",
-  "dia": "2026-11-04",
-  "maquina": "macOS-26.6.2-arm64-arm-64bit",
-  "processador": "arm",
-  "python": "3.12.13",
-  "V": 9659,
-  "E": 146563,
+  "feed": "dados\\brutos\\bhtrans.zip",
+  "dia": "2026-11-18",
+  "maquina": "Windows-11-10.0.26200-SP0",
+  "processador": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "python": "3.12.10",
+  "V": 9660,
+  "E": 146630,
   "origem": "14788851",
   "destino": "14792190",
   "saida_s": 28800,
@@ -197,8 +197,8 @@
     },
     {
       "saida_s": 29916,
-      "total_s": 1838,
-      "espera_s": 297.73049492526843
+      "total_s": 1797,
+      "espera_s": 256.73049492526843
     },
     {
       "saida_s": 28978,
@@ -207,8 +207,8 @@
     },
     {
       "saida_s": 29664,
-      "total_s": 2090,
-      "espera_s": 338.7315513325957
+      "total_s": 2049,
+      "espera_s": 297.7315513325957
     },
     {
       "saida_s": 28865,
@@ -237,8 +237,8 @@
     },
     {
       "saida_s": 29834,
-      "total_s": 1920,
-      "espera_s": 379.73049492526843
+      "total_s": 1879,
+      "espera_s": 338.73049492526843
     },
     {
       "saida_s": 28854,
@@ -247,8 +247,8 @@
     },
     {
       "saida_s": 29949,
-      "total_s": 1805,
-      "espera_s": 264.73049492526843
+      "total_s": 1764,
+      "espera_s": 223.73049492526843
     },
     {
       "saida_s": 29207,
@@ -257,13 +257,13 @@
     },
     {
       "saida_s": 29916,
-      "total_s": 1838,
-      "espera_s": 297.73049492526843
+      "total_s": 1797,
+      "espera_s": 256.73049492526843
     },
     {
       "saida_s": 29659,
-      "total_s": 2095,
-      "espera_s": 343.7315513325957
+      "total_s": 2054,
+      "espera_s": 302.7315513325957
     },
     {
       "saida_s": 29251,
@@ -272,8 +272,8 @@
     },
     {
       "saida_s": 29719,
-      "total_s": 2035,
-      "espera_s": 283.7315513325957
+      "total_s": 1994,
+      "espera_s": 242.7315513325957
     },
     {
       "saida_s": 29369,
@@ -292,8 +292,8 @@
     },
     {
       "saida_s": 29665,
-      "total_s": 2089,
-      "espera_s": 337.7315513325957
+      "total_s": 2048,
+      "espera_s": 296.7315513325957
     },
     {
       "saida_s": 29496,
@@ -313,18 +313,18 @@
   ],
   "tempos": {
     "construir_gt": {
-      "media_s": 0.3185492585878819,
-      "desvio_s": 0.011290294161374342,
+      "media_s": 0.4550369799995678,
+      "desvio_s": 0.013090850736753827,
       "repeticoes": 5
     },
     "chegada_mais_cedo": {
-      "media_s": 0.006976991600822657,
-      "desvio_s": 0.0012781200337793868,
+      "media_s": 0.011103680000815075,
+      "desvio_s": 0.0011304805384831273,
       "repeticoes": 5
     },
     "monte_carlo": {
-      "media_s": 0.27931486681336537,
-      "desvio_s": 0.024467309957454112,
+      "media_s": 0.3832236999995075,
+      "desvio_s": 0.004170576173098704,
       "repeticoes": 5
     }
   }
