@@ -1,36 +1,18 @@
 @startuml sequencia-p0-ui
-' Sequência da aplicação e dos pontos de integração de P0-UI.
-!pragma layout smetana
-title Sequência · P0-UI
+hide footbox
+participant "Página Início" as UI
+participant "Cache da rede" as Cache
+participant "Leitor GTFS" as Leitor
+participant "Visões" as Visoes
 
-actor "Usuário" as Usuario
-participant "Streamlit\napp.py" as App
-participant "P0-DADOS\nler(caminho)" as Dados
-participant "Cache de recursos" as Cache
-participant "Construtores\nG_P e G_E" as Modelo
-participant "Componente Folium\nmapa.py" as Mapa
-participant "Página render(rede)" as Pagina
-
-Usuario -> App: escolhe pasta/ZIP GTFS e solicita carga
-alt carga concluída
-  App -> Cache: consulta origem e identidade da fonte
-  alt cache ausente
-    Cache -> Dados: ler(caminho)
-    Dados --> Cache: Rede + dia + inconsistências
-  else cache presente
-    Cache --> App: Rede armazenada
-  end
-  Cache --> App: cópia isolada por sessão
-  App -> Modelo: construir_gp(rede), construir_ge(rede, faixa)
-  Modelo --> App: V/E de G_P e G_E
-  App -> Mapa: render_mapa(rede, camadas)
-  Mapa --> Usuario: mapa + resumo + inconsistências
-else erro no carregamento
-  Dados --> Cache: erro explícito
-  Cache --> App: exceção propagada
-  App --> Usuario: mensagem; rede anterior preservada
+UI -> Cache: Solicitar a fonte selecionada
+opt Fonte nova ou modificada
+  Cache -> Leitor: Ler o serviço da data
+  Leitor --> Cache: Rede normalizada
 end
-Usuario -> App: seleciona uma página
-App -> Pagina: render(rede)
-Pagina --> Usuario: conteúdo da página
+Cache --> UI: Rede compartilhada
+UI -> UI: Copiar a rede para a sessão
+UI -> Visoes: Construir G_P e G_E da faixa inicial
+Visoes --> UI: Totais de vértices e arestas
+UI -> UI: Exibir resumo, inconsistências e mapa
 @enduml
