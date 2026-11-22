@@ -61,7 +61,7 @@ aresta de embarque nela.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.6\textwidth]{ge-exemplo}
+\includegraphics[width=0.46\textwidth]{ge-exemplo}
 \caption{Exemplo de $G_E$: de A a C pela linha L1 e depois pela L2, com baldeação em B
 (dois embarques); C e D estão a distância de caminhada. Em cima, as paradas; embaixo, em
 azul, as plataformas.}
@@ -81,19 +81,27 @@ $O(V + K + L + N \log N)$, com $N$ horários e $L$ plataformas.
 No serviço de 04/11/2026, $G_P$ tem 9.659 vértices e 122.732 arestas (110.178 de caminhada) e
 $G_E$ do pico da manhã, 46.100 vértices e 208.956 arestas; cada visão é construída em menos de
 0,4\,s (Intel Core i5-13600KF, cinco execuções). O piso de 1\,s atinge 39 das 12.554 arestas de
-viagem de $G_P$. Limitações: o tempo de um trecho é um só para o dia todo, sem o trânsito do
-pico; a caminhada ignora as ruas; e 387 dos 698 padrões repetem alguma parada, caso em que a
-plataforma única por (parada, padrão) deixa seguir do fim para o início do padrão.
+viagem de $G_P$. Limitação: 387 dos 698 padrões repetem alguma parada, caso em que a
+plataforma única por (parada, padrão) deixa seguir do fim para o início do padrão (as demais
+estão na Seção~\ref{sec:conclusao}).
 
-\textbf{Diagramas UML.} A Figura~\ref{fig:classes} mostra as classes do modelo: o módulo
+\textbf{Diagramas UML.} A Figura~\ref{fig:classes}a mostra as classes do modelo: o módulo
 \texttt{construtores} lê a \texttt{Rede} e os \texttt{Parametros} e cria as visões, que herdam
 de \texttt{Visao} e guardam um \texttt{Grafo} do núcleo e os mapas entre identificadores do
-GTFS e vértices. Os diagramas de componentes, sequência e atividade estão em
-\texttt{docs/diagramas/}.
+GTFS e vértices; a mesma figura traz o núcleo e os componentes, e a
+Figura~\ref{fig:diagramas}, os diagramas de sequência e de atividade.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{classes-modelo}
-\caption{Diagrama de classes do modelo normalizado, dos parâmetros e das visões.}
+\begin{minipage}[b]{0.39\linewidth}\centering
+  \includegraphics[width=\linewidth]{classes-modelo}\\{\scriptsize (a) Modelo, parâmetros e visões}
+\end{minipage}\hfill
+\begin{minipage}[b]{0.35\linewidth}\centering
+  \includegraphics[width=\linewidth]{componentes}\\{\scriptsize (b) Componentes}
+\end{minipage}\\[6pt]
+\includegraphics[width=0.74\linewidth]{classes}\\{\scriptsize (c) Classes do núcleo e das visões}
+\caption{Diagramas de classes e de componentes.}
 \label{fig:classes}
 \end{figure}
+
+\input{secoes/diagramas}

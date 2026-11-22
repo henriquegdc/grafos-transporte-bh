@@ -8,7 +8,7 @@ Uma rede de ônibus é, por natureza, um grafo: paradas ligadas por linhas que p
 nelas em sequência, com tempos de viagem, intervalos entre partidas e trechos a pé entre
 paradas próximas. Belo Horizonte publica a programação da sua rede no formato
 GTFS~\cite{gtfs-reference}, o padrão aberto de dados de transporte público, o que
-permite estudar a rede real em vez de um exemplo de livro.
+permite estudar a rede real.
 
 Este trabalho atende ao tema 5 da disciplina, que pede a construção de grafos a partir
 de linhas de ônibus, metrô ou trem, com simulação de trajetos, tempo de espera e
@@ -27,20 +27,16 @@ de um integrante:
   \item O que acontece quando uma parada ou uma linha sai de operação?
 \end{enumerate}
 
+\begin{wrapfigure}{r}{0.36\textwidth}
+\vspace{-12pt}
+\centering
+\includegraphics[width=0.34\textwidth]{casos-de-uso}
+\caption{Casos de uso: as seis perguntas e as extensões.}
+\label{fig:casos-de-uso}
+\vspace{-10pt}
+\end{wrapfigure}
 As três primeiras perguntas tratam de trajetos e espera, do ponto de vista do
 passageiro; as três últimas, da estrutura e da robustez da rede como um todo. A
 Figura~\ref{fig:casos-de-uso} mostra a ferramenta pelos casos de uso de quem analisa a
 rede. A análise usa os horários programados de um dia típico: a ferramenta simula e
 compara cenários, mas não é um aplicativo de navegação em tempo real.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.34\textwidth]{casos-de-uso}
-\caption{Casos de uso da ferramenta. Cada caso essencial corresponde a uma das seis
-perguntas; as extensões são os requisitos desejáveis.}
-\label{fig:casos-de-uso}
-\end{figure}
-
-A Seção~\ref{sec:modelagem} mostra como o GTFS vira grafos; a Seção~\ref{sec:funcionalidades}
-traz os resultados das seis perguntas e das extensões, a Seção~\ref{sec:avaliacao} os tempos
-medidos e a Seção~\ref{sec:conclusao} as limitações.

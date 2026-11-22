@@ -23,20 +23,17 @@ as simplificações da visão que a sustenta.
   e sem atrasos reais.
   \item \emph{Caminhada em linha reta.} Até 300~m, sem as ruas, o que subestima o tempo a pé e
   torna $G_P$ mais conexa do que a cidade é.
-  \item \emph{Amostragem.} Intermediação, proximidade e eficiência usam origens sorteadas; o erro
-  padrão da intermediação só é confiável nas paradas centrais (Seção~\ref{sec:F-MET}), e a perda
-  de uma falha que desconecta poucas paradas varia muito com a amostra (Seção~\ref{sec:F-RES}).
+  \item \emph{Amostragem.} Intermediação, proximidade, eficiência e falhas usam origens sorteadas
+  (Seções~\ref{sec:F-MET} e~\ref{sec:F-RES}).
 \end{itemize}
 Centralidade, eficiência e falhas usam $G_P$, sem espera: medem a forma da rede, não o serviço
-numa faixa horária; e os padrões com parada repetida (387 de 698) admitem um retorno indevido ao
-início do padrão (Seção~\ref{sec:modelagem}).
+numa faixa horária.
 
 \textbf{Resultados que pedem cautela.} A rede pareceu muito redundante: só 17 das 291 linhas,
 retiradas uma por vez, tiram alguma parada da rede principal, e dos 30 candidatos do ranking de
 criticidade só a linha 5034 desconectou uma parada. A hipótese é que a caminhada de até 300~m contorna
-as falhas, o que provavelmente superestima a robustez real. O A* quase não ganhou do Dijkstra
-por causa de trechos de 1~s no GTFS, e as comunidades saíram pequenas demais para descrever
-regiões da cidade.
+as falhas, o que provavelmente superestima a robustez real. O A* e as comunidades também pedem
+cautela (Seção~\ref{sec:extensoes}).
 
 \textbf{O que fica para depois.} Medir as falhas sem caminhada e com a malha viária; interpolar
 os horários repetidos do GTFS, o que daria ao A* uma heurística útil; acrescentar tempo mínimo

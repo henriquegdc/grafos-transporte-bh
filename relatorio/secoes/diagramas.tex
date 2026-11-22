@@ -1,0 +1,39 @@
+% Diagramas UML das funcionalidades (sequência e atividade), em página própria.
+% Dono: Henrique (integração) · fontes em docs/diagramas/*.puml, cópias PNG em figuras/.
+% Incluída em 22/11 para cumprir o enunciado ("demonstrar todos os artefatos produzidos,
+% como modelagem, diagramas, resultados obtidos e telas produzidas"). Os painéis são
+% pequenos por causa do limite de 15 páginas; as imagens têm resolução para ampliar no PDF.
+
+% \painel{arquivo}{largura}{altura}{legenda}
+\newcommand{\painel}[4]{%
+  \begin{minipage}[b]{#2\linewidth}\centering
+    \includegraphics[width=\linewidth,height=#3\textheight,keepaspectratio]{#1}\\[-1pt]
+    {\scriptsize #4}
+  \end{minipage}}
+
+\begin{figure}[p]
+\centering
+\textbf{\small Sequência}\\[2pt]
+\painel{sequencia-dados-resumo}{0.30}{0.13}{(a) P0-DADOS}\hfill
+\painel{sequencia-p0-ui}{0.20}{0.13}{(b) P0-UI}\hfill
+\painel{sequencia-dijkstra}{0.22}{0.13}{(c) P0-GRAFO: Dijkstra}\hfill
+\painel{sequencia-trajeto}{0.25}{0.13}{(d) F-ROTA: consulta}\\[5pt]
+\painel{sequencia-trajetos-pagina}{0.30}{0.17}{(e) F-ROTA: página (A*, Yen)}\hfill
+\painel{sequencia-eficiencia}{0.22}{0.17}{(f) F-EFI}\hfill
+\painel{sequencia-falhas}{0.42}{0.17}{(g) F-RES: falha e Tarjan}\\[8pt]
+\textbf{\small Atividade}\\[2pt]
+\painel{atividade-p0-dados}{0.10}{0.27}{(h) P0-DADOS}\hfill
+\painel{atividade-construir-ge}{0.15}{0.27}{(i) P0-MODELO}\hfill
+\painel{atividade-medir}{0.12}{0.27}{(j) P0-AVAL}\hfill
+\painel{atividade-intermediacao}{0.13}{0.27}{(k) F-MET}\hfill
+\painel{atividade-menos-baldeacoes}{0.18}{0.27}{(l) F-BALD}\hfill
+\painel{atividade-comparar-baldeacoes}{0.25}{0.27}{(m) F-BALD-2}\\[5pt]
+\painel{atividade-espera}{0.24}{0.14}{(n) F-ESPERA: $H/2$}\hfill
+\painel{atividade-quadro-horarios}{0.12}{0.14}{(o) F-ESPERA-2}\hfill
+\IfFileExists{figuras/atividade-sensibilidade.png}{%
+\painel{atividade-sensibilidade}{0.18}{0.14}{(p) F-ESPERA-OPC}\hfill}{}%
+\painel{atividade-extensoes-eficiencia}{0.26}{0.14}{(q) F-EFI-2 e F-EFI-OPC}
+\caption{Diagramas de sequência (a a g) e de atividade (h a q) das funcionalidades; fontes
+PlantUML em \texttt{docs/diagramas/}.}
+\label{fig:diagramas}
+\end{figure}
