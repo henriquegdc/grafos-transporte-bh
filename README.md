@@ -113,5 +113,5 @@ python scripts/baixar_gtfs.py   # salva dados/brutos/bhtrans.zip (fora do Git)
 |---|---|
 | Relatório (SBC, 15 páginas) | `relatorio/relatorio.pdf`; fonte LaTeX em `relatorio/main.tex` e `relatorio/secoes/` |
 | Slides da apresentação | `apresentacao/grafos-transporte-bh.pdf` (e `.pptx`) |
-| Vídeo de demonstração | pendente: link a publicar (YouTube não listado ou Drive) |
+| Vídeo de demonstração (17:57) | [pasta no Google Drive](https://drive.google.com/drive/folders/1J3pq5fKFeUG0VE-1qQbltuayWJQOv_6W?usp=sharing) |
 | Responsabilidades de cada integrante | Seção 10 do relatório |
