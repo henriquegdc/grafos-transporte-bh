@@ -94,8 +94,24 @@ python scripts/verificar_imports.py # só a verificação de imports
 Antes de abrir um PR: hook e `pytest` verdes, e o resumo da saída do pytest na descrição.
 NetworkX só pode aparecer em `tests/`, para comparar resultados, e em `benchmarks/`.
 
+**5. Obter o feed real** (opcional; sem ele, use a rede de teste em `dados/rede-teste/`):
+
+```bash
+python scripts/baixar_gtfs.py   # salva dados/brutos/bhtrans.zip (fora do Git)
+```
+
 ## 6. Documentação
 
-- `docs/GUIA.md`: como a ferramenta funciona e por quê, e o registro de decisões.
+- `docs/GUIA.md` (e `docs/GUIA.pdf`): como a ferramenta funciona e por quê, e o registro de decisões.
 - `docs/fontes/`: requisitos, modelagem e plano de projeto.
 - `docs/plano-de-desenvolvimento/features/`: um arquivo por feature, com estado e próximo passo.
+- `docs/diagramas/`: fontes PlantUML e imagens de todos os diagramas UML.
+
+## 7. Entregáveis
+
+| Item | Onde |
+|---|---|
+| Relatório (SBC, 15 páginas) | `relatorio/relatorio.pdf`; fonte LaTeX em `relatorio/main.tex` e `relatorio/secoes/` |
+| Slides da apresentação | `apresentacao/grafos-transporte-bh.pdf` (e `.pptx`) |
+| Vídeo de demonstração | pendente: link a publicar (YouTube não listado ou Drive) |
+| Responsabilidades de cada integrante | Seção 10 do relatório |
