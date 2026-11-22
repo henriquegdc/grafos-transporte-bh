@@ -19,8 +19,19 @@
 \usepackage{tabularx}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{wrapfig}
 
 \graphicspath{{figuras/}}
+
+% Espaço menor em volta de figuras e tabelas (22/11), para caber os diagramas e as telas
+% exigidos pelo enunciado sem passar de 15 páginas.
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.08}
+\renewcommand{\floatpagefraction}{0.8}
 
 % Texto ainda não escrito. Sai em cinza no PDF para ninguém esquecer; some quando a
 % seção é escrita. Nenhuma versão entregue pode conter \pendente.

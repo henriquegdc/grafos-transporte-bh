@@ -61,17 +61,14 @@ F-RES-OPC & Falhas em sequência; remoção dirigida contra aleatória; $G_P$ &
 
 \textbf{Trajetos.} O A* devolveu o mesmo custo do Dijkstra, mas quase não poda: 181 trechos com
 horário repetido no GTFS ficam no piso de 1~s e levam $v_{\max}$ a 1.258~m/s, e $h$ ignora as
-esperas; a mediana foi de 81,0~ms contra 64,1~ms do Dijkstra. Como os alternativos do Yen
-diferiam só no ponto de troca ou no trecho a pé, a página mostra um trajeto por sequência de
-linhas, tirando até $2k$ caminhos; ainda assim só 1 dos 8 pares ganhou uma segunda sequência,
-com cerca de 2,2 vezes o tempo do Yen puro.
+esperas; a mediana foi de 81,0~ms contra 64,1~ms do Dijkstra. Os alternativos do Yen diferiam
+só no ponto de troca ou no trecho a pé, então a página agrupa por sequência de linhas.
 
 \textbf{Espera.} Em $G_T$, entre as paradas 14788851 e 14792190 às 08h, o
 quadro de horários deu 23,67~min de porta a porta, contra 40,24~min por $H/2$; cada modelo
 escolhe seu trajeto. $G_T$ não tem tempo mínimo de transferência: o trajeto do exemplo tem uma troca
-com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade (feed de 18/11),
-com origens sorteadas entre as paradas da linha, só 3 de 100 pares ficaram mais lentos ao dobrar
-a linha 561787, em média 1,35~min; nos outros 97 o melhor trajeto não depende dela.
+com 0~s de espera, o que favorece o quadro na comparação. Na sensibilidade, os 3 pares afetados
+ficam em média 1,35~min mais lentos; nos outros 97 o melhor trajeto não depende da linha.
 
 \textbf{Baldeações.} O tempo comparado é o do mais rápido com até $k$ baldeações, não o do
 trajeto de $G_L$, cujo desempate não olha o tempo. A comparação levou 212,9~ms por par em média
@@ -82,14 +79,11 @@ NetworkX em 20 redes aleatórias; a maior vai de 0 a 4 baldeações em 151,4 a 9
 \textbf{Centralidades e eficiência.} A proximidade coincidiu com a do NetworkX em 15 grafos
 aleatórios, mas a amostrada não traz erro padrão. As comunidades dependem da semente (587 a 608
 com cinco sementes) e saem pequenas: a maior tem 1,5\% das paradas. O maior índice de desvio em
-12 pares foi 1,55 (13,7~km percorridos para 8,9~km em linha reta, sem as curvas das ruas). Entre
-as faixas, as diferenças de tempo médio (60,0 a 66,0~min) e de eficiência (2,72 a
-$3{,}03 \times 10^{-4}\,\mathrm{s}^{-1}$) são da ordem de um erro padrão (cerca de 5~min e
-$0{,}3 \times 10^{-4}$): com 12 pares, não distinguem as faixas.
+12 pares foi 1,55 (13,7~km percorridos para 8,9~km em linha reta). Entre as faixas, as
+diferenças são da ordem de um erro padrão (cerca de 5~min): com 12 pares, não as distinguem.
 
 \textbf{Falhas.} O ranking simula só candidatos (10 paradas de maior intermediação e 20 linhas
 sorteadas) com as mesmas 30 origens. Lideram três paradas vizinhas (Rua Deputado Salim Nacur e
 Rua das Canárias); a linha 9550 é a 5.ª (0,40\%), e a parada de maior intermediação causa só
-0,14\%: centralidade e criticidade não coincidem. Nas falhas em sequência, o estado final é igual
-ao de uma falha única com todos os itens, e a intermediação do ataque dirigido é calculada uma
-vez, na rede intacta.
+0,14\%: centralidade e criticidade não coincidem. No ataque dirigido, a intermediação é calculada
+uma vez, na rede intacta.

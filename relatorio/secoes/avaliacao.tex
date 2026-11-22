@@ -7,16 +7,12 @@
 \section{Avaliação de desempenho}\label{sec:avaliacao}
 
 Todos os tempos foram obtidos com a mesma função, \texttt{medir}, que executa o algoritmo $N$
-vezes e cronometra cada execução com \texttt{time.perf\_counter}, o relógio monotônico de maior
-resolução do Python~\cite{python-perf-counter}; a leitura do GTFS e a construção do grafo ficam
-fora do intervalo. O resultado é a média e o desvio padrão amostral (divisor $N - 1$, pois as
-execuções são uma amostra). A Tabela~\ref{tab:desempenho}, gerada por
+vezes com \texttt{time.perf\_counter}~\cite{python-perf-counter}, sem a leitura do GTFS e a
+construção do grafo, e devolve a média e o desvio padrão amostral (divisor $N - 1$). A Tabela~\ref{tab:desempenho}, gerada por
 \texttt{benchmarks/consolidar.py} a partir dos JSON de \texttt{benchmarks/resultados/} e, onde não
 há JSON, do arquivo da feature, consolida a complexidade teórica (das docstrings) e o tempo de
 cada algoritmo. As medições vêm de quatro máquinas e de três instantâneos do feed, e
-tempo de parede só se compara dentro do mesmo grupo. Em cada grupo, as buscas únicas ficam em
-dezenas a centenas de milissegundos, e o que multiplica buscas (Brandes, eficiência, falhas, Yen)
-vai a segundos, como prevê a complexidade.
+tempo de parede só se compara dentro do mesmo grupo.
 
 \input{secoes/tabela-desempenho}
 
@@ -26,27 +22,20 @@ NetworkX~\cite{hagberg2008}: BFS e Dijkstra a partir das mesmas 20 origens, inte
 Brandes (também com 20 origens, via \texttt{betweenness\_centrality\_subset}) e Tarjan, com as
 arestas paralelas reduzidas à de menor peso, como no nosso Brandes. Além do tempo, confere que
 distâncias, intermediações (tolerância relativa $10^{-6}$) e componentes coincidem; na execução
-final (20/11, $N = 3$) todos coincidiram, no feed real e em redes sintéticas
-(Tabela~\ref{tab:networkx}).
+final (20/11, $N = 3$) todos coincidiram, no feed real e em redes sintéticas. No $G_P$ do feed
+de 18/11 (i5-13600KF), nosso tempo contra o do NetworkX foi de $274 \pm 2$ contra $131 \pm 4$~ms
+na BFS (razão 2,09), $770 \pm 3$ contra $575 \pm 3$~ms no Dijkstra (1,34), $864 \pm 12$ contra
+$1{.}036 \pm 6$~ms no Brandes (0,83), todos com 20 origens, e $48 \pm 20$ contra $25 \pm 19$~ms
+no Tarjan do grafo inteiro (1,91).
 
-\begin{table}[t]
+\begin{wrapfigure}[9]{r}{0.42\linewidth}
+  \vspace{-12pt}
   \centering
-  \caption{Nosso tempo contra o do NetworkX no $G_P$ do feed de 18/11 ($|V| = 9{.}660$,
-  $|E| = 122{.}799$; i5-13600KF), média $\pm$ desvio de 3 execuções.}
-  \label{tab:networkx}
-  \footnotesize
-  \begin{tabular}{llrrr}
-    \toprule
-    Algoritmo & Escopo & Nosso & NetworkX & Razão \\
-    \midrule
-    BFS & 20 origens & 274 $\pm$ 2 ms & 131 $\pm$ 4 ms & 2,09 \\
-    Dijkstra & 20 origens & 770 $\pm$ 3 ms & 575 $\pm$ 3 ms & 1,34 \\
-    Brandes & 20 origens & 864 $\pm$ 12 ms & 1{.}036 $\pm$ 6 ms & 0,83 \\
-    Tarjan & grafo inteiro & 48 $\pm$ 20 ms & 25 $\pm$ 19 ms & 1,91 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
+  \includegraphics[width=0.98\linewidth]{figuras/complexidade-empirica.png}
+  \caption{Tempo contra $|V| + |E|$ do $G_P$ sintético (log-log) e inclinação $b$.}
+  \label{fig:complexidade}
+  \vspace{-10pt}
+\end{wrapfigure}
 Nas sintéticas de lado 10, 30 e 60, a razão ficou entre 1,81 e 1,92 no Dijkstra, 3,46 e 4,36 na
 BFS, 4,04 e 7,40 no Tarjan e 0,74 e 0,85 no Brandes. O nosso Brandes é o único mais rápido; nos
 outros, o NetworkX ganha por operar direto sobre dicionários, enquanto o nosso \texttt{Grafo}
@@ -58,13 +47,4 @@ $\log t = a + b \log(|V| + |E|)$. O esperado é $b \approx 1$ para BFS e Tarjan,
 para o Dijkstra e $b \approx 2$ para o Brandes, já que $V(V + E) \sim (V + E)^2$ com $E$
 proporcional a $V$. As inclinações medidas (Figura~\ref{fig:complexidade}) foram 1,01 (BFS),
 1,06 (Dijkstra), 1,10 (Tarjan) e 2,04 (Brandes), com $R^2 \geq 0{,}999$, o que confirma as
-complexidades declaradas. A razão entre os tempos é mais estável que os valores absolutos, e
-as inclinações em tamanhos pequenos sofrem com o custo fixo de cada chamada.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.42\linewidth]{figuras/complexidade-empirica.png}
-  \caption{Tempo médio contra $|V| + |E|$ do $G_P$ sintético, em log-log, com a reta ajustada e
-  a inclinação $b$ de cada algoritmo.}
-  \label{fig:complexidade}
-\end{figure}
+complexidades declaradas.

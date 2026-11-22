@@ -5,8 +5,7 @@
 % Início (figuras/sequencia-p0-ui.png) segue em docs/diagramas/.
 \section{Implementação}\label{sec:impl}
 
-O núcleo (\texttt{src/transporte/grafo/}) não usa biblioteca de grafo nem o \texttt{heapq}. O
-grafo guarda os atributos de vértices e arestas em listas paralelas indexadas por identificadores
+O grafo do núcleo (\texttt{src/transporte/grafo/}) guarda os atributos de vértices e arestas em listas paralelas indexadas por identificadores
 estáveis, e a lista de adjacência de cada vértice contém os identificadores das arestas que saem
 dele, o que permite arestas paralelas (viagem e caminhada entre as mesmas paradas) e devolve, no
 caminho, o tipo de cada passo. Vértices e arestas são desativados por uma marcação em $O(1)$ e
