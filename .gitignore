@@ -36,3 +36,14 @@ dados/cache/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Entrega: vídeos (publicados por link), enunciado do professor e cópias locais
+*.mp4
+*.mov
+Video para editar/
+TP.pdf
+relatorio/main.pdf
+relatorio/build/
+roteiro-gravacao*.pdf
+.claude/worktrees/
+.claude/settings.local.json
